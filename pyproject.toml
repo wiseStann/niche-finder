@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "niche-finder"
+version = "0.1.0"
+description = "Niche-first market research pipeline: measure demand, supply fragmentation, pricing and buyer voice for hundreds of software niches."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+trends = ["trendspy>=0.1.6"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+nf = "nichefinder.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+nichefinder = ["node/*.mjs", "examples/**/*", "examples/*/.env.example"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

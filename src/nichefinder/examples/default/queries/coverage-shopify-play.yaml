@@ -1,0 +1,214 @@
+# Search queries for the remaining-coverage niches (section VI of niches.yaml). Same schema as the other query files.
+# For Shopify niches Google search is a weak signal (discovery happens inside the app store); the queries are needed for CPC and trend.
+shopify-seo-image-optimizer:
+  en:
+    - {q: shopify seo app, i: category, anchor: true}
+    - {q: shopify image optimizer, i: category}
+    - {q: shopify alt text app, i: category}
+    - {q: shopify speed optimization app, i: category}
+    - {q: how to improve shopify seo, i: problem}
+    - {q: booster seo, i: brand, b: Booster SEO}
+    - {q: avada seo, i: brand, b: Avada SEO}
+    - {q: tinyimg, i: brand, b: TinyIMG}
+    - {q: searchpie, i: brand, b: SearchPie}
+
+shopify-dropshipping-pod-sourcing:
+  en:
+    - {q: shopify dropshipping app, i: category, anchor: true}
+    - {q: dropshipping suppliers app, i: category}
+    - {q: print on demand shopify, i: category}
+    - {q: aliexpress dropshipping tool, i: category}
+    - {q: how to start dropshipping on shopify, i: problem}
+    - {q: dsers, i: brand, b: DSers}
+    - {q: autods, i: brand, b: AutoDS}
+    - {q: zendrop, i: brand, b: Zendrop}
+    - {q: spocket, i: brand, b: Spocket}
+    - {q: cjdropshipping, i: brand, b: CJdropshipping}
+
+shopify-order-tracking:
+  en:
+    - {q: shopify order tracking app, i: category, anchor: true}
+    - {q: branded tracking page shopify, i: category}
+    - {q: shopify invoice app, i: category}
+    - {q: order status page shopify, i: category}
+    - {q: how to add order tracking to shopify, i: problem}
+    - {q: parcel panel, i: brand, b: Parcel Panel}
+    - {q: track123, i: brand, b: Track123}
+    - {q: 17track shopify, i: brand, b: 17TRACK}
+    - {q: order printer pro, i: brand, b: Order Printer Pro}
+
+shopify-labels-badges:
+  en:
+    - {q: shopify product labels app, i: category, anchor: true}
+    - {q: shopify trust badges, i: category}
+    - {q: shopify product badges, i: category}
+    - {q: sale sticker shopify, i: category}
+    - {q: how to add sale badge shopify, i: problem}
+    - {q: deco product labels, i: brand, b: DECO Labels}
+    - {q: bss product labels, i: brand, b: BSS Labels}
+    - {q: essential trust badges, i: brand, b: Essential Trust Badges}
+
+shopify-marketplace-sync:
+  en:
+    - {q: shopify etsy integration, i: category, anchor: true}
+    - {q: shopify ebay integration, i: category}
+    - {q: shopify amazon integration, i: category}
+    - {q: shopify inventory sync app, i: category}
+    - {q: how to sync shopify with etsy, i: problem}
+    - {q: quicksync etsy, i: brand, b: QuickSync}
+    - {q: litcommerce, i: brand, b: LitCommerce}
+    - {q: cedcommerce, i: brand, b: CedCommerce}
+    - {q: stock sync app, i: brand, b: syncX Stock Sync}
+
+shopify-reports-profit-analytics:
+  en:
+    - {q: shopify analytics app, i: category, anchor: true}
+    - {q: shopify profit tracker, i: category}
+    - {q: shopify reports app, i: category}
+    - {q: shopify heatmap app, i: category}
+    - {q: how to calculate profit on shopify, i: problem}
+    - {q: report pundit, i: brand, b: Report Pundit}
+    - {q: better reports shopify, i: brand, b: Better Reports}
+    - {q: trueprofit, i: brand, b: TrueProfit}
+    - {q: beprofit, i: brand, b: BeProfit}
+    - {q: lucky orange, i: brand, b: Lucky Orange}
+
+shopify-bulk-edit-import:
+  en:
+    - {q: shopify bulk edit app, i: category, anchor: true}
+    - {q: shopify bulk product editor, i: category}
+    - {q: shopify import export app, i: category}
+    - {q: shopify csv import products, i: category}
+    - {q: how to bulk edit prices on shopify, i: problem}
+    - {q: ablestar, i: brand, b: Ablestar}
+    - {q: matrixify, i: brand, b: Matrixify}
+    - {q: hextom bulk product edit, i: brand, b: Hextom}
+
+shopify-b2b-wholesale:
+  en:
+    - {q: shopify wholesale app, i: category, anchor: true}
+    - {q: shopify b2b app, i: category}
+    - {q: shopify hide price app, i: category}
+    - {q: shopify request a quote app, i: category}
+    - {q: how to sell wholesale on shopify, i: problem}
+    - {q: sparklayer, i: brand, b: SparkLayer}
+    - {q: wholesale pricing discount app, i: brand, b: Wholesale Pricing Discount}
+    - {q: bss b2b wholesale, i: brand, b: BSS B2B}
+    - {q: b2b wholesale club, i: brand, b: B2B Wholesale Club}
+
+shopify-search-filter-menus:
+  en:
+    - {q: shopify product filter app, i: category, anchor: true}
+    - {q: shopify search app, i: category}
+    - {q: shopify mega menu app, i: category}
+    - {q: shopify collection filter, i: category}
+    - {q: how to add filters to shopify collection page, i: problem}
+    - {q: boost ai search, i: brand, b: Boost AI Search}
+    - {q: searchanise, i: brand, b: Searchanise}
+    - {q: globo mega menu, i: brand, b: Globo Mega Menu}
+    - {q: doofinder, i: brand, b: Doofinder}
+
+phone-as-security-baby-camera:
+  en:
+    - {q: baby monitor app, i: category, anchor: true}
+    - {q: security camera app for old phone, i: category}
+    - {q: turn old phone into security camera, i: category}
+    - {q: baby cam app two phones, i: category}
+    - {q: how to use old phone as baby monitor, i: problem}
+    - {q: alfredcamera, i: brand, b: AlfredCamera}
+    - {q: bibino, i: brand, b: Bibino}
+    - {q: annie baby monitor, i: brand, b: Annie Baby Monitor}
+    - {q: cloud baby monitor, i: brand, b: Cloud Baby Monitor}
+  ru:
+    - {q: радионяня приложение, i: category, anchor: true}
+    - {q: видеоняня из телефона, i: category}
+    - {q: старый телефон как камера видеонаблюдения, i: category}
+    - {q: приложение камера наблюдения из телефона, i: category}
+    - {q: как сделать видеоняню из двух телефонов, i: problem}
+    - {q: alfredcamera, i: brand, b: AlfredCamera}
+    - {q: nani видеоняня, i: brand, b: Nani}
+    - {q: babycam, i: brand, b: BabyCam}
+
+star-maps-astronomy-apps:
+  en:
+    - {q: star map app, i: category, anchor: true}
+    - {q: night sky app, i: category}
+    - {q: planetarium app, i: category}
+    - {q: constellation finder app, i: category}
+    - {q: how to identify stars in the sky, i: problem}
+    - {q: stellarium app, i: brand, b: Stellarium}
+    - {q: star walk 2, i: brand, b: Star Walk 2}
+    - {q: sky guide app, i: brand, b: Sky Guide}
+    - {q: skyview app, i: brand, b: SkyView}
+    - {q: skysafari, i: brand, b: SkySafari}
+  ru:
+    - {q: карта звездного неба приложение, i: category, anchor: true}
+    - {q: приложение звездное небо, i: category}
+    - {q: планетарий приложение, i: category}
+    - {q: как узнать какая звезда на небе, i: problem}
+    - {q: stellarium, i: brand, b: Stellarium}
+    - {q: star walk 2, i: brand, b: Star Walk 2}
+    - {q: sky tonight, i: brand, b: Sky Tonight}
+
+family-chore-reward-apps:
+  en:
+    - {q: chore app for kids, i: category, anchor: true}
+    - {q: family chore app, i: category}
+    - {q: chore chart app, i: category}
+    - {q: kids reward app, i: category}
+    - {q: how to get kids to do chores, i: problem}
+    - {q: chorereward, i: brand, b: ChoreReward}
+    - {q: ourhome app, i: brand, b: OurHome}
+    - {q: homey app chores, i: brand, b: Homey}
+    - {q: chorefriend, i: brand, b: Chorefriend}
+  ru:
+    - {q: приложение домашние дела для семьи, i: category, anchor: true}
+    - {q: приложение обязанности детей награды, i: category}
+    - {q: семейный планировщик дел, i: category}
+    - {q: как приучить ребенка к домашним обязанностям, i: problem}
+    - {q: ourhome приложение, i: brand, b: OurHome}
+    - {q: chorereward, i: brand, b: ChoreReward}
+
+bedtime-stories-kids-audio:
+  en:
+    - {q: bedtime stories app, i: category, anchor: true}
+    - {q: kids audio stories app, i: category}
+    - {q: personalized bedtime story, i: category}
+    - {q: ai bedtime story generator, i: category}
+    - {q: how to get toddler to sleep stories, i: problem}
+    - {q: readmio, i: brand, b: Readmio}
+    - {q: little stories app, i: brand, b: Little Stories}
+    - {q: moshi kids, i: brand, b: Moshi}
+    - {q: oscar stories, i: brand, b: Oscar Stories}
+  ru:
+    - {q: сказки на ночь приложение, i: category, anchor: true}
+    - {q: аудиосказки для детей приложение, i: category}
+    - {q: сказка с именем ребенка, i: category}
+    - {q: нейросеть сказка для ребенка, i: category}
+    - {q: как уложить ребенка спать сказки, i: problem}
+    - {q: storiko, i: brand, b: Storiko}
+    - {q: гусьгусь, i: brand, b: Гусьгусь}
+    - {q: маленькие истории приложение, i: brand, b: Маленькие истории}
+
+travel-esim-apps:
+  en:
+    - {q: travel esim, i: category, anchor: true}
+    - {q: esim app, i: category}
+    - {q: international esim, i: category}
+    - {q: esim for europe, i: category}
+    - {q: how to get esim for travel, i: problem}
+    - {q: airalo, i: brand, b: Airalo}
+    - {q: saily esim, i: brand, b: Saily}
+    - {q: holafly, i: brand, b: Holafly}
+    - {q: nomad esim, i: brand, b: Nomad}
+    - {q: ubigi, i: brand, b: Ubigi}
+  ru:
+    - {q: esim для путешествий, i: category, anchor: true}
+    - {q: esim для поездки за границу, i: category}
+    - {q: туристическая esim, i: category}
+    - {q: купить esim онлайн, i: category}
+    - {q: как подключить интернет за границей, i: problem}
+    - {q: airalo, i: brand, b: Airalo}
+    - {q: yesim, i: brand, b: Yesim}
+    - {q: unisim, i: brand, b: UNISIM}
+    - {q: mobimatter, i: brand, b: MobiMatter}

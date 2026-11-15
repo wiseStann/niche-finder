@@ -1,0 +1,32 @@
+# niche-finder workspace settings. Keys live in .env, not here.
+
+# Demand pools to measure: us (United States), ww (worldwide, all languages), ru (Russia; enables the
+# Russian module: Wordstat, hh.ru, public procurement, software registry).
+markets: [us, ww]
+
+# Run date. Leave empty for today; set YYYY-MM-DD to reproduce an earlier run from cache.
+as_of:
+
+# Optional: keep the API cache outside the workspace (also $NF_CACHE_DIR).
+cache_dir:
+
+# Your goal, for the "path to goal" layer (S6 ceiling): how big a share of each niche you would need.
+goal:
+  currency: USD
+  units_per_usd: 1.0          # e.g. 85 for RUB
+  net_month_low: 60000        # net profit per month, in `currency`
+  net_month_high: 120000
+  net_margin: 0.40            # net margin of a small team
+
+# Verdicts. Gates (supply fragmentation, platform risk, feasibility) decide red; among niches that pass,
+# a score at or above green_min_score is green, the rest yellow. config/overrides.yaml can set any verdict by hand.
+verdict:
+  green_min_score: 70
+
+# Founder fit (0–3) used by the path-to-goal grade when a niche has no `fit` in config/overrides.yaml.
+default_fit: 1
+
+# LLM for Reddit classification (S10). Environment variables LLM_BASE_URL / LLM_MODEL override these.
+llm:
+  base_url: https://api.deepseek.com/v1
+  model: deepseek-chat

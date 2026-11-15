@@ -1,0 +1,311 @@
+# Manual relevance edits for the iTunes Search results (s5_appstore). Per niche and store (us, ru):
+#   exclude: [trackId, ...]  drop an app from the relevant set (it stays in appstore_apps.csv with relevant=0)
+#   include: [trackId, ...]  force an app into the relevant set
+#   na: true                 the App Store is not the place for this niche (web B2B); its App Store metrics are not used
+# Rule of thumb: exclude marketplaces, platforms, content media, games and neighbouring categories (document scanners,
+# tuners); keep direct competitors and the closest substitutes.
+
+faith-devotional-apps:
+  us: {exclude: []}
+  ru: {exclude: []}
+ai-phone-receptionist-local:
+  us:
+    na: true   # an AI receptionist is sold on the web; the App Store shows telephony (RingCentral, Grasshopper, OpenPhone) and chatbots
+    exclude: [284910350, 1668000334, 1158555867, 1559479889, 6447763703, 6449486871, 1297230801, 1640745955, 1452013231, 588199307, 605841731, 1661016696, 1104772757]
+workout-log-trackers:
+  us:
+    exclude: [1438388363, 298903147, 1574460221, 839285684, 301521403, 1313192037, 1472638797, 1438092960]   # habit tracker, running, guided home workouts
+  ru:
+    exclude: [1114387800, 1313192037, 1099771240, 636240052, 1438388363, 1107635517, 1339206887, 1523672406, 1460136147, 756930454]   # ready-made workouts, running, habits, tabata
+recipe-manager-meal-planner:
+  us:
+    exclude: [911422904, 1217456898, 970107419, 312101965, 771068291, 1365223384, 6479693198]   # content media (NYT, Tasty, Epicurious, ATK), meal kit HelloFresh
+  ru:
+    exclude: [429047995, 1187285712, 1278473923, 1499198946, 1449483587, 1135683789, 1667349931, 1556367668, 1195428600, 1568506349]   # Pinterest, planners, games, calories, content media Food.ru
+astrology-human-design:
+  us:
+    exclude: [1417411962, 1208433822, 1444277220]   # psychic/astrologer marketplaces, tarot
+  ru:
+    exclude: [1457711961, 1444277220]   # photo retouching, tarot
+reseller-crosslisting-scanners:
+  us:
+    exclude: [282614216, 468996152, 896130944, 470412147, 518684914, 632064380, 1061302787, 794141485, 1116808792,
+              1496800347, 307868751, 1495971405, 684155862, 1402847779, 1536411052, 1264425656]   # marketplaces, document scanners
+  ru: {na: true, exclude: []}   # the results are a car-check app
+coin-antique-identifiers:
+  us:
+    exclude: [372836496, 1036449551]   # the game Coin Dozer, Discogs
+digital-business-cards:
+  us:
+    exclude: [1160481993, 388627783, 368494609, 1200318119, 1180773759, 1252962749, 881629660, 1249686798]   # Wallet, PDF/QR scanners, NFC utilities, Wave
+  ru:
+    exclude: [950802372, 1217017670, 1249686798, 1252962749, 1523685730, 1504644677, 6744375020]   # logos, NFC/QR utilities
+screen-time-focus-apps:
+  us:
+    exclude: [672904239, 1055677337, 1569973513, 6444370199, 1522854086, 1265128036, 1528322796, 966057213]   # I Am Sober, Firefox Focus, App Lock, Bluesky, BlockerX, pomodoro timers
+nature-id-mushroom-bird-insect:
+  us:
+    exclude: [6560107458, 6473705235, 1663862037, 1122922065]   # generic "identify anything" apps, bird sounds for sleep
+  ru: {exclude: []}
+licence-exam-prep-apps:
+  us:
+    exclude: [6449002508]   # CA DMV Wallet (government)
+  ru: {exclude: []}
+anglers-fishing-apps:
+  us:
+    exclude: [6505145935, 997079492, 1191010451, 694972182]   # games, generic weather
+  ru:
+    exclude: [997079492, 1371461117, 1422605014]   # generic weather
+n8n-openclaw-managed-hosting:
+  us: {na: true, exclude: []}   # hosting is not a mobile category; the results are VPNs and clouds
+music-instrument-learning:
+  us:
+    exclude: [968585775, 6480136315, 1580330718, 509993510, 342138881, 547109049, 6482289804, 1052970183,
+              1107017950, 527588389, 1573260863, 835731296]   # DAWs, AI music, karaoke, tuners, sheet music
+  ru:
+    exclude: [1208138685, 527588389, 509993510, 342138881, 1345937284, 838981369, 1520523641]   # Toca Boca, tuners, karaoke, video editing
+cold-email-deliverability:
+  us: {na: true, exclude: []}   # email clients, not mailing tools
+ai-language-speaking-tutors:
+  us:
+    exclude: [6448311069, 570060128, 829587759, 1348028646, 6446047896, 1036725690, 379968583, 1460782849, 6479639235,
+              1352790442, 557130558, 1255783056, 959001619, 668386019]   # ChatGPT, general language apps (Duolingo/Babbel/Busuu are substitutes), translators, tutor marketplaces, language exchange
+sign-language-learning:
+  us:
+    exclude: [570060128, 829587759, 859243872, 1017813651, 597293943]   # general language apps
+gym-martial-arts-studios:
+  us: {na: true, exclude: []}   # B2B; the App Store has club-member apps and consumer workouts
+small-nonprofits-donor-crm:
+  us: {na: true, exclude: []}
+pod-kdp-etsy-seller-tools:
+  us: {na: true, exclude: []}
+restock-drop-alerts:
+  us:
+    exclude: [966758561, 1089294040, 911130812, 881599819, 6479970832, 328412701, 1442061397, 1508115448, 552799694,
+              591644846, 1477500619, 281941097, 517166254, 6741503079, 1576385234, 1095571204, 1174967174, 1211125805]   # sneaker marketplaces, stock exchanges, games
+invoice-estimate-mobile-apps:
+  us:
+    exclude: [584606479, 971412288, 1053148887, 1104772757, 1571207100]   # QuickBooks (an accounting substitute), Podium, PayPal, HoneyBook, JobNimbus
+indie-app-dev-aso-tools:
+  us: {na: true, exclude: []}
+loyalty-wallet-passes:
+  us: {na: true, exclude: []}   # merchant tools are web; the App Store has consumer card wallets
+law-firm-intake:
+  us: {na: true, exclude: []}
+local-seo-gbp-agencies:
+  us: {na: true, exclude: []}
+pet-care-facilities:
+  us: {na: true, exclude: []}
+course-creator-affiliate-payouts:
+  us: {na: true, exclude: []}
+str-hosts-tools:
+  us: {na: true, exclude: []}   # the results are OTAs (Vrbo, Booking); host tools are web
+saas-product-feedback-boards:
+  us: {na: true, exclude: []}
+calorie-counters-ai:
+  us:
+    exclude: [1092799236, 6739765789]   # Yuka/Olive are ingredient scanners, not calorie counters
+  ru:
+    exclude: [1194023242]   # Daylio
+parental-control-family-locator:
+  us:
+    exclude: [1150085200, 1190074407, 1285713171, 6471528064, 923408272, 353334746]   # platform/carrier apps (Google, Nintendo, Meta, Amazon, Verizon, AT&T) are substitutes
+  ru:
+    exclude: [1038369065, 896501514, 1144871267, 1668580784, 1150085200, 1069777320, 1439575933, 1259448817, 6443790994]   # period calendars, friends on a map, Family Link (platform)
+co-parenting-apps:
+  us:
+    exclude: [1108185179, 407108860, 1641107226, 909319292, 608834326, 1320244591, 952578473, 1113106806, 1098999871,
+              794574199, 1385417904, 1567076603, 1422829127, 737534985, 1636705869, 1161255926]   # shared calendars, school apps, kids apps
+tcg-sports-card-scanners:
+  us:
+    exclude: [6479970832, 6751921248, 1494294403, 6499322184, 1557962344, 1568026219]   # Pokemon games, rips, card maker, breaks
+churches-tools:
+  us:
+    exclude: [879478102, 1348028646, 332615624, 804641004, 361285480, 6465173251, 1268937966, 1570134612, 6740606431,
+              1371998651, 6738304985, 1441880422]   # generic presentation apps, translators, Bibles
+shift-scheduling-deskless:
+  us:
+    exclude: [866163372, 949731866, 1235930724, 1452013231, 1400078107, 1236495154, 1016565262]   # Resy, NurseGrid (personal), Shiftsmart (marketplace), Restaurant365, personal time trackers
+couples-relationship-apps:
+  us:
+    exclude: [1600525061, 456034437, 1641107226, 1164067996, 1570369625, 1295936594, 1437263404, 1353066380, 1600025374]   # widgets, Quora, dating, party games
+  ru:
+    exclude: [1462556579, 1600525061, 1459096552, 1641107226, 1330105377, 1067232789, 1560496752, 1193550697, 1529267219]   # games, widgets, cycle calendar
+trip-planners:
+  us:
+    exclude: [284971959, 415458524, 284876795, 434832826, 1499198946, 681752345, 6736921913, 343038584, 397227037,
+              703796787, 1198232244, 1478573199, 959621658, 1471394318]   # OTAs, airlines, sudoku, delivery route planners
+sobriety-quit-trackers:
+  us:
+    exclude: [1438388363, 963034692, 1532875441, 672401817, 6446997766, 6478942469]   # generic habit trackers, one sec
+gig-worker-mileage-tax:
+  us:
+    exclude: [291890420, 307861492, 584606479, 1291962681, 1136617388, 1017559099, 942370264, 728948811, 1533453332,
+              295905460, 732079889, 548615579]   # running trackers, QuickBooks, scanners, gig marketplaces, receipt cashback
+small-landlords-pm:
+  us:
+    exclude: [310738695, 555063314, 659694038, 1458274896, 319836632, 538946076, 443831139, 388038507, 1071907841,
+              1645842987, 1528914272, 950949627, 1327264569, 333244247, 1668123799, 6476510444]   # rental search portals, tenant portal, games, Turo, Vrbo
+dog-training-apps:
+  us:
+    exclude: [1149449468, 1368715736, 1313818172, 1209845479, 1438036784, 1561965563, 1489388968, 1447489158, 6478392521,
+              1498829744, 6737748858, 1448122107, 1635707718, 6743102288, 1636914989]   # stores, games, "translators", GPS collar, breed identifier
+marketplace-seller-analytics:
+  us: {na: true, exclude: []}   # the results are Amazon apps
+auto-repair-shops:
+  us: {na: true, exclude: []}
+ai-video-dubbing-captions:
+  us:
+    exclude: [997362197, 844570015, 1348028646, 1082956994, 1585824635, 1019382747, 6465173251, 1459833443, 1609369954,
+              6742757464, 1620499741, 1634439688, 6470238006, 1061319002, 6468764490]   # generic video editors, translators
+ai-search-visibility-geo:
+  us: {na: true, exclude: []}
+digital-wardrobe-outfit-planner:
+  us:
+    exclude: [470412147, 518684914, 457876088, 499725337, 632064380, 606173978, 6449296449, 1588252721, 1540575613]   # clothing marketplaces, stores, Planner 5D, photo generator
+  ru:
+    exclude: [863844475, 6736916284, 1482629672, 1536745174, 6746669395]   # makeup, Instagram grid, color typing, try-on
+personal-budgeting-apps:
+  us:
+    exclude: [519817714, 1001257338, 1295303441, 471713959, 1174471607, 1057771088]   # Credit Karma, Empower (wealth), Mint Mobile (carrier), Expensify (B2B), NerdWallet (content), Albert (neobank)
+  ru:
+    exclude: [1127692604, 1010198076]   # a couples widget, Masters (client booking)
+muslim-apps-ru-cis:
+  us: {exclude: []}
+  ru:
+    exclude: [1148389742]   # Alif keyboard
+golf-gps-handicap:
+  us:
+    exclude: [411930498, 555651262, 491796218, 1478029036, 1598432538, 1192480582, 937899125, 1449021143, 1514586439, 1537336274, 909762897, 635386429, 342537812, 6789293277]   # GolfNow/Supreme/iGolf (tee-time booking), Golf Genius (B2B clubs), GHIN/Golf Canada (associations), Imagine (mental game), TaylorMade/Garmin/TAG Heuer (brand companions), SmoothSwing, mini golf, disc golf
+homework-solvers-ai:
+  us: {exclude: []}
+  ru:
+    exclude: [1050704155, 1346556904, 6670535436, 501624074, 562191106]   # Yandex with Alice, driving-test tickets, puzzles
+indie-music-distribution-stems:
+  us:
+    exclude: [921765888, 1017492454, 401347343, 1521888879, 1447312762, 6445854828, 6444621447, 6751705626, 1437251983, 1470209570, 1622577500, 719638589, 346194763]   # streaming / players / Spotify stats
+  ru:
+    exclude: [1345937284, 1455601338, 1493256837, 1663471569, 924635678]   # mp3 trimming / audio editors
+brain-training-memory:
+  us:
+    exclude: [1486214495, 1207472156, 6448104157, 1424533120, 1477841973, 1509517244, 1492978794, 6670789598, 1478345385]   # puzzle games (Brain Test, Wordscapes, Brain Out), sudoku, trivia, pomodoro
+  ru:
+    exclude: [1369521645, 1486214495, 1528503142, 1197961218, 1275023828, 1337667848, 849654325, 1442749804, 404242044, 1491764681, 439873467, 598949838, 1618258678, 662552813]   # word games, fillwords, sudoku, checkers, puzzles, spot-the-difference, a Russian-language test
+book-summaries-microlearning:
+  us:
+    exclude: [355833469, 875063456, 1488170618, 1085047737, 1324203419, 1668805457, 376183339, 1579855028, 6451444706, 991242619]   # Goodreads/Fable/Bookly (reading trackers), Elevate, Ground News, a chatbot, TED, an LMS
+  ru:
+    exclude: [6462816053]   # flashcards
+pregnancy-baby-milestones:
+  us:
+    exclude: [1038369065, 1495829322, 570244389, 1279295922, 1556748552]   # cycle/ovulation trackers (Flo, Stardust, Ovia Cycle, Premom), Lovevery (a toy brand)
+  ru:
+    exclude: [1038369065, 896501514, 657189652, 1471491632, 1504152442, 1501297737]   # Flo, a period calendar, Clue, a kids game, yoga, a learning game
+ai-hairstyle-tryon:
+  us:
+    exclude: [1180884341, 1488782587, 1548712972, 1530776865, 1536745174]   # FaceApp/FaceLab (generic face editors), Reface, Hair Dye! (a game), Dressika (color typing)
+  ru:
+    exclude: [1180884341, 863844475, 475976577, 1530776865, 6449296449, 6746566869]   # FaceApp, YouCam/Perfect365 (makeup), FaceLab, GIO, photo animation
+flight-tracking-deals-award-travel:
+  us:
+    exclude: [344542975, 427916203, 284971959, 367003839, 336381998, 305204535, 307861492, 284876795, 311035142, 436858222, 440676901, 578830929, 880759727, 1136617388, 1041591359, 557871911]   # airlines and OTAs (Expedia, Booking, Priceline, KAYAK, Agoda, CheapOair), TripIt, mileage/step trackers, a speedometer
+youth-sports-team-management:
+  us:
+    exclude: [871544379, 542613198, 1121613912, 383126470, 1435368303, 730422337, 1151499033, 1258991852, 6462083193, 1419667065, 1065897968, 1195686320, 596598472]   # employee shift schedulers (Homebase, When I Work, Connecteam, Shyft, Deputy...), BAND, Teamup, CoachNow (video)
+kids-learning-games-preschool:
+  us:
+    exclude: [302584613, 1669091583, 1239522573]   # Kindle, Bluey (a brand), Speech Blubs (speech therapy)
+  ru:
+    exclude: [977016099]   # fairy tales
+credit-card-points-optimizers:
+  us:
+    exclude: [519817714, 362348516, 301724680, 1128712763, 1193801909, 1476775662, 1228440036, 476718980, 1130616675, 1364215562, 1008234539, 1617487581, 1525159784, 1565576987, 1027586503, 1600495551, 1174471607, 1438006983, 1584248673, 714626557, 1584183782, 1559021775, 6451211924, 1570296831, 1078295053,
+              1581364879, 6480379937, 1400353064, 871022793, 6445810443, 6450669712, 6471141803, 6449683788, 6482576688, 1076634150, 1666496536, 1588303199, 1473089006, 1601211886, 6749548849, 6474440896, 6484501975, 1059355733, 1574751566, 1435763477, 1628590195, 321399433, 290137919, 6444899851, 6758373810, 1563986090]   # banks and card issuers, credit builders, credit scores, POS terminals; only rewards optimizers remain (MaxRewards, CardPointers, Kudos, AwardWallet, Travel Freely, WalletFlo...)
+collection-trackers-lego-watches-vinyl:
+  us:
+    exclude: [1486159728, 472912032, 1603892248, 1606306441, 1433811063, 6740403375, 1008305274, 1586195658]   # LEGO Builder/Tower/Insiders (a brand, a game), Chrono24/Bezel (watch marketplaces), Collectr (TCG is a separate niche), MD Vinyl (a player), Hodinkee (media)
+travel-journal-map:
+  us:
+    exclude: [585027354, 323229106, 284971959, 311035142, 1044867788, 1476732439, 316126557, 1252208166, 6749205970, 703796787, 870161082, 1429967544, 1444539710, 882519460, 1178125920]   # maps/navigation, OTAs, TripIt/Wanderlog/Tripsy (planners), Day One/Diaro (diaries), Swarm, a geo quiz
+  ru:
+    exclude: [481627348, 382233851, 1097815000, 749133753, 498477945, 1436776211, 1329688004, 1527996466, 533365777, 1629505231, 1536318799, 1358823008, 1295506659, 704921899, 1434848437, 6503337835, 1436044299, 1388195923]   # 2GIS, flight radars, weather, transport, sport trackers, password diaries, games
+immigration-case-trackers:
+  us:
+    exclude: [1492938869, 1268078389, 1514036839, 6758992473, 1451202585, 1238166926, 1499891460, 1635268679, 6752501722, 6447767254, 6472096747]   # a citizenship test, a law-firm client portal, the visa service Atlys, day/tax-residency trackers, UK ID Check
+cookie-consent-gdpr-widgets:
+  us: {na: true, exclude: []}   # a web widget; the App Store has the games Cookie Jam/CookieRun and clinic portals
+  ru: {na: true, exclude: []}
+web-accessibility-widgets:
+  us: {na: true, exclude: []}   # a web widget; the results are health/EHS/government apps
+digital-signage-smb:
+  us: {na: true, exclude: []}   # sold on the web (a player on a TV); the App Store has remote controls
+  ru: {na: true, exclude: []}
+sms-marketing-smb:
+  us:
+    exclude: [1472619338, 314487667, 366794783, 579356813, 1186010974, 1241817309, 1425004076, 1455950508, 1557469430, 6505050591, 1609695129, 1523913647, 1563627840, 1591815272, 1436638155, 1603222959, 6753724792, 6746873130, 6661027967, 1278821552, 1568700841, 1287560183, 6759511643]   # stickers, second numbers / telephony (textPlus, Grasshopper, OpenPhone, Index), Mailchimp, HighLevel (a platform), spam filters, SMS forwarders, virtual SIMs
+  ru: {na: true, exclude: []}   # one app with ratings (a CRM)
+pest-control-software:
+  us: {na: true, exclude: []}   # vertical B2B on the web; the App Store has shift schedules, routing, Jobber/ServiceM8 (general field service)
+daycare-childcare-software:
+  us:
+    exclude: [1456634128, 738207604, 1605163109, 476675123, 6741319630, 1561621817, 1641860089]   # KinderCare (a chain), SimplePractice, simulator games, DaySmart Pet/Vet, MoeGo (grooming)
+  ru: {na: true, exclude: []}   # no market (88 ratings or fewer)
+coaching-business-platforms:
+  us: {na: true, exclude: []}   # Paperbell/CoachAccountable/Practice are web; the App Store has fitness trainers, sports video, AI coaches
+  ru: {na: true, exclude: []}
+funeral-homes-software:
+  us: {na: true, exclude: []}   # web; the results are genealogy, Find a Grave, games
+shopify-upsell-bundles:
+  us: {na: true, exclude: []}   # Shopify apps live on apps.shopify.com; the App Store has marketplaces and Shop
+shopify-loyalty-rewards:
+  us: {na: true, exclude: []}
+shopify-popups-notifications:
+  us: {na: true, exclude: []}
+shopify-product-options-variants:
+  us: {na: true, exclude: []}   # Shopify apps live on apps.shopify.com
+shopify-back-in-stock-preorder:
+  us: {na: true, exclude: []}
+shopify-translation-currency:
+  us: {na: true, exclude: []}
+shopify-seo-image-optimizer:
+  us: {na: true, exclude: []}
+shopify-dropshipping-pod-sourcing:
+  us: {na: true, exclude: []}
+shopify-order-tracking:
+  us: {na: true, exclude: []}
+shopify-labels-badges:
+  us: {na: true, exclude: []}
+shopify-marketplace-sync:
+  us: {na: true, exclude: []}
+shopify-reports-profit-analytics:
+  us: {na: true, exclude: []}
+shopify-bulk-edit-import:
+  us: {na: true, exclude: []}
+shopify-b2b-wholesale:
+  us: {na: true, exclude: []}
+shopify-search-filter-menus:
+  us: {na: true, exclude: []}
+bedtime-stories-kids-audio:
+  us:
+    exclude: [525463029, 719219382, 1244690083, 1412039719, 1109543953, 606378030, 1275493456, 1057374139, 668692393, 6740884542, 6502035172, 1332871024, 1614501990]   # Apple Podcasts, Epic (reading), adult sleep stories (Sleepiest, Slumber, Manki, StellaSleep), Yoto (hardware), children's Bibles, audiobooks, Novel Effect, AI writers for adults
+  ru:
+    exclude: [1395112217, 1061992624, 449818886, 454170409, 6746245772]   # Skazbuka (games), general audiobooks, Chitaynik
+family-chore-reward-apps:
+  us:
+    exclude: [407108860, 1438388363, 1631584032, 496889629, 6737811484, 1604675493]   # Cozi/FamilyWall (family calendars), Habit Tracker, Playful Rewards ("earn"), games
+  ru:
+    exclude: [1425915788, 1565739275, 1448336046, 6479862569]   # Dragon Family (a piggy bank), MyLife (habits), a game, a shopping list
+phone-as-security-baby-camera:
+  us:
+    exclude: [1459289784, 439763870, 1103530261, 1445991661, 1478095333, 1397726277, 1137885597, 1542759321, 6444252233, 1342829120, 1164464478, 1596766858, 726845420, 995927563, 1544694845, 1375812275, 1071165451, 6469943309, 998574475, 1137252313, 471366587, 6450695466]   # hardware companions (Arlo, Nanit, VTech, Lorex, Reolink, eufy, Yi, Imou, Lollipop, Sense-U, Night Owl, Wansview, blurams), hidden-camera detectors, iVCam, photo art
+  ru: {exclude: []}
+star-maps-astronomy-apps:
+  us:
+    exclude: [334325516]   # NASA
+  ru:
+    exclude: [1464879676, 983877380, 6449408583]   # a game, a kids' "Solar System", the Moscow Planetarium guide
+travel-esim-apps:
+  us:
+    exclude: [1564051387, 518708790, 1437014693, 526829675, 1482736281, 1441116618, 1249825694, 825314001]   # second numbers (OnPhone, eSIM Plus, Numero), carriers (T-Mobile, Claro, Orange), KeepCalling, GlocalMe (hotspot hardware)
+  ru:
+    exclude: [811057180, 681752345, 548925969]   # Aviasales, Trip.com (OTAs); WiFi Map (a Wi-Fi password map with an eSIM upsell)

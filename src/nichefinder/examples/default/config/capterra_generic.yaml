@@ -1,0 +1,141 @@
+# Horizontal products that Capterra lists in many categories. They are excluded from the per-niche concentration
+# (they are substitutes, not players of the niche) and mentioned separately as "horizontal substitute" (cap_generic).
+generic:
+  - Trello
+  - Jira
+  - Asana
+  - Zoho CRM
+  - Zoho Projects
+  - Zoho Books
+  - Zoho Invoice
+  - Zoho Desk
+  - monday.com AI Work Platform
+  - monday CRM
+  - ClickUp
+  - Wrike
+  - NetSuite
+  - Miro
+  - Marketing 360
+  - Bitrix24
+  - Quickbase
+  - Freshsales
+  - Freshdesk
+  - Slack
+  - Canva
+  - PayPal
+  - Wix
+  - Squarespace
+  - Semrush
+  - Zapier
+  - HubSpot CRM
+  - HubSpot Marketing Hub
+  - HubSpot Sales Hub
+  - Salesforce Sales Cloud
+  - Salesforce Marketing Cloud
+  - Notion
+  - Airtable
+  - Smartsheet
+  - Pipedrive
+  - Mailchimp
+  - Shopify
+  - Square Point of Sale
+  - Square Appointments
+  - Stripe
+  - Google Workspace
+  - Microsoft 365
+  - Microsoft Teams
+  - Zendesk Suite
+  - Intercom
+  - Hootsuite
+  - Keap
+  - ActiveCampaign
+  - Brevo
+  - Constant Contact
+  - GoDaddy Website Builder
+  - Odoo
+  - SAP Business One
+  - Adobe Acrobat
+  - Adobe Express
+  - Wave
+  - Xero
+  - Sage Intacct
+  - Dynamics 365
+  - Calendly
+  - Acuity Scheduling
+  - SimplyBook.me
+  - Setmore
+  - Booksy
+  - Bonsai
+  - PocketSuite
+  - Pendo
+  - Similarweb
+  - Productive
+  - Mosaic
+  - Bordio
+  - Keto AI+ Platform
+  - Vimeo
+  - YouTube
+  - Loom
+  - Descript
+  - Kaltura
+  - Panopto
+  - Wistia
+  - Rev
+  - Otter.ai
+  - Google Analytics 360
+  - Ahrefs
+  - Moz Pro
+  - SE Ranking
+  - LiveAgent
+  - RingCentral
+  - Nextiva
+  - Dialpad
+  - GoTo Connect
+  - 8x8
+  - Aircall
+  - CloudTalk
+  - Twilio
+  - Ooma Office
+  - Grasshopper
+  - Deputy
+  - Homebase
+  - Connecteam
+  - When I Work
+  - Rippling
+  - Gusto
+  - BambooHR
+  - Paycor
+  - ADP Workforce Now
+  - Confluence
+  - Basecamp
+  - Marketo Engage
+  - Appy Pie
+  - RingEX
+  - SignUpGenius
+  - Guusto
+  - Tidio
+  - Clockify
+  - Hubstaff
+  - Teamwork.com
+  - Podium
+  - Birdeye
+  - Yext
+  - Zoom Workplace
+  - Fishbowl
+  - Lightspeed Retail
+  - Goldie
+  - EngageBay CRM
+  - EngageBay Marketing
+  - Mindbody
+  - QuickBooks Online
+  - QuickBooks Enterprise
+  - QuickBooks Time
+  - AuditBoard
+  - OneTrust
+  - Vanta
+  - Drata
+  - Sprinto
+  - Box
+  - Splunk Enterprise
+  - Epos Now
+  - Square for Retail

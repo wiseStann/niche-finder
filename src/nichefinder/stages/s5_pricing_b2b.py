@@ -1,0 +1,187 @@
+"""B2B pricing (switching cost): prices of the top products per niche from GetApp.
+
+GetApp shows the same Gartner data as Capterra but keeps product cards open. For every B2B niche: the top-N products by
+Capterra reviews (horizontal ones excluded) -> their GetApp slug (found in the category listing) -> the product card:
+starting price, period, pricing model, free trial, free version.
+Inputs: data/out/capterra_products.csv, config/capterra_map.yaml, config/getapp_categories.yaml (GetApp child -> parent).
+Outputs: data/out/pricing_b2b.csv (per product) and data/out/pricing_b2b_niche.csv (per niche: share of products with a
+public price, median/min/max monthly price, share under $100, free trial/version shares). HTML is cached in
+data/cache/getapp/. Needs curl. No key.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import html
+import re
+import time
+from collections import defaultdict
+
+from nichefinder import http
+from nichefinder.workspace import Workspace
+
+SUMMARY = "B2B pricing of top Capterra products from GetApp cards"
+KEYS: tuple[str, ...] = ()
+NEEDS: tuple[str, ...] = ("curl",)
+
+TOP_N = 8
+# Capterra slug -> GetApp child category, where it differs from "slug minus -software"
+OVERRIDE = {
+    "billing-and-invoicing-software": "billing-invoicing",
+    "rental-property-management-software": "property-management",
+    "legal-case-management-software": "legal-case-management",
+    "multi-channel-ecommerce-software": "multi-channel-ecommerce",
+    "seo-software": "seo",
+}
+
+
+def fetch(ws: Workspace, url: str, name: str) -> str:
+    path = ws.cache("getapp") / name
+    if path.exists() and path.stat().st_size > 5000:
+        return path.read_text(encoding="utf-8", errors="ignore")
+    for attempt in range(3):
+        try:
+            text = http.request(url, backend="curl", timeout=60, headers={"Accept": "text/html"},
+                                tries=1, raise_for_status=False).text
+        except OSError:
+            text = ""
+        if len(text) > 5000 and "Page Not Found" not in text[:3000]:
+            path.write_text(text, encoding="utf-8")
+            time.sleep(1.2)
+            return text
+        time.sleep(6 * (attempt + 1))
+    return ""
+
+
+def norm(s: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+def listing_products(ws: Workspace, parent: str, child: str) -> dict:
+    out = {}
+    for page in (1, 2, 3):
+        url = f"https://www.getapp.com/{parent}/{child}/" + (f"?page={page}" if page > 1 else "")
+        s = fetch(ws, url, f"cat_{child}_p{page}.html")
+        if not s:
+            break
+        found = re.findall(r'href="/[a-z0-9-]+/a/([a-z0-9-]+)/"[^>]*>\s*(?:<[^>]+>\s*)*([^<]{2,80}?)\s*<', s)
+        new = 0
+        for slug, name in found:
+            if slug not in out and name.strip() and not name.lower().startswith(("read more", "learn more", "compare")):
+                out[slug] = name.strip(); new += 1
+        if new == 0:
+            break
+    return out
+
+
+def product_pricing(ws: Workspace, slug: str):
+    s = fetch(ws, f"https://www.getapp.com/all-software/a/{slug}/", f"prod_{slug}.html")
+    if not s:
+        return None
+    txt = re.sub(r"<[^>]+>", "|", s)
+    txt = html.unescape(re.sub(r"[\s|]*\|[\s|]*", "|", txt))
+    price, period, model = None, "", ""
+    m = re.search(r"Starting price\|(?:See details\|)?([\d.,]+)\|([^|]{0,30})\|?/?\|?(per [a-z]+|Per [a-z]+|one-time|One-time)?", txt)
+    if m:
+        price = m.group(1).replace(",", "")
+        model = m.group(2).strip()
+        period = (m.group(3) or "").lower()
+    if price is None:
+        m = re.search(r"Starting from\|([\d.,]+)\|(Per [a-z]+|per [a-z]+|One-time|Free)", txt)
+        if m:
+            price, period = m.group(1).replace(",", ""), m.group(2).lower()
+    no_info = "No pricing info" in txt
+
+    def flag(label):
+        i = s.find(f">{label}</div>")
+        if i < 0:
+            i = s.find(f">{label}<")
+        if i < 0:
+            return ""
+        seg = s[i:i + 400]
+        if "fas-check" in seg or "far-check" in seg or "icon-fas-check" in seg:
+            return "1"
+        if "fas-times" in seg:
+            return "0"
+        return ""
+    return {"price": price, "period": period, "model": model, "no_pricing_info": int(no_info),
+            "free_trial": flag("Free trial"), "free_version": flag("Free version")}
+
+
+def add_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--agg", action="store_true", help="only rebuild pricing_b2b_niche.csv from pricing_b2b.csv")
+
+
+def run(ws: Workspace, args: argparse.Namespace) -> None:
+    if getattr(args, "agg", False):
+        aggregate(ws)
+        return
+    cmap = ws.load_config("capterra_map.yaml", {})
+    gcats = ws.load_config("getapp_categories.yaml", {}) or {}
+    src = ws.out("capterra_products.csv")
+    if not src.is_file():
+        print(f"{src} not found - run s5_capterra first; skipping")
+        return
+    prods = list(csv.DictReader(open(src, encoding="utf-8")))
+    by_slug = defaultdict(list)
+    for r in prods:
+        if r["generic"] == "0":
+            by_slug[r["slug"]].append(r)
+    rows = []
+    for nid, cfg in cmap.items():
+        for cslug in cfg["slugs"]:
+            child = OVERRIDE.get(cslug, cslug.replace("-software", ""))
+            parent = gcats.get(child)
+            if not parent:
+                print(f"  !! no GetApp category for {cslug} ({child}) - add it to config/getapp_categories.yaml")
+                continue
+            listing = listing_products(ws, parent, child)
+            lookup = {norm(n): s for s, n in listing.items()}
+            top = sorted(by_slug[cslug], key=lambda r: -int(r["reviews"]))[:TOP_N]
+            for r in top:
+                gslug = lookup.get(norm(r["product"]))
+                if not gslug:
+                    cand = [s for s, n in listing.items() if norm(r["product"]) in norm(n) or norm(n) in norm(r["product"])]
+                    gslug = cand[0] if cand else re.sub(r"[^a-z0-9]+", "-", r["product"].lower()).strip("-")
+                pr = product_pricing(ws, gslug) or {}
+                rows.append({"niche_id": nid, "capterra_slug": cslug, "product": r["product"], "reviews": r["reviews"],
+                             "getapp_slug": gslug, "matched": int(gslug in listing), **{k: pr.get(k, "") for k in
+                             ("price", "period", "model", "no_pricing_info", "free_trial", "free_version")}})
+                print(f"{nid:34} {r['product'][:28]:28} rev={r['reviews']:>5} -> {gslug[:30]:30} price={pr.get('price')} {pr.get('period','')} {pr.get('model','')[:12]} trial={pr.get('free_trial')} free={pr.get('free_version')}")
+    if not rows:
+        print("no products priced - nothing written")
+        return
+    out = ws.out("pricing_b2b.csv")
+    with open(out, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+    print("->", out, len(rows))
+    aggregate(ws)
+
+
+def aggregate(ws: Workspace) -> None:
+    """pricing_b2b.csv -> pricing_b2b_niche.csv: share of products with a public price, median/min/max monthly price,
+    share under $100, free trial / free version shares."""
+    rows = list(csv.DictReader(open(ws.out("pricing_b2b.csv"), encoding="utf-8")))
+    by = defaultdict(list)
+    for r in rows:
+        by[r["niche_id"]].append(r)
+    agg = []
+    for nid, rs in by.items():
+        seen, uniq = set(), []
+        for r in rs:
+            if r["product"] not in seen:
+                seen.add(r["product"]); uniq.append(r)
+        monthly = sorted(float(r["price"]) for r in uniq if r["price"] not in ("", "None") and "month" in (r["period"] or ""))
+        pub = [r for r in uniq if r["price"] not in ("", "None")]
+        trial = [r for r in uniq if r["free_trial"] in ("0", "1")]
+        free = [r for r in uniq if r["free_version"] in ("0", "1")]
+        agg.append({"niche_id": nid, "n": len(uniq), "price_public": len(pub), "price_public_share": round(len(pub) / len(uniq), 2) if uniq else "",
+                    "median_monthly_usd": monthly[len(monthly) // 2] if monthly else "", "min_monthly_usd": monthly[0] if monthly else "", "max_monthly_usd": monthly[-1] if monthly else "",
+                    "under_100_share": round(sum(1 for x in monthly if x < 100) / len(monthly), 2) if monthly else "",
+                    "free_trial_share": round(sum(1 for r in trial if r["free_trial"] == "1") / len(trial), 2) if trial else "",
+                    "free_version_share": round(sum(1 for r in free if r["free_version"] == "1") / len(free), 2) if free else "",
+                    "sample": "; ".join(f"{r['product'][:20]} ${r['price']}{'/' + r['period'].replace('per ', '') if r['period'] else ''}" for r in pub[:5])})
+    out = ws.out("pricing_b2b_niche.csv")
+    with open(out, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=list(agg[0].keys())); w.writeheader(); w.writerows(agg)
+    print("->", out, len(agg))

@@ -1,0 +1,63 @@
+# Broad English anchors for Google Trends (S4), per niche id.
+# Used for niches whose narrow anchor query gives a Trends index below 5 (verdict NA), or where a broad phrase
+# is a more reliable read of the category. Each entry is fetched in addition to the niche anchor (kind=extra).
+
+gym-martial-arts-studios: gym management software
+churches-tools: church software
+cold-email-deliverability: cold email software
+course-creator-affiliate-payouts: affiliate software
+str-hosts-tools: vacation rental software
+law-firm-intake: law practice management software
+local-seo-gbp-agencies: local seo tools
+pet-care-facilities: pet boarding software
+auto-repair-shops: auto repair software
+saas-product-feedback-boards: feature request tool
+loyalty-wallet-passes: loyalty program software
+indie-app-dev-aso-tools: app store optimization
+n8n-openclaw-managed-hosting: n8n
+marketplace-seller-analytics: amazon seller tools
+ai-search-visibility-geo: generative engine optimization
+ai-video-dubbing-captions: ai dubbing
+pod-kdp-etsy-seller-tools: etsy seo
+reseller-crosslisting-scanners: crosslisting
+restock-drop-alerts: restock alerts
+digital-wardrobe-outfit-planner: outfit planner
+ai-language-speaking-tutors: ai english tutor
+sign-language-learning: learn sign language
+nature-id-mushroom-bird-insect: mushroom identifier
+shift-scheduling-deskless: employee scheduling app
+brain-training-memory: brain games
+ai-hairstyle-tryon: hairstyle app
+credit-card-points-optimizers: credit card rewards
+collection-trackers-lego-watches-vinyl: vinyl collection
+travel-journal-map: travel map
+youth-sports-team-management: teamsnap
+cookie-consent-gdpr-widgets: cookie consent
+web-accessibility-widgets: website accessibility
+sms-marketing-smb: sms marketing
+funeral-homes-software: funeral home
+shopify-upsell-bundles: shopify apps
+shopify-loyalty-rewards: loyalty program
+shopify-popups-notifications: popup builder
+book-summaries-microlearning: blinkist
+digital-signage-smb: digital signage
+coaching-business-platforms: coaching software
+muslim-apps-ru-cis: prayer times app
+pest-control-software: pest control app
+travel-esim-apps: esim
+star-maps-astronomy-apps: star map
+family-chore-reward-apps: chore chart
+bedtime-stories-kids-audio: bedtime stories
+phone-as-security-baby-camera: baby monitor app
+shopify-dropshipping-pod-sourcing: dropshipping
+shopify-order-tracking: order tracking
+shopify-marketplace-sync: etsy integration
+shopify-seo-image-optimizer: shopify seo
+shopify-b2b-wholesale: shopify wholesale
+shopify-reports-profit-analytics: shopify analytics
+shopify-labels-badges: trust badges
+shopify-bulk-edit-import: matrixify
+shopify-search-filter-menus: shopify search
+shopify-product-options-variants: product options
+shopify-back-in-stock-preorder: back in stock
+shopify-translation-currency: shopify translate

@@ -1,0 +1,628 @@
+# Search queries for the coverage-cluster niches (section V of niches.yaml). Same schema as the other query files.
+golf-gps-handicap:
+  en:
+    - {q: golf gps app, i: category, anchor: true}
+    - {q: golf rangefinder app, i: category}
+    - {q: golf handicap app, i: category}
+    - {q: golf scorecard app, i: category}
+    - {q: how to track golf handicap, i: problem}
+    - {q: 18birdies, i: brand, b: 18Birdies}
+    - {q: golfshot, i: brand, b: Golfshot}
+    - {q: hole19, i: brand, b: Hole19}
+    - {q: thegrint, i: brand, b: TheGrint}
+    - {q: swingu, i: brand, b: SwingU}
+
+flight-tracking-deals-award-travel:
+  en:
+    - {q: flight tracker app, i: category, anchor: true}
+    - {q: cheap flight alerts, i: category}
+    - {q: flight deals app, i: category}
+    - {q: award travel tool, i: category}
+    - {q: points and miles tracker, i: category}
+    - {q: how to find cheap flights, i: problem}
+    - {q: flighty, i: brand, b: Flighty}
+    - {q: going flights, i: brand, b: Going}
+    - {q: awardwallet, i: brand, b: AwardWallet}
+    - {q: roame travel, i: brand, b: Roame}
+
+indie-music-distribution-stems:
+  en:
+    - {q: music distribution service, i: category, anchor: true}
+    - {q: how to put music on spotify, i: category}
+    - {q: stem separation, i: category}
+    - {q: vocal remover, i: category}
+    - {q: how to release a song independently, i: problem}
+    - {q: distrokid, i: brand, b: DistroKid}
+    - {q: tunecore, i: brand, b: TuneCore}
+    - {q: unitedmasters, i: brand, b: UnitedMasters}
+    - {q: moises app, i: brand, b: Moises}
+    - {q: lalal ai, i: brand, b: LALAL.AI}
+  ru:
+    - {q: дистрибуция музыки, i: category, anchor: true}
+    - {q: как выложить трек на стриминги, i: category}
+    - {q: убрать вокал из песни, i: category}
+    - {q: как выпустить песню самому, i: problem}
+    - {q: lalal ai, i: brand, b: LALAL.AI}
+    - {q: moises, i: brand, b: Moises}
+
+collection-trackers-lego-watches-vinyl:
+  en:
+    - {q: collection tracker app, i: category, anchor: true}
+    - {q: lego collection app, i: category}
+    - {q: watch collection app, i: category}
+    - {q: vinyl collection app, i: category}
+    - {q: how to catalog my collection, i: problem}
+    - {q: brickify, i: brand, b: Brickify}
+    - {q: watchcharts, i: brand, b: WatchCharts}
+    - {q: discogs app, i: brand, b: Discogs}
+
+ai-hairstyle-tryon:
+  en:
+    - {q: hairstyle try on app, i: category, anchor: true}
+    - {q: hair color try on, i: category}
+    - {q: ai haircut app, i: category}
+    - {q: virtual hairstyle, i: category}
+    - {q: what haircut suits my face, i: problem}
+    - {q: hairhunt, i: brand, b: HairHunt}
+    - {q: hairlook app, i: brand, b: HairLook}
+    - {q: perfect365, i: brand, b: Perfect365}
+  ru:
+    - {q: подобрать прическу по фото, i: category, anchor: true}
+    - {q: примерить прическу приложение, i: category}
+    - {q: подбор стрижки онлайн, i: category}
+    - {q: какая стрижка мне подойдет, i: problem}
+    - {q: hairlook, i: brand, b: HairLook}
+    - {q: youcam, i: brand, b: YouCam}
+
+creative-learning-draw-origami:
+  en:
+    - {q: learn to draw app, i: category, anchor: true}
+    - {q: drawing lessons app, i: category}
+    - {q: ar drawing app, i: category}
+    - {q: origami app, i: category}
+    - {q: how to learn to draw for beginners, i: problem}
+    - {q: artworkout, i: brand, b: ArtWorkout}
+    - {q: drawing desk app, i: brand, b: Drawing Desk}
+    - {q: da vinci eye, i: brand, b: Da Vinci Eye}
+
+travel-journal-map:
+  en:
+    - {q: travel journal app, i: category, anchor: true}
+    - {q: countries visited map app, i: category}
+    - {q: travel map app, i: category}
+    - {q: trip diary app, i: category}
+    - {q: how to track countries visited, i: problem}
+    - {q: polarsteps, i: brand, b: Polarsteps}
+    - {q: been app, i: brand, b: been}
+    - {q: pin traveler, i: brand, b: Pin Traveler}
+  ru:
+    - {q: карта посещенных стран приложение, i: category, anchor: true}
+    - {q: дневник путешествий приложение, i: category}
+    - {q: приложение для путешествий трекер, i: category}
+    - {q: как отмечать посещенные страны, i: problem}
+    - {q: polarsteps, i: brand, b: Polarsteps}
+    - {q: mark o travel, i: brand, b: Mark O'Travel}
+
+youth-sports-team-management:
+  en:
+    - {q: sports team management app, i: category, anchor: true}
+    - {q: team schedule app, i: category}
+    - {q: youth sports app, i: category}
+    - {q: team communication app for coaches, i: category}
+    - {q: how to organize a youth sports team, i: problem}
+    - {q: teamsnap, i: brand, b: TeamSnap}
+    - {q: gamechanger app, i: brand, b: GameChanger}
+    - {q: spond app, i: brand, b: Spond}
+    - {q: teamreach, i: brand, b: TeamReach}
+
+family-private-photo-sharing:
+  en:
+    - {q: family photo sharing app, i: category, anchor: true}
+    - {q: private photo album app, i: category}
+    - {q: baby photo album app, i: category}
+    - {q: share baby photos with family, i: category}
+    - {q: how to share baby photos privately, i: problem}
+    - {q: familyalbum, i: brand, b: FamilyAlbum}
+    - {q: tinybeans, i: brand, b: Tinybeans}
+    - {q: skylight app, i: brand, b: Skylight}
+
+pregnancy-baby-milestones:
+  en:
+    - {q: pregnancy app, i: category, anchor: true}
+    - {q: pregnancy tracker, i: category}
+    - {q: baby milestones app, i: category}
+    - {q: baby development app, i: category}
+    - {q: contraction timer app, i: category}
+    - {q: how to track baby milestones, i: problem}
+    - {q: pregnancy plus app, i: brand, b: Pregnancy+}
+    - {q: kinedu, i: brand, b: Kinedu}
+    - {q: huckleberry app, i: brand, b: Huckleberry}
+    - {q: what to expect app, i: brand, b: What to Expect}
+  ru:
+    - {q: календарь беременности приложение, i: category, anchor: true}
+    - {q: приложение для беременных, i: category}
+    - {q: развитие ребенка приложение, i: category}
+    - {q: счетчик схваток, i: category}
+    - {q: как отслеживать развитие ребенка, i: problem}
+    - {q: wachanga, i: brand, b: Wachanga}
+    - {q: amma беременность, i: brand, b: amma}
+
+immigration-case-trackers:
+  en:
+    - {q: uscis case tracker, i: category, anchor: true}
+    - {q: immigration case status app, i: category}
+    - {q: visa status tracker, i: category}
+    - {q: green card tracker, i: category}
+    - {q: how to check uscis case status, i: problem}
+    - {q: lawfully app, i: brand, b: Lawfully}
+    - {q: casestatus app, i: brand, b: CaseStatus}
+    - {q: case tracker for uscis, i: brand, b: Case Tracker for USCIS}
+
+personal-budgeting-apps:
+  en:
+    - {q: budgeting app, i: category, anchor: true}
+    - {q: budget app, i: category}
+    - {q: expense tracker app, i: category}
+    - {q: personal finance app, i: category}
+    - {q: mint alternative, i: category}
+    - {q: how to make a budget, i: problem}
+    - {q: ynab, i: brand, b: YNAB}
+    - {q: monarch money, i: brand, b: Monarch}
+    - {q: copilot money, i: brand, b: Copilot}
+    - {q: everydollar, i: brand, b: EveryDollar}
+    - {q: rocket money, i: brand, b: Rocket Money}
+  ru:
+    - {q: приложение для учета расходов, i: category, anchor: true}
+    - {q: приложение для бюджета, i: category}
+    - {q: учет личных финансов, i: category}
+    - {q: как вести семейный бюджет, i: problem}
+    - {q: дзен мани, i: brand, b: Дзен-мани}
+    - {q: monefy, i: brand, b: Monefy}
+    - {q: coinkeeper, i: brand, b: CoinKeeper}
+
+credit-card-points-optimizers:
+  en:
+    - {q: credit card points tracker, i: category, anchor: true}
+    - {q: best credit card to use app, i: category}
+    - {q: credit card rewards app, i: category}
+    - {q: credit card optimizer, i: category}
+    - {q: which credit card should i use for this purchase, i: problem}
+    - {q: cardpointers, i: brand, b: CardPointers}
+    - {q: kudos app, i: brand, b: Kudos}
+    - {q: maxrewards, i: brand, b: MaxRewards}
+
+homework-solvers-ai:
+  en:
+    - {q: math solver app, i: category, anchor: true}
+    - {q: homework help app, i: category}
+    - {q: ai homework solver, i: category}
+    - {q: photo math solver, i: category}
+    - {q: how to solve math problems by photo, i: problem}
+    - {q: photomath, i: brand, b: Photomath}
+    - {q: gauth, i: brand, b: Gauth}
+    - {q: solvely, i: brand, b: Solvely}
+    - {q: question ai, i: brand, b: Question.AI}
+  ru:
+    - {q: решение задач по фото, i: category, anchor: true}
+    - {q: приложение решает задачи по фото, i: category}
+    - {q: гдз по фото, i: category}
+    - {q: как решить задачу по фото, i: problem}
+    - {q: photomath, i: brand, b: Photomath}
+    - {q: гдз мой решебник, i: brand, b: ГДЗ Мой решебник}
+
+brain-training-memory:
+  en:
+    - {q: brain training app, i: category, anchor: true}
+    - {q: memory training app, i: category}
+    - {q: brain games app, i: category}
+    - {q: cognitive training app, i: category}
+    - {q: how to improve memory, i: problem}
+    - {q: elevate app, i: brand, b: Elevate}
+    - {q: lumosity, i: brand, b: Lumosity}
+    - {q: impulse brain training, i: brand, b: Impulse}
+    - {q: peak brain training, i: brand, b: Peak}
+  ru:
+    - {q: тренировка мозга приложение, i: category, anchor: true}
+    - {q: тренировка памяти приложение, i: category}
+    - {q: игры для мозга, i: category}
+    - {q: как улучшить память, i: problem}
+    - {q: викиум, i: brand, b: Викиум}
+    - {q: lumosity, i: brand, b: Lumosity}
+
+kids-learning-games-preschool:
+  en:
+    - {q: learning apps for toddlers, i: category, anchor: true}
+    - {q: preschool learning app, i: category}
+    - {q: kids learning games, i: category}
+    - {q: learn to read app for kids, i: category}
+    - {q: educational apps for 4 year olds, i: problem}
+    - {q: lingokids, i: brand, b: Lingokids}
+    - {q: abcmouse, i: brand, b: ABCmouse}
+    - {q: kiddopia, i: brand, b: Kiddopia}
+    - {q: keiki app, i: brand, b: Keiki}
+  ru:
+    - {q: обучающие игры для детей приложение, i: category, anchor: true}
+    - {q: развивающие приложения для детей, i: category}
+    - {q: учимся читать приложение, i: category}
+    - {q: чем занять ребенка 4 года, i: problem}
+    - {q: кидби, i: brand, b: Кидби}
+    - {q: lingokids, i: brand, b: Lingokids}
+
+book-summaries-microlearning:
+  en:
+    - {q: book summary app, i: category, anchor: true}
+    - {q: book summaries, i: category}
+    - {q: microlearning app, i: category}
+    - {q: nonfiction summaries app, i: category}
+    - {q: how to read more books, i: problem}
+    - {q: blinkist, i: brand, b: Blinkist}
+    - {q: headway app, i: brand, b: Headway}
+    - {q: deepstash, i: brand, b: Deepstash}
+    - {q: shortform, i: brand, b: Shortform}
+  ru:
+    - {q: саммари книг приложение, i: category, anchor: true}
+    - {q: краткое содержание книг приложение, i: category}
+    - {q: ключевые идеи книг, i: category}
+    - {q: как читать больше книг, i: problem}
+    - {q: smart reading, i: brand, b: Smart Reading}
+    - {q: headway приложение, i: brand, b: Headway}
+
+muslim-apps-ru-cis:
+  en:
+    - {q: muslim app, i: category, anchor: true}
+    - {q: prayer times app, i: category}
+    - {q: quran app, i: category}
+    - {q: qibla finder app, i: category}
+    - {q: how to learn to pray namaz, i: problem}
+    - {q: muslim pro, i: brand, b: Muslim Pro}
+    - {q: pillars app, i: brand, b: Pillars}
+    - {q: athan app, i: brand, b: Athan}
+    - {q: quran majeed, i: brand, b: Quran Majeed}
+  ru:
+    - {q: время намаза, i: category, anchor: true}
+    - {q: коран приложение, i: category}
+    - {q: приложение для мусульман, i: category}
+    - {q: азкары приложение, i: category}
+    - {q: как научиться делать намаз, i: problem}
+    - {q: muslim pro, i: brand, b: Muslim Pro}
+    - {q: sajda, i: brand, b: Sajda}
+    - {q: 1muslim, i: brand, b: 1Muslim}
+    - {q: islamapp, i: brand, b: IslamApp}
+
+driving-schools-software:
+  en:
+    - {q: driving school software, i: category, anchor: true}
+    - {q: driving school management software, i: category}
+    - {q: driving school scheduling software, i: category}
+    - {q: driving instructor app, i: category}
+    - {q: how to manage driving school lessons, i: problem}
+    - {q: drive scout, i: brand, b: Drive Scout}
+    - {q: drivingschoolsoftware, i: brand, b: DrivingSchoolSoftware.com}
+    - {q: total drive app, i: brand, b: Total Drive}
+  ru:
+    - {q: программа для автошколы, i: category, anchor: true}
+    - {q: crm для автошколы, i: category}
+    - {q: учет автошколы, i: category}
+    - {q: как вести учет в автошколе, i: problem}
+    - {q: автошкола контроль, i: brand, b: Автошкола Контроль}
+    - {q: учет автошколы программа, i: brand, b: Учёт автошколы}
+
+dry-cleaning-laundry-software:
+  en:
+    - {q: dry cleaning software, i: category, anchor: true}
+    - {q: laundry management software, i: category}
+    - {q: laundromat software, i: category}
+    - {q: dry cleaner pos system, i: category}
+    - {q: how to manage a dry cleaning business, i: problem}
+    - {q: cleancloud, i: brand, b: CleanCloud}
+    - {q: smrt systems, i: brand, b: SMRT}
+    - {q: enlite pos, i: brand, b: Enlite}
+  ru:
+    - {q: программа для химчистки, i: category, anchor: true}
+    - {q: программа для прачечной, i: category}
+    - {q: автоматизация химчистки, i: category}
+    - {q: как вести учет в химчистке, i: problem}
+    - {q: агбис химчистка, i: brand, b: Агбис}
+
+florists-software:
+  en:
+    - {q: florist software, i: category, anchor: true}
+    - {q: flower shop software, i: category}
+    - {q: florist pos system, i: category}
+    - {q: flower shop website builder, i: category}
+    - {q: how to take flower orders online, i: problem}
+    - {q: floranext, i: brand, b: Floranext}
+    - {q: lovingly florist, i: brand, b: Lovingly}
+    - {q: floristware, i: brand, b: FloristWare}
+  ru:
+    - {q: программа для цветочного магазина, i: category, anchor: true}
+    - {q: crm для цветочного магазина, i: category}
+    - {q: учет в цветочном магазине, i: category}
+    - {q: как вести учет цветов в магазине, i: problem}
+    - {q: posiflora, i: brand, b: Posiflora}
+
+funeral-homes-software:
+  en:
+    - {q: funeral home software, i: category, anchor: true}
+    - {q: funeral home management software, i: category}
+    - {q: mortuary software, i: category}
+    - {q: funeral home website, i: category}
+    - {q: how to manage funeral home records, i: problem}
+    - {q: passare, i: brand, b: Passare}
+    - {q: osiris software, i: brand, b: Osiris}
+    - {q: srs computing, i: brand, b: SRS Computing}
+
+jewelry-store-management:
+  en:
+    - {q: jewelry store software, i: category, anchor: true}
+    - {q: jewelry pos system, i: category}
+    - {q: jewelry inventory software, i: category}
+    - {q: jewelry repair software, i: category}
+    - {q: how to track jewelry inventory, i: problem}
+    - {q: the edge jewelry software, i: brand, b: The Edge}
+    - {q: jewel360, i: brand, b: Jewel360}
+    - {q: piro jewelry, i: brand, b: Piro}
+  ru:
+    - {q: программа для ювелирного магазина, i: category, anchor: true}
+    - {q: учет ювелирных изделий программа, i: category}
+    - {q: crm для ювелирного, i: category}
+    - {q: как вести учет ювелирных изделий, i: problem}
+    - {q: 1с ювелирный, i: brand, b: 1С Ювелирный}
+
+moving-companies-software:
+  en:
+    - {q: moving company software, i: category, anchor: true}
+    - {q: moving crm, i: category}
+    - {q: moving estimate software, i: category}
+    - {q: movers dispatch software, i: category}
+    - {q: how to run a moving company, i: problem}
+    - {q: smartmoving, i: brand, b: SmartMoving}
+    - {q: supermove, i: brand, b: Supermove}
+    - {q: moveitpro, i: brand, b: MoveitPro}
+  ru:
+    - {q: crm для грузчиков и переездов, i: category, anchor: true}
+    - {q: программа для мувинговой компании, i: category}
+    - {q: учет заявок на переезд, i: category}
+    - {q: как организовать бизнес по переездам, i: problem}
+    - {q: moveitpro, i: brand, b: MoveitPro}
+
+pest-control-software:
+  en:
+    - {q: pest control software, i: category, anchor: true}
+    - {q: pest control scheduling software, i: category}
+    - {q: pest control crm, i: category}
+    - {q: pest control routing software, i: category}
+    - {q: how to schedule pest control routes, i: problem}
+    - {q: gorilladesk, i: brand, b: GorillaDesk}
+    - {q: fieldroutes, i: brand, b: FieldRoutes}
+    - {q: pestpac, i: brand, b: PestPac}
+    - {q: briostack, i: brand, b: Briostack}
+
+daycare-childcare-software:
+  en:
+    - {q: daycare software, i: category, anchor: true}
+    - {q: childcare management software, i: category}
+    - {q: daycare app for parents, i: category}
+    - {q: preschool management software, i: category}
+    - {q: how to manage daycare attendance and billing, i: problem}
+    - {q: brightwheel, i: brand, b: brightwheel}
+    - {q: procare, i: brand, b: Procare}
+    - {q: lillio, i: brand, b: Lillio}
+    - {q: kangarootime, i: brand, b: Kangarootime}
+  ru:
+    - {q: программа для детского сада, i: category, anchor: true}
+    - {q: crm для частного детского сада, i: category}
+    - {q: приложение для детского сада родителям, i: category}
+    - {q: как вести учет посещаемости в детском саду, i: problem}
+    - {q: kidsoft, i: brand, b: Kidsoft}
+
+coaching-business-platforms:
+  en:
+    - {q: coaching platform, i: category, anchor: true}
+    - {q: coaching software, i: category}
+    - {q: client management for coaches, i: category}
+    - {q: life coach software, i: category}
+    - {q: how to manage coaching clients, i: problem}
+    - {q: paperbell, i: brand, b: Paperbell}
+    - {q: coachaccountable, i: brand, b: CoachAccountable}
+    - {q: practice.do, i: brand, b: Practice}
+    - {q: satori app, i: brand, b: Satori}
+  ru:
+    - {q: платформа для коучей, i: category, anchor: true}
+    - {q: crm для коуча, i: category}
+    - {q: приложение для коуча и клиентов, i: category}
+    - {q: как вести клиентов коучу, i: problem}
+    - {q: paperbell, i: brand, b: Paperbell}
+
+parent-school-communication:
+  en:
+    - {q: parent communication app for schools, i: category, anchor: true}
+    - {q: school communication app, i: category}
+    - {q: parent teacher communication app, i: category}
+    - {q: classroom app for parents, i: category}
+    - {q: how to communicate with parents as a teacher, i: problem}
+    - {q: classdojo, i: brand, b: ClassDojo}
+    - {q: parentsquare, i: brand, b: ParentSquare}
+    - {q: talkingpoints, i: brand, b: TalkingPoints}
+    - {q: remind app, i: brand, b: Remind}
+
+sms-marketing-smb:
+  en:
+    - {q: sms marketing software, i: category, anchor: true}
+    - {q: text message marketing, i: category}
+    - {q: sms marketing for small business, i: category}
+    - {q: bulk sms service, i: category}
+    - {q: how to send marketing texts to customers, i: problem}
+    - {q: simpletexting, i: brand, b: SimpleTexting}
+    - {q: ez texting, i: brand, b: EZ Texting}
+    - {q: textedly, i: brand, b: Textedly}
+    - {q: slicktext, i: brand, b: SlickText}
+  ru:
+    - {q: смс рассылка для бизнеса, i: category, anchor: true}
+    - {q: сервис смс рассылок, i: category}
+    - {q: смс рассылка клиентам, i: category}
+    - {q: как сделать смс рассылку клиентам, i: problem}
+    - {q: sms aero, i: brand, b: SMS Aero}
+    - {q: smsc, i: brand, b: SMSC}
+
+digital-signage-smb:
+  en:
+    - {q: digital signage software, i: category, anchor: true}
+    - {q: digital menu board software, i: category}
+    - {q: digital signage for small business, i: category}
+    - {q: tv signage app, i: category}
+    - {q: how to display menu on tv screen, i: problem}
+    - {q: yodeck, i: brand, b: Yodeck}
+    - {q: screencloud, i: brand, b: ScreenCloud}
+    - {q: optisigns, i: brand, b: OptiSigns}
+    - {q: novisign, i: brand, b: NoviSign}
+  ru:
+    - {q: digital signage программа, i: category, anchor: true}
+    - {q: меню борд для кафе, i: category}
+    - {q: управление контентом на экранах, i: category}
+    - {q: как вывести меню на телевизор в кафе, i: problem}
+    - {q: yodeck, i: brand, b: Yodeck}
+
+email-signature-management:
+  en:
+    - {q: email signature management, i: category, anchor: true}
+    - {q: email signature software, i: category}
+    - {q: company email signature generator, i: category}
+    - {q: centralized email signatures, i: category}
+    - {q: how to manage email signatures for all employees, i: problem}
+    - {q: exclaimer, i: brand, b: Exclaimer}
+    - {q: wisestamp, i: brand, b: WiseStamp}
+    - {q: opensense, i: brand, b: Opensense}
+
+cookie-consent-gdpr-widgets:
+  en:
+    - {q: cookie consent banner, i: category, anchor: true}
+    - {q: cookie consent tool, i: category}
+    - {q: gdpr cookie banner, i: category}
+    - {q: consent management platform, i: category}
+    - {q: cookie banner for website, i: category}
+    - {q: do i need a cookie banner on my website, i: problem}
+    - {q: cookieyes, i: brand, b: CookieYes}
+    - {q: cookiebot, i: brand, b: Cookiebot}
+    - {q: complianz, i: brand, b: Complianz}
+    - {q: iubenda, i: brand, b: iubenda}
+    - {q: termly, i: brand, b: Termly}
+  ru:
+    - {q: баннер cookie для сайта, i: category, anchor: true}
+    - {q: согласие на обработку персональных данных на сайте, i: category}
+    - {q: уведомление о cookie на сайте, i: category}
+    - {q: нужно ли согласие на cookie на сайте, i: problem}
+    - {q: cookieyes, i: brand, b: CookieYes}
+
+web-accessibility-widgets:
+  en:
+    - {q: website accessibility widget, i: category, anchor: true}
+    - {q: ada compliance website, i: category}
+    - {q: wcag compliance tool, i: category}
+    - {q: accessibility overlay, i: category}
+    - {q: how to make my website ada compliant, i: problem}
+    - {q: accessibe, i: brand, b: accessiBe}
+    - {q: userway, i: brand, b: UserWay}
+    - {q: audioeye, i: brand, b: AudioEye}
+    - {q: equalweb, i: brand, b: EqualWeb}
+
+website-reviews-widgets:
+  en:
+    - {q: google reviews widget, i: category, anchor: true}
+    - {q: reviews widget for website, i: category}
+    - {q: embed google reviews on website, i: category}
+    - {q: testimonial widget, i: category}
+    - {q: how to show google reviews on my website, i: problem}
+    - {q: elfsight, i: brand, b: Elfsight}
+    - {q: trustindex, i: brand, b: Trustindex}
+    - {q: embedsocial, i: brand, b: EmbedSocial}
+  ru:
+    - {q: виджет отзывов для сайта, i: category, anchor: true}
+    - {q: виджет отзывов яндекс карты на сайт, i: category}
+    - {q: вставить отзывы на сайт, i: category}
+    - {q: как разместить отзывы на сайте, i: problem}
+    - {q: elfsight, i: brand, b: Elfsight}
+
+wp-booking-plugins:
+  en:
+    - {q: wordpress booking plugin, i: category, anchor: true}
+    - {q: wordpress appointment plugin, i: category}
+    - {q: booking calendar wordpress, i: category}
+    - {q: appointment booking plugin, i: category}
+    - {q: how to add booking to wordpress site, i: problem}
+    - {q: amelia booking, i: brand, b: Amelia}
+    - {q: bookly, i: brand, b: Bookly}
+    - {q: booknetic, i: brand, b: Booknetic}
+    - {q: bookingpress, i: brand, b: BookingPress}
+
+shopify-upsell-bundles:
+  en:
+    - {q: shopify upsell app, i: category, anchor: true}
+    - {q: shopify bundle app, i: category}
+    - {q: shopify cross sell app, i: category}
+    - {q: post purchase upsell shopify, i: category}
+    - {q: how to increase average order value shopify, i: problem}
+    - {q: reconvert, i: brand, b: ReConvert}
+    - {q: kaching bundles, i: brand, b: Kaching Bundles}
+    - {q: selleasy, i: brand, b: Selleasy}
+    - {q: bundler app, i: brand, b: Bundler}
+
+shopify-loyalty-rewards:
+  en:
+    - {q: shopify loyalty app, i: category, anchor: true}
+    - {q: shopify rewards program app, i: category}
+    - {q: loyalty program for shopify, i: category}
+    - {q: shopify referral app, i: category}
+    - {q: how to set up loyalty program shopify, i: problem}
+    - {q: smile io, i: brand, b: Smile.io}
+    - {q: joy loyalty, i: brand, b: Joy Loyalty}
+    - {q: bon loyalty, i: brand, b: BON Loyalty}
+    - {q: rivo loyalty, i: brand, b: Rivo}
+
+shopify-product-options-variants:
+  en:
+    - {q: shopify product options app, i: category, anchor: true}
+    - {q: shopify variant options app, i: category}
+    - {q: shopify product customizer, i: category}
+    - {q: shopify custom product options, i: category}
+    - {q: shopify more than 100 variants, i: problem}
+    - {q: globo product options, i: brand, b: Globo Product Options}
+    - {q: hulk product options, i: brand, b: Hulk Product Options}
+    - {q: bold product options, i: brand, b: Bold Product Options}
+    - {q: inkybay, i: brand, b: Inkybay}
+
+shopify-popups-notifications:
+  en:
+    - {q: shopify popup app, i: category, anchor: true}
+    - {q: shopify email popup, i: category}
+    - {q: shopify announcement bar app, i: category}
+    - {q: shopify exit intent popup, i: category}
+    - {q: how to add popup to shopify store, i: problem}
+    - {q: privy shopify, i: brand, b: Privy}
+    - {q: pop convert, i: brand, b: Pop Convert}
+    - {q: ecomsend, i: brand, b: EcomSend}
+    - {q: adoric, i: brand, b: Adoric}
+
+shopify-back-in-stock-preorder:
+  en:
+    - {q: shopify back in stock app, i: category, anchor: true}
+    - {q: shopify pre order app, i: category}
+    - {q: shopify notify me when available, i: category}
+    - {q: shopify restock notification, i: category}
+    - {q: how to add pre order on shopify, i: problem}
+    - {q: back in stock notify me kbi, i: brand, b: Back In Stock Notify Me}
+    - {q: preorder now, i: brand, b: PreOrder Now}
+    - {q: timesact, i: brand, b: Timesact}
+    - {q: appikon back in stock, i: brand, b: Appikon}
+
+shopify-translation-currency:
+  en:
+    - {q: shopify translation app, i: category, anchor: true}
+    - {q: shopify currency converter app, i: category}
+    - {q: shopify multi language app, i: category}
+    - {q: shopify translate store, i: category}
+    - {q: how to translate shopify store, i: problem}
+    - {q: transcy, i: brand, b: Transcy}
+    - {q: weglot shopify, i: brand, b: Weglot}
+    - {q: langify, i: brand, b: Langify}
+    - {q: langshop, i: brand, b: LangShop}

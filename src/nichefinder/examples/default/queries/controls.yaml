@@ -1,0 +1,196 @@
+# Search queries for the control niches (section IV of niches.yaml). Fewer queries: controls only calibrate the filters.
+
+ctrl-smb-crm:
+  en:
+    - {q: "crm for small business", i: category, anchor: true}
+    - {q: "crm software", i: category}
+    - {q: "simple crm", i: category}
+    - {q: "best crm for small business", i: category}
+    - {q: "how to track customers small business", i: problem}
+    - {q: "hubspot", i: brand, b: HubSpot}
+    - {q: "pipedrive", i: brand, b: Pipedrive}
+    - {q: "zoho crm", i: brand, b: "Zoho CRM"}
+  ru:
+    - {q: "crm для малого бизнеса", i: category, anchor: true}
+    - {q: "crm система", i: category}
+    - {q: "простая crm", i: category}
+    - {q: "как вести учет клиентов", i: problem}
+    - {q: "амо crm", i: brand, b: amoCRM}
+    - {q: "битрикс24", i: brand, b: Битрикс24}
+
+ctrl-task-manager:
+  en:
+    - {q: "task management software", i: category, anchor: true}
+    - {q: "project management software", i: category}
+    - {q: "to do list app", i: category}
+    - {q: "team task tracker", i: category}
+    - {q: "how to organize tasks", i: problem}
+    - {q: "asana", i: brand, b: Asana}
+    - {q: "clickup", i: brand, b: ClickUp}
+    - {q: "trello", i: brand, b: Trello}
+    - {q: "notion", i: brand, b: Notion}
+  ru:
+    - {q: "таск менеджер", i: category, anchor: true}
+    - {q: "программа для управления проектами", i: category}
+    - {q: "планировщик задач для команды", i: category}
+    - {q: "как вести задачи команды", i: problem}
+    - {q: "kaiten", i: brand, b: Kaiten}
+    - {q: "яндекс трекер", i: brand, b: "Яндекс Трекер"}
+    - {q: "notion", i: brand, b: Notion}
+
+ctrl-notes-app:
+  en:
+    - {q: "note taking app", i: category, anchor: true}
+    - {q: "notes app", i: category}
+    - {q: "best notes app", i: category}
+    - {q: "how to organize notes", i: problem}
+    - {q: "evernote", i: brand, b: Evernote}
+    - {q: "obsidian", i: brand, b: Obsidian}
+    - {q: "goodnotes", i: brand, b: Goodnotes}
+  ru:
+    - {q: "приложение для заметок", i: category, anchor: true}
+    - {q: "заметки приложение", i: category}
+    - {q: "лучшие приложения для заметок", i: category}
+    - {q: "evernote", i: brand, b: Evernote}
+    - {q: "obsidian", i: brand, b: Obsidian}
+
+ctrl-website-builder:
+  en:
+    - {q: "website builder", i: category, anchor: true}
+    - {q: "free website builder", i: category}
+    - {q: "small business website builder", i: category}
+    - {q: "how to make a website", i: problem}
+    - {q: "wix", i: brand, b: Wix}
+    - {q: "squarespace", i: brand, b: Squarespace}
+    - {q: "framer", i: brand, b: Framer}
+  ru:
+    - {q: "конструктор сайтов", i: category, anchor: true}
+    - {q: "создать сайт бесплатно конструктор", i: category}
+    - {q: "конструктор сайтов для бизнеса", i: category}
+    - {q: "как создать сайт самому", i: problem}
+    - {q: "тильда", i: brand, b: Tilda}
+    - {q: "wix", i: brand, b: Wix}
+
+ctrl-document-scanner:
+  en:
+    - {q: "document scanner app", i: category, anchor: true}
+    - {q: "scan to pdf app", i: category}
+    - {q: "pdf scanner", i: category}
+    - {q: "how to scan a document with iphone", i: problem}
+    - {q: "iscanner", i: brand, b: iScanner}
+    - {q: "adobe scan", i: brand, b: "Adobe Scan"}
+    - {q: "camscanner", i: brand, b: CamScanner}
+  ru:
+    - {q: "сканер документов приложение", i: category, anchor: true}
+    - {q: "сканер документов в pdf", i: category}
+    - {q: "как отсканировать документ на айфоне", i: problem}
+    - {q: "iscanner", i: brand, b: iScanner}
+    - {q: "camscanner", i: brand, b: CamScanner}
+
+ctrl-photo-animate:
+  en:
+    - {q: "animate old photos", i: category, anchor: true}
+    - {q: "photo animation app", i: category}
+    - {q: "bring photos to life ai", i: category}
+    - {q: "myheritage deep nostalgia", i: brand, b: MyHeritage}
+    - {q: "revive app", i: brand, b: Revive}
+  ru:
+    - {q: "оживить фото", i: category, anchor: true}
+    - {q: "оживить фото нейросеть", i: category}
+    - {q: "анимация старых фото", i: category}
+    - {q: "оживить фото алиса", i: brand, b: Алиса}
+    - {q: "myheritage оживить фото", i: brand, b: MyHeritage}
+
+ctrl-translator:
+  en:
+    - {q: "translator app", i: category, anchor: true}
+    - {q: "voice translator app", i: category}
+    - {q: "camera translator", i: category}
+    - {q: "google translate", i: brand, b: "Google Translate"}
+    - {q: "deepl", i: brand, b: DeepL}
+    - {q: "itranslate", i: brand, b: iTranslate}
+  ru:
+    - {q: "переводчик приложение", i: category, anchor: true}
+    - {q: "голосовой переводчик", i: category}
+    - {q: "переводчик по фото", i: category}
+    - {q: "яндекс переводчик", i: brand, b: "Яндекс Переводчик"}
+    - {q: "google переводчик", i: brand, b: "Google Translate"}
+    - {q: "deepl", i: brand, b: DeepL}
+
+ctrl-ai-meeting-notes:
+  en:
+    - {q: "ai meeting notes", i: category, anchor: true}
+    - {q: "ai note taker for meetings", i: category}
+    - {q: "meeting transcription software", i: category}
+    - {q: "meeting summary ai", i: category}
+    - {q: "how to take notes in meetings", i: problem}
+    - {q: "fathom ai", i: brand, b: Fathom}
+    - {q: "otter ai", i: brand, b: Otter}
+    - {q: "granola ai", i: brand, b: Granola}
+    - {q: "fireflies ai", i: brand, b: Fireflies}
+  ru:
+    - {q: "ии заметки со встреч", i: category, anchor: true}
+    - {q: "саммари встречи нейросеть", i: category}
+    - {q: "транскрибация встреч", i: category}
+    - {q: "конспект созвона автоматически", i: category}
+    - {q: "otter ai", i: brand, b: Otter}
+    - {q: "яндекс телемост саммари", i: brand, b: "Яндекс Телемост"}
+
+ctrl-transcription:
+  en:
+    - {q: "audio to text", i: category, anchor: true}
+    - {q: "transcription software", i: category}
+    - {q: "transcribe audio to text free", i: category}
+    - {q: "video to text converter", i: category}
+    - {q: "how to transcribe an interview", i: problem}
+    - {q: "otter ai transcription", i: brand, b: Otter}
+    - {q: "rev transcription", i: brand, b: Rev}
+    - {q: "descript", i: brand, b: Descript}
+  ru:
+    - {q: "транскрибация аудио в текст", i: category, anchor: true}
+    - {q: "перевести аудио в текст", i: category}
+    - {q: "расшифровка аудиозаписи в текст онлайн", i: category}
+    - {q: "видео в текст онлайн", i: category}
+    - {q: "как транскрибировать интервью", i: problem}
+    - {q: "звук в букву", i: brand, b: "Звук в букву"}
+    - {q: "soniox", i: brand, b: Soniox}
+
+ctrl-ai-song-generator:
+  en:
+    - {q: "ai song generator", i: category, anchor: true}
+    - {q: "ai music generator", i: category}
+    - {q: "make a song with ai", i: category}
+    - {q: "ai music maker free", i: category}
+    - {q: "how to make a song with ai", i: problem}
+    - {q: "suno ai", i: brand, b: Suno}
+    - {q: "udio", i: brand, b: Udio}
+    - {q: "mureka", i: brand, b: Mureka}
+  ru:
+    - {q: "нейросеть для создания песен", i: category, anchor: true}
+    - {q: "генерация песен ии", i: category}
+    - {q: "создать песню нейросеть онлайн бесплатно", i: category}
+    - {q: "нейросеть для музыки", i: category}
+    - {q: "как сделать песню с помощью нейросети", i: problem}
+    - {q: "suno", i: brand, b: Suno}
+    - {q: "udio", i: brand, b: Udio}
+
+ctrl-ai-presentations:
+  en:
+    - {q: "ai presentation maker", i: category, anchor: true}
+    - {q: "ai slide generator", i: category}
+    - {q: "ai powerpoint generator", i: category}
+    - {q: "presentation ai free", i: category}
+    - {q: "how to make a presentation with ai", i: problem}
+    - {q: "gamma app", i: brand, b: Gamma}
+    - {q: "beautiful ai", i: brand, b: "Beautiful.ai"}
+    - {q: "tome app", i: brand, b: Tome}
+    - {q: "pitch com", i: brand, b: Pitch}
+  ru:
+    - {q: "нейросеть для презентаций", i: category, anchor: true}
+    - {q: "создать презентацию нейросеть", i: category}
+    - {q: "ии презентации онлайн бесплатно", i: category}
+    - {q: "генератор презентаций", i: category}
+    - {q: "как сделать презентацию с помощью нейросети", i: problem}
+    - {q: "gamma презентации", i: brand, b: Gamma}
+    - {q: "гамма нейросеть", i: brand, b: Gamma}
+    - {q: "gamma app", i: brand, b: Gamma}

@@ -1,0 +1,32 @@
+# Assumptions for the bottom-up ceiling and the path-to-goal grade (stage s6_ceiling).
+# Rough order-of-magnitude coefficients, not forecasts. Your goal (net profit per month, currency, margin) lives in nf.yaml.
+
+b2c:
+  store_fee: 0.20                  # blended app store commission (15% up to $1M/year, 30% above)
+  annual_discount: 0.70            # monthly price -> average price including annual plans (annual ~ 7 monthly)
+  install_to_paid: 0.03            # install -> paying user (3%)
+  paid_lifetime_months: 8          # average payer lifetime; 12-month payer retention is ~10-30%
+  installs_per_rating_ios: 50      # installs per App Store rating (roughly: 1-3% of users leave a rating)
+  android_multiplier: 2.0          # iOS + Android ~ 2x iOS (US)
+  position_thresholds:             # share of the niche's payers needed for the goal -> "what place in the niche"
+    leader: 0.20                   # > 20% = niche leader
+    top3: 0.08                     # 8-20% = top-3
+    top10: 0.02                    # 2-8% = top-10
+                                   # < 2% = "one of many" (reachable without winning the niche)
+
+b2b:
+  payment_fee: 0.06                # card acquiring + merchant of record
+  customers_per_review: 30         # customers per Capterra review (~3% leave a review)
+  category_to_niche: 1.0           # kept at 1: reviews_niche is already cleaned of off-niche products in S5
+  search_to_customer: 0.02         # fallback proxy without a Capterra category: share of monthly category searches that becomes a customer within a year
+  position_thresholds:
+    leader: 0.20
+    top3: 0.08
+    top10: 0.02
+  customers_per_review_shopify: 15 # Shopify: reviews are left more often (~7%)
+
+grade:                             # path-to-goal grade
+  a_max_share: 0.08                # A: share of the niche's payers needed for the low goal <= 8% (no need to be top-3)
+  a_ticket_tiers: ["50-250", ">250"]
+  a_min_fit: 2
+  b_max_share: 0.20                # B / B-: <= 20% (top-3, but not the leader)

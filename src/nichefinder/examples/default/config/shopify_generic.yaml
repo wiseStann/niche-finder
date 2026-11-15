@@ -1,0 +1,48 @@
+# Apps that land in a Shopify subcategory through tags but solve a different job (excluded from the concentration).
+# Format: handle: [subcategories to exclude it from]; an empty list means everywhere.
+pagefly: []                    # page builders
+gempages: []
+ecomposer: []
+layout-hub: []
+releasit-cod-order-form: []    # COD forms
+cash-on-delivery-cod-order-confirmation: []
+cash-on-delivery-fee: []
+subscriptions-by-appstle: []   # subscriptions
+seal-subscriptions: []
+affliate-by-secomapp: []       # affiliate programs
+referralcandy: []
+bixgrow-affiliate-marketing: []
+product-reviews-addon: []      # reviews (Stamped)
+okendo-reviews: []
+swym-relay: []                 # wishlists
+growave: []
+wishlist-engine: []
+form-builder-contact-form: []  # forms
+avada-cookie-bar: []           # cookie banner
+smile-io: [store-design-notifications]        # loyalty inside "notifications"
+bon-loyalty-rewards: [store-design-notifications]
+judgeme: []                    # reviews that landed in SEO/images by tags
+yotpo-social-reviews: []
+loox: []
+instafeed: [store-design-images-and-media]        # an Instagram feed is social proof, not image optimization
+faire-buy-wholesale: []        # a purchasing marketplace, not software
+automizely-reviews: [store-design-design-elements]
+ez-label: [orders-and-shipping-orders, orders-and-shipping-shipping-solutions-shipping]   # label printing / pickup is a different job
+packlink-pro: [orders-and-shipping-orders, orders-and-shipping-shipping-solutions-shipping]
+click-and-collect: [orders-and-shipping-orders, orders-and-shipping-shipping-solutions-shipping]
+tiktok: [sales-channels-selling-online-marketplaces]      # the platforms' own sales channels, not a third-party sync
+shop: [sales-channels-selling-online-marketplaces]
+facebook: [sales-channels-selling-online-marketplaces]
+google: [sales-channels-selling-online-marketplaces]
+pinterest: [sales-channels-selling-online-marketplaces]
+bulk-product-edit: [orders-and-shipping-inventory]        # a bulk editor belongs to the bulk-edit niche
+qbconnector: [store-management-finances]                  # accounting connectors are a different job
+ecc-cloud-quickbooks-online-integration: [store-management-finances]
+fontify-change-customize-font-for-your-store: [store-design-content]   # fonts / blog / descriptions / page builder are not bulk editors
+seoon-blog: [store-design-content]
+automizely-page-builder: [store-design-content]
+automated-description-writing: [store-design-content]
+tapita-ai-seo-blog-builder: [store-design-content]
+storeseo: [store-design-content]
+custom-pricing-discounts-by-appikon: [selling-products-pricing]   # B2C volume discounts belong to upsell-bundles
+discounty-bulk-discount-sales: [selling-products-pricing]

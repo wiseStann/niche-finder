@@ -1,0 +1,7 @@
+# Wordstat dynamics settings (stages s4_wordstat_dynamics and ru_wordstat).
+# yoy_pre compares the average monthly volume of `compare_year` with `base_year`. Pick two full years before the period where
+# search data got contaminated (for example by Google Keyword Planner or by a one-off event), so the two metrics are independent.
+# A verdict UP/DOWN needs yoy (last 12 vs previous 12 months) and yoy_pre to agree.
+pre_period:
+  base_year: 2023
+  compare_year: 2024

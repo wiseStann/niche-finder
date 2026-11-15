@@ -1,0 +1,92 @@
+# Niche -> Capterra category slugs (S5, B2B and prosumer niches), as in https://www.capterra.com/<slug>/.
+# `slugs`: one or more categories; the first is the primary one (it feeds supply_deep), the rest add to the product count.
+# `note`: free text carried into supply_deep. A note containing the word "broader" or "proxy" marks a category that does not
+#         match the niche; s5_merge then reports the S5 gate as NA:proxy instead of judging concentration by it.
+# Niches without an entry have no Capterra category; their supply is read from the App Store / Shopify / deal signals.
+ai-phone-receptionist-local:
+  slugs: [business-phone-systems-software]
+  note: "the telephony category is much broader than an AI receptionist; concentration is not computed from it, only the count of new products with 'AI'"
+gym-martial-arts-studios:
+  slugs: [gym-management-software, martial-arts-software]
+small-nonprofits-donor-crm:
+  slugs: [donation-management-software, nonprofit-crm-software]
+cold-email-deliverability:
+  slugs: [email-verification-tools-software, sales-engagement-platform-software]
+  note: "sales engagement is broader (Outreach/Salesloft); there is no separate category for email warm-up"
+invoice-estimate-mobile-apps:
+  slugs: [billing-and-invoicing-software]
+  note: "generic category (QuickBooks/FreshBooks); the mobile niche is visible in the App Store"
+indie-app-dev-aso-tools:
+  slugs: [app-store-optimization-tools-software]
+loyalty-wallet-passes:
+  slugs: [customer-loyalty-software]
+  note: "broader (loyalty in general); wallet passes are a subset"
+law-firm-intake:
+  slugs: [law-practice-management-software, legal-case-management-software]
+  note: "intake/CRM is a subset of practice management"
+local-seo-gbp-agencies:
+  slugs: [local-seo-tools-software]
+pet-care-facilities:
+  slugs: [kennel-software, pet-grooming-software, pet-sitting-software]
+course-creator-affiliate-payouts:
+  slugs: [affiliate-software]
+str-hosts-tools:
+  slugs: [vacation-rental-software]
+saas-product-feedback-boards:
+  slugs: [product-roadmap-software, idea-management-software]
+digital-business-cards:
+  slugs: [business-card-software]
+churches-tools:
+  slugs: [church-management-software, church-presentation-software]
+shift-scheduling-deskless:
+  slugs: [employee-scheduling-software]
+small-landlords-pm:
+  slugs: [rental-property-management-software]
+auto-repair-shops:
+  slugs: [auto-repair-software]
+ai-video-dubbing-captions:
+  slugs: [closed-captioning-software]
+  note: "there is no separate category for dubbing; captioning is adjacent"
+marketplace-seller-analytics:
+  slugs: [multi-channel-ecommerce-software]
+  note: "there is no 'Amazon seller tools' category; multi-channel is adjacent, a weak proxy"
+ai-search-visibility-geo:
+  slugs: [seo-software]
+  note: "the SEO category in general; GEO tools are not separated within it, count only new products with AI/GEO in the name"
+n8n-openclaw-managed-hosting:
+  slugs: [ipaas-software, workflow-management-software]
+  note: "proxy: automation platforms; managed n8n hosting is not separated within them"
+daycare-childcare-software:
+  slugs: [child-care-software]
+coaching-business-platforms:
+  slugs: [coaching-software]
+  note: "the category is broader: the leader is Vagaro (salon booking); coaching platforms (Paperbell, CoachAccountable) are in the tail"
+pest-control-software:
+  slugs: [pest-control-software]
+sms-marketing-smb:
+  slugs: [sms-marketing-software]
+digital-signage-smb:
+  slugs: [digital-signage-software]
+cookie-consent-gdpr-widgets:
+  slugs: [gdpr-compliance-software, data-privacy-software]
+  note: "the GDPR compliance category is broader than cookie banners (it includes DSAR requests and audits)"
+funeral-homes-software:
+  slugs: [funeral-home-software]
+moving-companies-software:
+  slugs: [moving-software]
+florists-software:
+  slugs: [florist-software]
+jewelry-store-management:
+  slugs: [jewelry-store-management-software]
+dry-cleaning-laundry-software:
+  slugs: [dry-cleaning-software]
+driving-schools-software:
+  slugs: [driving-school-software]
+email-signature-management:
+  slugs: [email-signature-software]
+youth-sports-team-management:
+  slugs: [sports-league-software, club-management-software]
+  note: "the league and club categories are broader than a team app"
+personal-budgeting-apps:
+  slugs: [budgeting-software]
+  note: "the Capterra category is corporate budgeting, not personal; use the App Store for B2C"

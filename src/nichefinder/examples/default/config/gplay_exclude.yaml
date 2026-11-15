@@ -1,0 +1,216 @@
+# Manual exclusions from the relevant Google Play set (s8_gplay_metrics, s9_snapshot): appId -> niches the exclusion
+# applies to ([] = every niche). A key can also be an appId prefix of 40+ characters.
+# Same principle as appstore_relevance: platforms, marketplaces, games and neighbouring categories go out;
+# direct competitors and the closest substitutes stay.
+com.google.android.apps.maps: []
+com.google.android.apps.messaging: []
+com.google.android.apps.googleassistant: []
+com.google.android.apps.youtube.music: []
+com.google.android.apps.books: []
+com.google.android.apps.fitness: []
+com.google.android.apps.kids.familylink: []
+com.deepseek.chat: []
+com.yandex.aliceapp: []
+com.duolingo: []   # language-learning platform, not a conversational AI tutor
+com.babbel.mobile.android.en: []
+com.busuu.android.enc: []
+com.memrise.android.memrisecompanion: []
+io.faceapp: []   # general face editor
+com.standysoftware.colorstyle: []   # colour-type quiz
+com.nabilsoft.daily_hairstyles_for_girls: []   # hairstyle catalogues (content), not try-on
+com.best.photo.app.womanhairstyles: []
+com.piupiuapps.hairstyles: []
+best.photo.app.besthairstyles: []
+com.com2us.acefishing.normal.freefull.goog: []   # fishing games
+com.arkgame.fishingmaster: []
+com.tensquaregames.letsfish2: []
+com.astrotalk: []   # astrologer marketplaces
+com.ojassoft.astrosage: []
+in.mohalla.reva: []
+ru.farpost.dromfilter: []   # car classifieds / VIN checks
+ru.drom.numbers: []
+ru.likemobile.checkauto: []
+ru.vin.proverka.auto: []
+com.cyberjoy.r1: []
+com.elm.elm327.obd2.eobd.obd.car.scanner.d: []
+org.readera: []   # e-readers / book stores, not summaries
+ru.litres.android: []
+ru.litres.android.readfree: []
+com.prestigio.ereader: []
+org.geometerplus.zlibrary.ui.android: []
+zahleb.me: []
+com.reader.books: []
+com.goodreads: []
+com.unicostudio.braintest: []   # puzzle games
+com.unicostudio.braintest2new: []
+com.brain.crazy.joygame: []
+com.psp.brainmindgames: []
+org.lds.ldssa: []   # denominational library
+org.godfootsteps.thechurchofalmightygod: []
+com.pocket.sort.coin.puzzle.game: []   # game
+com.chrono24.mobile: []   # watch marketplace
+com.pwcc.mobile: []
+com.widgetable.theme.android: []   # widgets for friends
+com.antoinehabert.truthordaregame: []
+com.venmo: []   # banks / card issuers
+com.discoverfinancial.mobile: []
+com.syf.mysynchrony: []
+com.exto.arrow: []
+com.firstpremier.mypremiercreditcard.app: []
+com.elan.icsmobile.elanapp: []
+com.arrofinance.production: []
+com.playtoddlers.happydaycarestories.free: []   # daycare games
+com.iz.my.daycare.baby.sitter.kids.family.: []
+com.carebaby.app: []
+com.beansprites.mypretenddaycareFREE: []
+com.baby.care.games.day.toys.cry.babies.do: []
+com.visiting.businesscardmaker: []   # paper business card design
+com.sweetsugar.cards: []
+com.ammaker.businesscardmaker: []
+com.fotopix.businessCardMaker: []
+com.hair_flutter: [digital-wardrobe-outfit-planner]
+com.bigbeep.dogtranslate: []   # dog-bark "translators"
+com.dogtranslator.catsounds.petlanguage.tr: []
+com.t.dogtrans: []
+rbx.calc.free.robux.counter: []
+com.bitsmedia.android.muslimpro: [faith-devotional-apps]   # the faith niche counts the Christian segment; Muslim apps are a separate niche
+com.quran.labs.androidquran: [faith-devotional-apps]
+com.pakdata.QuranMajeed: [faith-devotional-apps]
+com.mmmoussa.iqra: [faith-devotional-apps]
+com.greentech.quran: [faith-devotional-apps]
+com.raimbekov.android.sajde: [faith-devotional-apps]
+com.namaztime: [faith-devotional-apps]
+com.geospatialtechnology.visualqiblah: [faith-devotional-apps]
+net.skyscanner.android.main: [flight-tracking-deals-award-travel]   # OTA
+ctrip.english: [flight-tracking-deals-award-travel]
+com.expedia.bookings: [flight-tracking-deals-award-travel]
+com.kayak.android: [flight-tracking-deals-award-travel]
+com.priceline.android.negotiator: [flight-tracking-deals-award-travel]
+com.dd.doordash: []   # delivery platform, not a tracker
+com.doordash.driverapp: []
+gymworkout.gym.gymlog.gymtrainer: [gym-martial-arts-studios]   # consumer workouts, not gym software
+fitness.online.app: [gym-martial-arts-studios]
+com.adaptech.gymup: [gym-martial-arts-studios]
+com.fitstars.home: [gym-martial-arts-studios]
+com.kg.app.sportdiary: [gym-martial-arts-studios]
+com.rarus.gyms: [gym-martial-arts-studios]
+com.prostoy.start2: [gym-martial-arts-studios]
+com.bandlab.bandlab: []   # DAW / social network, not distribution or stems
+com.komspek.battleme: []
+com.ntrack.studio.demo: []
+fm.anchor.android: []   # Spotify for Creators/Artists is a platform
+com.spotify.s4a: []
+todo.list.tasks.planner.calendar.reminder: []
+ua.napps.scorekeeper: []
+io.github.lauworks.p02multicounter: []
+com.intuit.quickbooks: [invoice-estimate-mobile-apps]   # accounting, not mobile invoicing
+com.edujoy.masha.games: []   # branded games
+com.ayasis.mentalup: [kids-learning-games-preschool]
+ru.cardsmobile.mw3: [loyalty-wallet-passes]   # consumer card wallets, not B2B passes
+ru.pyaterochka.app.browser: []
+ua.com.abank: []
+com.wildberries.ru: []   # marketplaces
+ru.ozon.app.android: []
+ru.beru.android: []
+ru.aliexpress.buyer: []
+tech.jm: []
+com.kazanexpress.ke_app: []
+ru.ozon.hire: []
+ru.wildberries.team: []
+com.gamestar.perfectpiano: [music-instrument-learning]   # virtual instruments / karaoke, not learning
+com.tencent.wesing: []
+com.starmakerinteractive.starmaker: []
+br.com.rodrigokolb.realguitar: []
+com.sonlam.mypianophone: []
+com.picturerock.rock: [nature-id-mushroom-bird-insect]   # rocks: a neighbouring category
+cn.danatech.xingseus: [nature-id-mushroom-bird-insect]   # plants
+ru.innim.my_finance: []   # publisher of "Cleaner + Antivirus": an app factory
+com.hellofresh.androidapp: []   # meal-kit
+com.buzzfeed.tasty: []   # content media
+ru.x5.foodru: []
+com.ebay.mobile: []   # marketplaces
+com.offerup: []
+com.poshmark.app: []
+com.mercariapp.mercari: []
+com.depop: []
+org.craigslist.CraigslistMobile: []
+com.thredup.android: []
+com.therealreal.app: []
+com.savved.uptick: []   # stock exchange
+com.paytar2800.stockapp: []
+com.StockMarketAlarms.StockAlarm: []
+com.apptornado.pricedrops: []
+kz.sirius.kidssecurity: [screen-time-focus-apps]   # parental control is a different niche
+ua.com.tim_berners.parental_control: [screen-time-focus-apps]
+com.lrhsoft.shiftercalendar: [shift-scheduling-deskless]   # personal shift calendars, not employer software
+com.aadhk.time: [shift-scheduling-deskless]
+com.petrik.shifshedule: [shift-scheduling-deskless]
+lincyu.shifttable: [shift-scheduling-deskless]
+fourbottles.bsg.workinghours4b: [shift-scheduling-deskless]
+bies.ar.monplanning: []
+com.dddev.Shift_Work_Calendar: [shift-scheduling-deskless]
+app.supershift: [shift-scheduling-deskless]
+ru.cian.main: []   # real-estate classifieds and simulator games
+com.shimmergames.tenants.gp: []
+com.yandex.mobile.realty: []
+ru.sutochno_redesign: []
+com.fsgpay: []
+com.etagi.client: []
+ru.yandex.mobile.arenda: []
+com.zillow.android.zillowmap: []
+com.trulia.android: []
+com.landlordgame.tycoon: []
+com.trulia.android.rentals: []
+com.rent: []
+com.apartmentlist.mobile: []
+com.clapclap.landlordsim: []
+com.enflick.android.TextNow: []   # second-number / SMS clients
+com.pinger.textfree: []
+com.textra: []
+com.p1.chompsms: []
+com.fulldive.extension.divesms: []
+ru.kvartirka.android_new: [str-hosts-tools]
+com.org.apartsharing: [str-hosts-tools]
+com.ilyabogdanovich.geotracker: []   # GPS tracker, general-purpose diaries, navigation
+mydiary.journal.diary.diarywithlock.diaryj: []
+com.citymapper.app.release: []
+com.journey.app: []
+ru.yandex.travel: []
+com.wanderlog.android: [travel-journal-map]
+com.tripadvisor.tripadvisor: []   # OTA / platforms in the trip-planner niche
+com.getyourguide.android: []
+com.klook: []
+ru.travelata.app: []
+homeworkout.homeworkouts.noequipment: []   # home workouts without a log
+sixpack.sixpackabs.absworkout: []
+loseweight.weightloss.workout.fitness: []
+loseweightapp.loseweightappforwomen.womenw: []
+com.fitifyworkouts.bodyweight.workoutapp: []
+dumbbellworkout.dumbbellapp.homeworkout: []
+musclebooster.workout.home.gym.abs.losewei: []
+com.nike.ntc: []
+com.asurion.solutohome.verizon: []   # tech support
+com.joinhomebase.homebase.homebase: [youth-sports-team-management]
+com.esim.numero: []   # virtual numbers, not travel eSIM
+esim.me: []   # hardware (eSIM adapter)
+com.everylounge: []   # airport lounges
+com.esimtravelapp.trialesimcard.mobile: []   # VPN publisher, junk
+com.macrovideo.v380pro: []   # hardware companions / CCTV platforms
+com.e2esoft.ivcam: []
+com.ivideon.client: []
+com.kapron.ap.aicamview.tv: []
+ru.rt.smarthome: []
+io.faceter.faceter: []
+com.philips.ph.babymonitorplus: []
+com.cams.vtech.mvb.pro: []
+com.vtech.app.plus: []
+com.hisense.nursery: []
+todolist.scheduleplanner.dailyplanner.todo.r: []   # general planners / locators in the chores niche
+com.ticktick.task: []
+com.familywall: []
+ru.gdemoideti.parent: []
+com.weekly.app: []
+com.youvendo.international_space_registry: []   # "name a star" registry marketing
+com.starregistration.star_finder: []
+com.starregistration.planetarium: []
+fm.slumber.sleep.meditation.stories: []   # adult sleep stories

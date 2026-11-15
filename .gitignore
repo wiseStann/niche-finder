@@ -1,0 +1,28 @@
+# Secrets
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+
+# Node (Google Play helpers)
+node_modules/
+
+# Workspaces: your research data never goes into this repo.
+# `nf init` creates workspaces outside the repo by default; these patterns catch ones created inside it.
+workspace/
+workspaces/
+**/data/cache/
+**/data/raw/
+**/data/out/
+**/data/snapshots/
+**/reports/
+!tests/fixtures/**

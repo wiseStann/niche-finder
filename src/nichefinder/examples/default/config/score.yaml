@@ -1,0 +1,47 @@
+# Quick-filter weights and thresholds (S3). Percentiles are computed inside each demand pool (us, ww, ru).
+# Change them deliberately: they define what "good" means for every niche, so re-run s3_metrics afterwards.
+
+# Quick filter (S3): only demand, growth and brand fragmentation are available at this point.
+# Deals and switching evidence arrive at S5.
+weights:
+  demand_vol: 20        # percentile of log(demand_cat) within the pool
+  demand_cpc: 10        # CPC inside the "workable" band
+  growth_yoy: 10
+  growth_momentum: 5
+  growth_cagr: 5
+  frag_hhi: 10          # 1 - HHI over brand queries
+  frag_top1: 10         # 1 - share of the top-1 brand
+  frag_comp: 5          # percentile of competition_index (more advertisers = more players)
+
+cpc_band:
+  en: [0.5, 8.0]        # USD, B2C / prosumer
+  en_b2b: [1.0, 1000.0] # B2B: no upper penalty (CPC of $30-100 marks niches where buyers pay); below $1 is not monetizable
+  ru: [0.15, 3.5]       # USD equivalent
+cpc_below: 0.3          # share of the points when CPC is below the band (not monetizable)
+cpc_above: 0.6          # share of the points when CPC is above it (enterprise / regulated)
+
+trend_up: 0.05
+trend_down: -0.05
+spike_ratio: 3.0        # max(month) / median(month) over 24 months; the same ratio caps peaks in the robust series
+step_ratio: 2.5         # flag Q:step: mean of the recent window to the monthly mean of the year after base_year ("X app" contamination)
+hump_ratio: 2.0         # flag Q:hump: year after base_year vs base_year > 2x ...
+hump_drop: 0.6          # ... and the current year vs the year after base_year < 0.6 (a one-year "X software" hump)
+
+# Keyword Planner history is contaminated after the base year: a one-year hump in the year after it and a step-up
+# in the recent window. Trend verdicts need both periods to agree; demand_2023 keeps the clean base-year level.
+base_year: 2023                 # clean year; the "hump" year is base_year + 1
+step_window_months: 12          # flag Q:step compares this many months ...
+step_window_end_lag_months: 3   # ... ending this many months before the run date's month
+
+history_months: 48              # months of Keyword Planner history requested from DataForSEO (date_from)
+
+min_cat_nonzero: 3      # G0: minimum category queries with volume > 0
+gate_top1_brand_share: 0.5
+gate_brand_share: 0.7   # informational flag I:brand_share, not a gate
+
+# Automatic shortlist (s3_report writes config/shortlist.yaml when it is missing):
+#   tier_a = niches that pass gates G0-G2 in the US pool
+#   tier_b = niches cut only by the top-1 brand gate, with enough demand and no near-monopoly
+shortlist:
+  tier_b_min_demand: 3000     # US category demand per month
+  tier_b_max_top1: 0.8        # top-1 brand share ceiling

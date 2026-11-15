@@ -1,0 +1,487 @@
+# Methodology: how niche-finder decides what a "green market" is
+
+This document explains the reasoning behind the pipeline: what it measures, why, which sources it trusts, which traps it knows about, and which questions it cannot answer. Stage-by-stage inputs, outputs and costs are in [stages.md](stages.md). Weights and thresholds quoted here are the defaults shipped in `config/score.yaml`, `config/ceiling.yaml` and `nf.yaml`.
+
+Contents
+
+1. [What "green" means](#1-what-green-means)
+2. [Design principles](#2-design-principles)
+3. [Ontology: niche = who x task x product](#3-ontology-niche--who--task--product)
+4. [Source priors: proven vs rising](#4-source-priors-proven-vs-rising)
+5. [Stages S0-S10](#5-stages-s0-s10)
+6. [Known traps and how they are caught](#6-known-traps-and-how-they-are-caught)
+7. [Gates and the score](#7-gates-and-the-score)
+8. [Path to goal](#8-path-to-goal-the-ceiling-layer)
+9. [Buyer voice rules](#9-buyer-voice-rules)
+10. [What the pipeline proves and what it cannot](#10-what-the-pipeline-proves-and-what-it-cannot)
+11. [Recommended validation after screening](#11-recommended-validation-after-screening)
+
+---
+
+## 1. What "green" means
+
+A green market is one where demand is real and growing, supply is fragmented, nobody owns the category, and a small team can plausibly build and sell a product. Concretely the pipeline looks for the intersection of:
+
+| Axis | Question | Measured by |
+|---|---|---|
+| Demand | Do people look for this, and does a click have commercial value? | Search volume, CPC (Keyword Planner via DataForSEO; Yandex Wordstat for the Russian module) |
+| Trend | Is it growing, not shrinking, not a one-off spike? | Year-over-year, 3-year CAGR, momentum, Google Trends cross-check |
+| Fragmentation | Many mid-sized players, no monopolist? | Brand-query shares, HHI, top-1 share, players in app stores / software directories |
+| Platform risk | Is it one native feature of Apple, Google, Microsoft, OpenAI? | Manual review per shortlisted niche, platform share of nested queries |
+| Liquidity | Do small products in this space earn money and change hands? | Marketplace listings with revenue, accelerator portfolios, launches, top-grossing apps |
+| Switching | Can a new entrant take customers away? | Public self-serve pricing, monthly plans, "import from" features, lock-in (manual 0-2) |
+| Feasibility | Can a small team build and sell it? | Four yes/no proxies (section 7.4) |
+| Veto | Regulated expertise (medicine, licensed law, regulated finance)? | `expertise_flag` |
+
+The tool ranks markets by *relative* signals. It does not estimate market size in money (section 10).
+
+---
+
+## 2. Design principles
+
+1. **The niche is the unit; the query is a measuring instrument.** Queries are never analysed without a niche they belong to. A phrase-first scan of hundreds of topics produced mostly noise: TV series that share a name with a profession, benchmark and "what is" queries, features of voice assistants, one-day launch spikes. Niche-first with typed queries removes most of it.
+2. **A cost funnel.** Each stage is roughly an order of magnitude more expensive (money, quota or manual time) than the previous one and cuts at least ~60 % of what reaches it. Cheap and wide first, expensive and deep on the shortlist only.
+3. **Triangulation.** No verdict rests on one source. Demand needs two sources, supply needs two, trend needs two. A concentration gate based on hand-listed brand queries is re-checked against an independent signal (app store ratings, software-directory reviews).
+4. **Pre-registration.** Gates, weights and thresholds are fixed in configuration before the first API call. They may change, but every change is written down with a reason, and a change is never made to rescue a favourite niche.
+5. **Controls.** The cohort always includes known-red niches (small-business CRM, task manager, notes, site builder), known "one platform feature" niches (photo restoration, translator, generic image generation), and a calibration case for the monopolist gate (a category with one product holding about half of brand searches). If a control behaves unexpectedly, the *scoring* is suspect, not the control: examine and document the formula or thresholds rather than only explaining the result away.
+6. **Cache and provenance.** Every tool call is cached by a hash of its parameters; every metric carries source and date. Re-running a month later is a free re-scan, not a new project.
+7. **Human checkpoints.** The pipeline runs unattended between checkpoints: after the universe (add/remove), after the quick filter (edit the shortlist), and before the final pick.
+8. **What to measure is separate from what to measure with.** Niches live in YAML, tool adapters are separate modules, scoring is configuration. Swapping a data vendor does not touch niches or formulas.
+9. **Metrics are never edited by hand.** Only `niches.yaml`, the configs, and an explicit manual-overrides file (lock-in, feasibility, platform-risk, supply estimates where no proxy exists) change results.
+
+---
+
+## 3. Ontology: niche = who x task x product
+
+### 3.1 Granularity rule
+
+A niche is a **segment (who) x job (task) x product shape (product)**, for example "freelancers and micro-agencies x invoice a client and get paid without an accountant x web SaaS, $10-30/month".
+
+- **Narrow enough** when one product can serve the segment's whole task and the niche has its own vocabulary (category queries different from the parent category).
+- **Broad enough** when at least 3 competitors exist and category queries total at least ~1,000 searches/month (US) - or about 500 in Wordstat for the Russian module.
+- Below the threshold: merge into the parent. Above ~10 competitors with large funding rounds: split by segment.
+
+"AI for X" is a technology, not a niche. Clustering groups by who x task, never by technology.
+
+### 3.2 Record
+
+Each niche in `niches.yaml` carries: `id`, `name`, `who`, `task`, `product`, `geo` (`global | ru | both` - geography is an attribute of the niche, not of the pipeline), `side` (`b2c | prosumer | b2b-smb | b2b-mid`), `sources` (where it was found; two or more different source types make the prior stronger), `expertise_flag`, `control` (`red | platform | green | null`), a competitor list (name, domain, price, self-serve, founding year, team size) and a query set.
+
+### 3.3 Query intents
+
+| Intent | Measures | Used for |
+|---|---|---|
+| `category` | Demand for the product class ("invoicing software for freelancers") | demand, CPC, competition index, trend |
+| `problem` | Latent demand (the task without a product name) | `demand_latent`; never in CPC |
+| `brand` | Navigational demand for a named competitor | **supply** side: brand share, HHI, top-1 share |
+| `info` | Reference queries, benchmarks, "what is" | excluded from every sum; stored only so they are not mistaken for something else |
+
+One query per niche is marked `anchor: true`; it goes to Google Trends and to the ambiguity check. A typical niche has 8-12 English queries (at least 4 category, at least 2 problem, one brand query per competitor).
+
+---
+
+## 4. Source priors: proven vs rising
+
+The universe (S0) mixes sources of different kinds, and the kind is stored as an attribute because it changes how a hit should be read.
+
+| Type | Examples | What it tells you | Prior |
+|---|---|---|---|
+| **Proven / transactional** (best signal of "green") | Software-directory category indexes, small-business marketplaces with revenue-verified listings (Flippa-style), bootstrapped-fund portfolios, top-grossing app charts, WordPress.org plugins by installs, Shopify App Store | Small players *already earn money* here and are bought and sold: fragmentation and deals exist | High |
+| **Rising** | Accelerator batches, Product Hunt, VC portfolio maps, subscription-app reports | Demand is rising, but so is competition: reads as "who is entering", i.e. a future red ocean | Medium |
+| **Regional** | Ranking sites, accelerators and procurement portals for a specific country | Local niches where Google data is thin | By data |
+
+A niche found by both a proven and a rising source is a priority candidate. Choosing "proven above rising" is a deliberate bias: it moves results away from fashionable AI categories toward unfashionable categories where money already changes hands.
+
+The universe is also biased by construction: it only contains things that already exist as an app, plugin or listing. Tasks that exist without a product (job postings, tenders, regulation deadlines, product shutdowns) are covered only indirectly, via S8 and the source registry (`config/sources.yaml`, rendered to `S0-sources.md`), which records for each candidate source its role (rising / transactions / voice / hiring), access method, rate limits and freshness.
+
+---
+
+## 5. Stages S0-S10
+
+The funnel in one table (details in [stages.md](stages.md)):
+
+| Stage | Question | Cost |
+|---|---|---|
+| S0 universe | What products and companies exist, and who pays for them? | free (public endpoints) |
+| S1 niches | Which who x task x product clusters does the universe contain? | LLM-assisted authoring + review |
+| S2 query validation | Are the queries unambiguous and on-topic? | free |
+| S3 quick filter | Which niches have real, growing, non-monopolised demand? | ~$0.27 per full run |
+| S4 trend depth | Is the growth real outside Keyword Planner? | free (Trends, Wordstat) |
+| S5 supply depth | Who are the players, how concentrated, what do they charge, are deals happening? | free |
+| S6 score and passports | Gates, score, verdict, path-to-goal | free |
+| S7 report | Leaderboard and HTML report | free |
+| S8 off-search demand | Is there demand where Google cannot see it? | free |
+| S9 supply over time | Who is growing now, and do new entrants survive? | free |
+| S10 buyer voice | What do buyers say about existing products? | LLM tokens |
+
+### S0 - Universe
+
+**Measures:** nothing yet; it enumerates existing products in categories where someone pays. Output is `universe.csv` (entity, source, source type, geo, side, category, one-liner, signal, URL), typically thousands of rows from about ten sources.
+
+**Sources (public or keyless):** accelerator batches (yc-oss JSON), Product Hunt monthly leaderboards, bootstrapped-fund portfolios, Flippa SaaS listings with revenue, App Store top-grossing charts (iTunes RSS, by genre, US and other storefronts), Google Play top charts (Node scraper), WordPress.org plugin API (active installs), Shopify App Store category walk.
+
+**Why:** to start from "products that already earn" rather than from an imagined list of ideas. Games and medicine are excluded at the door.
+
+**Traps:** top-grossing charts over-represent consumer apps, so the universe is skewed toward mature categories with shelves. The coverage stage (S1) reports which universe rows no niche explains, to expose gaps.
+
+### S1 - Niches and coverage
+
+**What it does:** clusters universe entities into niches (rules in section 3), then `s1_coverage` maps universe rows to niches by phrase lists and competitor names and reports what fraction of each source is explained, the most common terms among unexplained rows, and unexplained top-grossing apps by genre. Output: `niches.yaml`, `queries/*.yaml`, `S1-coverage.md`.
+
+**Rules:** at least 3 competitors per niche; queries typed by intent; 6-8 control niches forced in; keyword lists used for coverage must be compound phrases ("shopify analytics"), not generic words ("analytics", "report") - generic words inflate coverage to meaningless levels.
+
+### S2 - Query validation
+
+**Measures:** `ambiguity` (share of off-topic nested phrases) and `platform_share` (share of phrases that name Google, Apple, a voice assistant, ChatGPT, Microsoft, Notion).
+
+**How:** for each anchor, collect nested phrases (Wordstat top requests for Russian, about 10 Google/Yandex autocomplete suggestions) and have them labelled on-topic / off-topic / platform / brand. Autocomplete suggestions are keyless; Wordstat needs a Yandex key and a 100-requests/hour quota.
+
+**Why:** a query that means something else is the commonest source of false signals - a profession that is also the title of a TV series, "translator" inside "English online". A niche with ambiguity above 25 % has its queries fixed or is dropped.
+
+### S3 - Quick filter (search demand)
+
+**Measures:** per niche and market - category demand (sum of monthly volume over `category` queries only; sums never mix intents), `cpc_med` (median CPC over category queries), `comp_idx` (mean Keyword Planner competition index, 0-100, used only as a weak proxy for number of advertisers), brand demand, `brand_share`, `hhi_brand`, `top1_brand_share`, and trend metrics from 48 months of history.
+
+**Sources:** DataForSEO `google_ads/search_volume/live`, which returns volume, CPC, competition index, and monthly history (48 months) for up to 1,000 keywords per call. One call per market (US, worldwide without location, and a Russian-language pool) covers the demand and trend side of every niche at once - about $0.09 per call. Yandex Wordstat `totalCount` is added for the Russian module.
+
+**Trend metrics** (computed on the category-query monthly sum):
+
+| Metric | Definition |
+|---|---|
+| `yoy` | last 12 months / previous 12 months - 1, on a **robust series** (each month capped at 3x the median of the preceding 12) |
+| `yoy_pre` | clean base period: calendar year after / calendar year before the contamination window (2024 / 2023 by default, configurable) |
+| `momentum` | last 3 months / same 3 months a year earlier - 1 (robust series) |
+| `cagr_3y` | (last 12 / the 12 months three years earlier)^(1/3) - 1 |
+| `spike` | max month / median month over the last 24 months > 3 |
+| `demand_2023` | monthly average of the clean base year (the last year before contamination); kept as a clean demand level |
+
+**Verdict:** `UP` only if `yoy_pre` and `yoy` are both above +5 %; `DOWN` only if both are below -5 %; otherwise `FLAT`; `NA` without enough history. Requiring two periods to agree is the defence against Keyword Planner contamination (section 6).
+
+**Brand metrics:** `brand_share = brand / (brand + category + problem)`; `hhi_brand = sum(share_i^2)` over brands; `top1_brand_share = max(share_i)`. Brand share is informational: it measures *navigational* demand, not concentration, and fires for most niches including healthy ones. Concentration is held by the top-1 gate.
+
+**Output:** `metrics_quick.csv` with gate flags, and a leaderboard per market. A quick score exists (demand + growth + the brand part of fragmentation, normalised to 0-100) but only orders the shortlist; it is not the final score.
+
+**Shortlisting:** pass = no `G0`, `G1`, `G2` flag (section 7.1); the human checkpoint then edits the list. A two-tier shortlist is used: tier A (passed G0-G2) and tier B (cut only by the top-1 brand gate but with substantial demand and a top-1 share that is not extreme) - because that gate depends on three to five hand-listed brands, tier B is re-tested against an independent concentration signal in S5. Niches with a top-1 brand share above ~80 % are not carried forward.
+
+### S4 - Trend depth
+
+**Google Trends cross-check (anchors).** Independent of Keyword Planner. Each anchor is queried alone for 2021-2024 in the matching geography; the series shape is compared by annual means. Verdict: `UP` if the last year is at least 15 % above two years earlier and the last year-over-year is at least -5 %; `DOWN` if at least 15 % below and last year-over-year at most +5 %; otherwise `FLAT`. A category that did not exist two years earlier but has a mean index of at least 10 in the last year is `UP`. If the anchor's index is below 5, the result is `NA` (unusable) - this is typical for narrow B2B anchors. Data after the contamination window is deliberately not used.
+
+**Why a broad fallback and why brands.** A narrow anchor gives `NA`; a broad "X software" phrase gives a verdict, but a single "X software" series is unreliable (section 6). So the pipeline queries 3-4 **brand anchors** of the category as well (`config/trends_brands.yaml`) and merges with a symmetric rule:
+
+| Case | Result |
+|---|---|
+| At least 2 brands with a signal (index at least 5) | the majority verdict of brands applies |
+| Broad `DOWN`, brands not `DOWN` | `FLAT` |
+| Broad `FLAT`/`UP`, brands `DOWN` | one step down |
+| Broad `NA` | the brands' verdict |
+| Brands `UP` | do not lift a broad verdict to `UP` (growth of the category must be visible in the category itself) |
+| Tie | `FLAT` |
+
+The reasoning: people looking for tools search for brand names, not for "X software"; a falling generic phrase with rising brands is a change in query habits, not a shrinking market.
+
+**Russian module:** Wordstat dynamics over 36 months for each Russian anchor, same robust metrics (`yoy`, `yoy_pre`, `momentum`); `UP`/`DOWN` only when the two year-over-year figures agree; series below 300 searches/month are `NA`; disagreement with the Google-based Russian pool gives `FLAT`.
+
+### S5 - Supply depth
+
+**What it measures:** who the players are, how concentrated the niche is by an *independent* signal, what they charge, and whether deals happen.
+
+| Source | Side | Signals |
+|---|---|---|
+| iTunes Search API + apps.apple.com pages | B2C | players with at least 1,000 / 10,000 ratings, top-1 / top-3 share and HHI by rating count, apps released in the last 12 / 24 months, free share of the top 20, largest-developer share (clone factories), in-app purchase prices (min monthly / annual / lifetime) |
+| Capterra categories and GetApp product cards | B2B | products in the category (`numberOfItems`), reviews per product, top-1 / top-3 / HHI by reviews, entry price, billing period, free trial / free version |
+| Shopify App Store subcategories | e-commerce B2B | reviews per app / subcategory total, players with at least 100 reviews, free-plan share |
+| Marketplace / portfolio / launch corpora (from S0) | all | `3 x listings with revenue + 2 x bootstrapped-fund portfolio + launches in 12 months + accelerator companies + top-grossing apps` |
+
+**Relevance is the hard part.** Search results include marketplaces, platforms and neighbours. App Store results are kept if the app ranks in the top 15 of at least one category query, then manually pruned by trackId in `config/appstore_relevance.yaml` (marketplaces, platforms, content media, games, adjacent categories). Horizontal products that appear in every software directory category (generic project tools, general CRMs) are excluded from concentration by `config/capterra_generic.yaml` (and `shopify_generic.yaml`).
+
+**Gate S5 - independent fragmentation:** top-1 share by ratings/reviews at most 50 % **and** at least 8 players (B2C: at least 1,000 ratings; B2B: at least 100 reviews, horizontals excluded; Shopify: at least 100 reviews). Niches where the directory category is only a weak proxy for the niche get `NA:proxy` and a manual supply estimate (flagged `S5:manual`, result `PASS*`).
+
+**The "second platform" rule.** One app store is one signal of concentration. If the App Store gate fails on `top1` but, in Google Play US, the leader holds at most 50 % and at least 8 apps have 100,000+ installs, the gate becomes `PASS:android` with flag `S5:android` (mirror thresholds of the iOS gate). The rule only affects the gate; the score is unchanged.
+
+**Why not paid-ads advertiser counts?** The intended fifth point of fragmentation was the number of distinct advertisers in the SERP. The SERP vendor endpoint did not return paid blocks from a datacentre IP, so the point is filled by the percentile of the Keyword Planner competition index (`frag_comp`). It is a weak proxy and is documented as one.
+
+**Pricing / switching:** `self_serve` (1.0 for B2C; share of products with a public price for B2B), `monthly` (share of plans below $100/month for B2B; share of apps with a monthly subscription for B2C), `import_from` (set to a neutral 0.5: not measured), `lock_in` (manual 0-2: 0 easy export, 2 annual contracts plus accumulated data). Shopify apps are given `self_serve = monthly = 1` (one-click install, public monthly prices).
+
+### S6 - Score, gates, passports
+
+Described in sections 7 and 8. Output: `score_final.csv`, `path_to_goal.csv`, per-niche passports (`reports/passports/<id>.md`) and a summary.
+
+### S7 - Report
+
+A static HTML leaderboard: all scored niches with filters, sorting, expandable passports, and the path-to-goal columns.
+
+### S8 - Demand outside search
+
+Stage S8 adds signals that never change the score (the weights are pre-registered) but go to passports and reports as confirmation or contradiction.
+
+| Source | What it gives | Caveat |
+|---|---|---|
+| YouTube search (Google Trends `gprop=youtube`) | Level relative to a reference topic queried in the same request (Trends indices are only relative within one query), plus the 2022-2024 trend | People search YouTube for a *topic*, not "X app": phrases are topical (`config/youtube_topics.yaml`). B2B topics sit near zero, which is itself a result |
+| Subreddit sizes | Comparative community size | A static snapshot, not growth |
+| App Store rating velocity | Ratings per month since release; share of velocity coming from apps up to 24 months old ("pull of newcomers") | Computed from one point in time; S9 gives a direct measurement |
+| Google Play search + details | Installs (`maxInstalls`, global, not per country), leader share, players with 100k+ / 1M+ installs, new apps, share paid | Storefront is the market in which the app was found, not where installs happened. Throttled, about 1 card/s |
+| Job-posting counts (Russian module) | Vacancies mentioning a software brand = adoption proxy | Needs Russian egress; HTML search page |
+
+Why outside search? B2B demand barely exists in search ("meeting summary" can have two impressions a month while the category earns millions), and consumer demand is partly expressed in app stores.
+
+### S9 - Supply over time
+
+- **Snapshots.** `freeze` stores the relevant apps (App Store: `relevant = 1`, not `na`; Google Play: not excluded) under `data/snapshots/<date>/`; `refresh` fetches fresh rating counts later (iTunes lookup, 150 ids per call, keyless); a Google Play refresh stores fresh cards in a separate cache. `diff` computes per-app and per-niche growth: share of growth from apps up to 24 months old, share of the leader in growth. This replaces S8's computed "velocity" with a direct measurement and answers "who is growing now", which no demand source can.
+- **Entrant survival** (`entrant_survival.csv`, from data already in the App Store set). Cohort = relevant US apps released 12-24 months ago. Alive = updated within 180 days; traction = at least 1,000 ratings. Flags when the cohort has at least 8 apps: `E:churn` (alive below 50 %) and `E:traction` (traction at least 30 %). The flags do not enter the score. They separate a healthy open market from a **clone factory**: high fragmentation plus many new releases and a small leader looks identical in the score, but a factory shows a cohort that stops updating and never earns ratings.
+
+### S10 - Buyer voice (Reddit)
+
+Described in section 9.
+
+---
+
+## 6. Known traps and how they are caught
+
+| Trap | Example | Detector |
+|---|---|---|
+| Homonym / other meaning | A profession that is also a TV series | `ambiguity` from nested phrases (S2); manual review of the top-50 nested phrases before accepting any "growing" cluster |
+| One-off spike | A platform launches a free feature; searches jump and fall back | `spike` (max / median over 24 months > 3); robust series caps each month at 3x the trailing median |
+| Calendar artefact | Phrases containing the year ("horoscope 2026", "tax deduction 2026") show +10,000 % | Year-bearing phrases are rejected in review |
+| "Ask an AI through search" | "come up with a name", imperative queries addressed to an assistant | `problem` intent excluded from CPC; `platform_share` |
+| Brand is the category | A presentation generator that owns about half of brand queries | `top1_brand_share` gate G2; Cyrillic spellings of brands must be included in `brand` queries |
+| Info queries | Benchmarks, "what is" | `info` intent excluded from all sums |
+| B2B does not live in search | "meeting summary" has almost no searches although the category sells | For B2B, demand is read from directory reviews, job postings, tenders; search is used for trend only |
+| Keyword Planner history contamination | see below | `yoy_pre` agreement, robust series, `Q:` flags, `demand_2023`, Trends brand anchors |
+| Google Trends after the contamination window | A phrase "X app" jumping 0.1 -> 30 without confirmation in Keyword Planner | Trends is used only up to the clean window; `contaminated` flag |
+| Directory category weaker than niche | Telephony category for an AI receptionist | `NA:proxy` plus manual estimate, flagged |
+| Generic words in coverage lists | "analytics" matched everything | compound phrases only |
+
+### Keyword Planner contamination
+
+Keyword Planner's *history* is not a stable series for tool-type queries. Two distortions are built into the defaults:
+
+- **The 2024 "X software" hump.** Many "X software" queries are inflated about 3-8x in 2024 and then fall back. A naive last-12-vs-previous-12 growth can read as steep decline or steep growth depending on where the window cuts the hump.
+- **The 2025-26 "X app" step.** From 2025 many "X app" and broad tool queries step up about 2-5x with no support from flat anchors or from falling informational queries; it appears across several geographies, including English queries in non-English countries rising from zero. The cause is unknown (measurement change, automated traffic, agents); the consequence for validation is single: year-over-year growth of tool queries in the contaminated window should not be believed.
+
+The pipeline responds with:
+
+1. `UP`/`DOWN` only when `yoy_pre` (the clean year over the year before) and `yoy` (last 12 vs previous 12) agree, otherwise `FLAT`.
+2. A robust series for `yoy` and `momentum`.
+3. Flags, none of which is a hard gate: `Q:spike`; `Q:step2025` (monthly mean of a recent 12-month window inside the contaminated period is at least `step_ratio` = 2.5x the monthly mean of the hump year); `Q:hump2024` (the contaminated year at least `hump_ratio` = 2x the clean year **and** the latest year below `hump_drop` = 0.6x the contaminated year).
+4. `demand_2023` - the clean base-year monthly level.
+5. In the score (S6): when growth versus the clean base year is at least 3x (or a `Q:step`/`Q:hump` flag is set) **and** Trends is `FLAT` or `DOWN`, the demand percentile uses `demand_2023` instead of the current volume, with flag `D:2023-base`. If Trends confirms growth (`UP`) or has no signal (`NA`), current volume is kept. The affected years (here 2023 as the clean base year, 2024 hump, 2025 step) are configuration values, not code.
+6. Growth on the shortlist is triangulated outside Google (Trends, brand anchors, Wordstat for the Russian module, app-store cohorts).
+
+### Why Google Trends brand anchors
+
+A single "X software" Trends series can flip a verdict. A category whose generic phrase peaked in one year looked flat or falling, while three of its leading brands were consistently rising. Searching for a *product category* by its generic name is itself a declining habit - buyers search for names. Brand anchors answer "is interest in the products of this category growing?", which is what the verdict is for. They are used symmetrically (they can also demote a generic `FLAT`), but they never lift a niche to `UP` on their own.
+
+### Why Trends stops at the clean window
+
+Trends data after the contamination window shows synchronous multi-fold rises across dozens of tool queries while informational queries fall. For validation the series is trusted only up to the clean window; later data can describe relative scale inside one batch only.
+
+---
+
+## 7. Gates and the score
+
+### 7.1 Quick-filter gates (S3)
+
+| Gate | Condition to pass | Notes |
+|---|---|---|
+| G0 data | at least 3 category queries with volume > 0 (`min_cat_nonzero`); ambiguity <= 25 % | otherwise fix queries first. A niche with a live category but no Google volume can be measured by stores instead |
+| G1 trend | verdict is not `DOWN` | flag `Q:spike` is shown separately (an unspiked demand still passes) |
+| G2 monopolist | `top1_brand_share` <= 0.50 (only evaluated with at least 2 brands) | calibration: a niche where one brand holds ~53 % of brand searches fails |
+| G3 platform | no free native feature closes the task (manual `platform_risk`; value 2 = veto, 1 = flag `P1:platform-partial`) | `platform_share` of nested queries <= 20 % is the S2 pre-screen |
+| G4 expertise | `expertise_flag` = 0 | medical, licensed legal, regulated finance. A veto, not part of any score |
+| G5 feasibility | at least 2 of 4 proxies (section 7.4) | applied at S6 only |
+| S5 supply | independent fragmentation test (section 5/S5), or `PASS:android`, or `PASS*` with manual estimate; `S5:unmeasured` is a failing flag | applied at S6 |
+
+Informational flags that do not block: `I:brand_share` (brand share above 0.7 - it fires in most niches because it measures navigational demand), `Q:*` flags, `D:2023-base`, `S5:android`, `S5:manual`, `E:churn`, `E:traction`.
+
+A niche failing any gate is **red**. A niche passing all gates is green or yellow: the verdict is a manual judgement recorded in the overrides file, with the score as support; the repo's default is a score of at least `verdict.green_min_score` (70) when no manual verdict is set.
+
+### 7.2 Final score (0-100)
+
+The score is computed on the shortlist cohort. **Percentiles are computed within segment** - B2C + prosumer on one side, B2B on the other - not over the whole cohort: volumes, number of players and top-grossing signal are not comparable between segments by construction (consumer query volumes are about ten times larger; top-grossing charts exist only for consumer apps). Computing percentiles over the pooled cohort made the median B2C score about 18 points higher than B2B - a property of the formula, not of the markets.
+
+`pct(x)` below means the share of the segment cohort whose value is <= x (0.5 when the value is missing).
+
+| Block | Weight | Components |
+|---|---|---|
+| Demand | 30 | `20 x pct(log10(demand_eff + 1))` + `10 x CPC-band factor` |
+| Growth | 20 | `10 x pct(yoy)` + `5 x pct(momentum)` + `5 x pct(cagr_3y)` |
+| Fragmentation | 25 | `10 x (1 - hhi_brand)` + `5 x pct(competition_index)` + `5 x pct(players)` + `5 x (1 - top3_share)` |
+| Deals | 15 | `15 x pct(3 x marketplace_with_revenue + 2 x fund_portfolio + launches_12m + accelerator + topgrossing_us)` |
+| Switching | 10 | `4 x self_serve` + `3 x monthly` + `1 x import_from` (neutral 0.5) + `2 x (2 - lock_in) / 2` |
+
+`demand_eff` is `demand_us` or, when contamination is detected, `demand_2023` (section 6). When the supply proxy is `NA`/`NA:proxy`, the `players` and `top3` points are replaced with neutral half-credit (2.5 + 2.5) and the niche is flagged `S5:manual`.
+
+**CPC band** (`cpc_band` in `score.yaml`, USD): B2C/prosumer 0.5-8.0; B2B 1.0-1000 (no upper penalty); Russian-market pool 0.15-3.5. Inside the band: factor 1.0; below it: `cpc_below` = 0.3 (not monetisable); above it: `cpc_above` = 0.6 (enterprise or regulated). A B2B niche with a $40-100 CPC is exactly where customers pay, so the upper penalty is disabled for B2B.
+
+**Trend multiplier:**
+
+```
+base  = demand + growth + fragmentation + deals + switching
+score = base x (1 + adj(trend_kp) + adj(trend_gt))     adj: UP = +0.05, DOWN = -0.05, else 0
+```
+
+`trend_kp` is the Keyword Planner verdict (S3), `trend_gt` the Trends verdict (S4, with brand merge).
+
+All weights are the pre-registered defaults. The tool intentionally contains no machine learning: percentiles and weights can be checked by hand.
+
+### 7.3 Why switching is not simply "good"
+
+Low lock-in makes it easy to enter and equally easy for customers to leave. The switching block rewards easy entry; the path-to-goal layer (next section) uses the ticket tier as a retention proxy so the two halves of the argument are both represented.
+
+### 7.4 Feasibility (0-4) for a small team
+
+1. `indie_exists` - a competitor with a team of at most 3 and revenue evidence.
+2. `stack_commodity` - no hardware, no two-sided marketplace, no proprietary data; buildable on APIs, LLMs, the web.
+3. `no_regulated_data` - no special-category medical, financial or personal data.
+4. `self_serve_motion` - at least 50 % of competitors sell without "contact sales".
+
+Passing needs at least 2 of 4. Feasibility is a manual input in the overrides file.
+
+### 7.5 Russian module
+
+The Russian-language branch is scored separately (dollars and roubles of CPC are not comparable, and Wordstat volumes use broad match): Russian demand = `max(anchor, max category phrase) + sum(brand volumes)`; growth from 36-month Wordstat dynamics (`yoy > +15 %` up, `< -15 %` down); concentration from the Russian App Store (manually cleaned) and Yandex brand shares. The B2B sub-module (software registry, public procurement, marketplace of a dominant SMB platform, job postings, Wordstat) uses its own pre-registered score: demand 35, growth 20, fragmentation 25, money 20, with a rule-based verdict (red when the top brand holds more than 70 % of brand searches at a total of at least 5,000; yellow at 50-70 % or below the cohort median; otherwise green). Its measurement traps (full-text search catching attachments; registry search by name missing brand-named products; fuzzy marketplace search) are listed in the module's `config/ru_b2b_traps.yaml`.
+
+---
+
+## 8. Path to goal (the ceiling layer)
+
+The score answers "is this a market a small team can enter?". It does not answer "can this become a business that meets my income goal?". The second layer is computed on top of the score and does not change it. It is stage `s6_ceiling`.
+
+### 8.1 From income goal to required revenue
+
+```
+required revenue / month = net income target / net margin           (default margin 0.40)
+required ARR             = 12 x revenue / month
+```
+
+The goal (`nf.yaml: goal`) is a net monthly profit range, a currency and a conversion rate to USD. Example, purely illustrative: a target of $10,000/month net at a 40 % margin needs $25,000/month revenue, or $300,000 ARR.
+
+### 8.2 Net revenue per payer (ARPU)
+
+- **B2C:** `ARPU = median monthly price x annual_discount (0.70) x (1 - store_fee (0.20))`. The discount converts a monthly list price to an average that accounts for annual plans (an annual plan is about seven monthly payments); the fee is a blend of 15 % and 30 % store commissions.
+- **B2B:** `ARPU = median entry price (GetApp) x (1 - payment_fee (0.06))`.
+
+Price falls back to the niche's `product` field, then to a default ($8 B2C, $50 B2B) if no price was measured; prices quoted per seat or per screen are flagged because ARPU is then understated.
+
+### 8.3 Payers needed vs payers in the niche
+
+```
+payers needed (low / high target) = required revenue / ARPU
+```
+
+Niche size in paying customers is estimated from the proxy that exists:
+
+| Segment | Proxy | Defaults |
+|---|---|---|
+| B2C | `ratings/month (App Store) x installs_per_rating_ios x android_multiplier x install_to_paid x paid_lifetime_months` | 50 x 2.0 x 3 % x 8 months |
+| B2B (directory) | `directory reviews x customers_per_review` | 30 customers per review (Shopify apps: 15) |
+| B2B, no directory category | `monthly category searches x 12 x search_to_customer` | 2 % (flagged "coarsest proxy") |
+| Any, manual | `size_override` with `size_note` in `config/overrides.yaml` | flagged as manual |
+
+Every multiplier is an order-of-magnitude estimate; read all shares as plus/minus a factor of two. Installs per rating and customers per review are the least certain inputs.
+
+### 8.4 Required share and position
+
+```
+share = payers needed / payers in niche
+```
+
+| Share needed | Position you must reach |
+|---|---|
+| > 20 % | **leader** |
+| 8 % - 20 % | top 3 |
+| 2 % - 8 % | top 10 |
+| <= 2 % | one of many (the goal is reachable without winning the niche; the question is only acquisition cost) |
+
+### 8.5 Ticket tier, founder fit and grades
+
+- **Ticket tier** by the median monthly price: `<50`, `50-250`, `>250` per month. Published retention benchmarks show a much lower gross retention for small tickets than for large ones, so the tier is a retention proxy.
+- **Founder fit** 0-3: a manual field per niche with a written reason. 0 = outside competence (reselling, licences, hardware: the path to the goal is not through a product); the default is `default_fit` in `nf.yaml`.
+- **Grades** (pre-registered):
+
+| Grade | Condition |
+|---|---|
+| **A** | share for the lower target <= 8 %, ticket tier 50-250 or >250, fit >= 2 |
+| **B** | share <= 20 % and (ticket tier >= $50 or fit >= 2) |
+| **B-** | share <= 20 %, but ticket < $50 and fit < 2 |
+| **C** | share > 20 % (needs to be the leader) or fit = 0 |
+| `?` / `-` | size unknown / niche explicitly excluded |
+
+(A niche that clears `a_max_share` but fails the ticket or fit condition falls through to B or B-.) Typical outcome of the grading: consumer apps priced $5-15/month land in B- (reaching the goal means being a top-3 to top-10 app in a mid-size niche, which is a race for acquisition cost, not for product), while grade A is dominated by B2B niches at $50-250/month that need a few hundred to a few thousand customers and where being "one of many" is enough.
+
+The tool also carries an access flag (`ru_access`-style: can the revenue be collected without a foreign legal structure). It is not part of the grade and is meaningful only for users in jurisdictions where payment access is a constraint.
+
+---
+
+## 9. Buyer voice rules
+
+S10 listens to what buyers say about existing products, at scale, using a public Reddit archive (Arctic Shift mirror) because the official Reddit API requires approval for new applications.
+
+**Collection.** Each niche maps to native subreddits and larger general subreddits (`config/reddit_terms.yaml`). The archive's full-text search and aggregates time out on medium and large subreddits (HTTP 422), while date-ordered listing is fast, so subreddits are exported by date listing and terms are matched locally. Native subreddits (up to ~70,000 posts) are taken whole for the recent years plus the last 12 months of comments; larger ones are limited to a capped number of pages of matched posts plus the comment threads under them (threads under "which app do you use?" are the densest buyer voice).
+
+**Matching.** Brands are matched at word boundaries and not after `/` (otherwise "liftin" matches "lifting" and "r/loseit" counts as an app).
+
+**LLM classification.** A sample per niche, tiered: (1) matched niche terms **and** an intent marker (question, "looking for", "alternative", "switched", price), (2) matched terms, (3) marker only, (4) random. Without tiers, about three quarters of documents turn out to be not about software. Each item gets an intent (including `off_topic`), pains and themes; shares are computed over software-related documents only. A niche needs at least 300 documents and at least 60 software-related ones, otherwise it is "quiet" and Reddit is not informative.
+
+**Verdict rule** (not a score; `reddit_verdict()`):
+
+| Verdict | Condition |
+|---|---|
+| Satisfied | praise >= 25 % and greater than the share of "which one should I use" |
+| **Seeking** (green) | dissatisfaction = complaints + switching + price >= 20 % **and** top-1 brand share of conversation <= 50 % |
+| Leader | dissatisfaction >= 20 %, but one product dominates the conversation (> 50 %) |
+| Seeking but satisfied | "which one" share >= 25 %, dissatisfaction < 20 % - buyers compare, they do not flee |
+| Weak | everything else |
+| Quiet | too few documents |
+
+The rule was tightened once: a first version required only "in motion" (seeking + complaints + switching + price >= 30 %) and turned about three quarters of niches green - a rule that passes almost everything is not a filter. Requiring actual **dissatisfaction** is what makes green informative.
+
+**Trend of discussion** is computed only for native subreddits and only where the export did not hit the page limit; otherwise the series would be distorted.
+
+**Seller-side voice** (optional): the same machinery over seller/builder communities extracts role, monetisation model, prices, client counts, outcome and obstacles - useful to see how others sell into a niche, not whether buyers want it.
+
+**Biases to remember:** Reddit skews US and technical; it lags new categories; LLM themes and quotes are not hand-validated.
+
+---
+
+## 10. What the pipeline proves and what it cannot
+
+### It supports
+
+- Where demand exists in search and in app stores, and whether it is rising on more than one independent source.
+- Where supply is fragmented by an independent signal, and where one product dominates.
+- Which niches are crowded with new entrants and which have survivors.
+- Whether the goal is reachable without winning the niche, as an order-of-magnitude statement.
+- Which trap-ridden numbers to ignore (contaminated history, homonyms, calendar artefacts).
+
+### It cannot prove
+
+| Not covered | Consequence |
+|---|---|
+| **Customer conversations.** No interviews, no willingness-to-pay test, no evidence of a specific buyer's pain | A green niche has a market; it does not have *your* customer. Reddit voice is a weak, biased substitute |
+| **Customer-acquisition cost.** The path-to-goal layer says how many payers you need, not what each costs. Keyword Planner CPC is the only price signal | The most likely reason a "reachable" niche fails is that acquisition costs more than revenue per customer |
+| **True market size.** Sizes are proxies (ratings x multipliers, reviews x multipliers, searches x conversion), accurate to about a factor of two at best; some niche sizes are manual estimates | Do not quote a niche size to anyone as a fact |
+| **Revenue of competitors.** Only listings and top-grossing positions are visible | You cannot see unit economics |
+| **Quality of competitors and of your product.** The tool does not use the product at all | A fragmented market can be fragmented because every product is bad - or because none can retain users |
+| **Platform response.** Platform risk is a manual call, and by construction the tool is blind to categories where a new leader forms quickly | New categories with an early leader fail the monopolist gates (the pipeline sees mature fragmented markets, not young ones) |
+| **Anything after the clean window.** Recent growth in tool queries cannot be confirmed from search; app-store snapshots and cohorts are the only fresh signals | Re-run snapshots a month later; do not trust recent year-over-year in Keyword Planner |
+| **B2B in search.** Search barely shows B2B demand | B2B verdicts rest more on directories, reviews and brand-anchored trends than on volume |
+| **Legal, tax and payment feasibility** for a specific founder | Outside scope |
+
+The honest reading of the output: "a niche that passes is a *candidate worth interviewing about*", not "a niche worth building in".
+
+---
+
+## 11. Recommended validation after screening
+
+Screening is the cheap part. The following steps are suggested, in increasing cost; stop at the first that kills the idea.
+
+1. **Dependencies and access.** Confirm you can charge customers in this niche through the relevant channel (app-store payouts, payment processor, telephony or data APIs you need, regulatory registrations).
+2. **Market size by hand.** Re-estimate the niche from the vendors' own pages (customer counts, pricing pages, case studies) and compare with the proxy in the passport; any manual estimate in the output is the first to verify.
+3. **Competitors and channels.** Use the top 5 players for a week: pricing, onboarding, reviews of 1-2 stars (app-store RSS, directory reviews), where each one acquires customers (SEO, ads, marketplaces, partners). Check that the SERP is not owned by the leaders.
+4. **Unit economics.** A back-of-envelope model: ARPU from section 8, retention by ticket tier, acquisition cost from paid search at the observed CPC and a realistic conversion rate, and the cost of serving a customer (API, telephony, support). The required number of new customers per month to hit the goal follows directly.
+5. **Customer interviews and a landing page.** 10-20 conversations with people in the segment; a landing page with a price and a call to action; look for willingness to pay, not agreement.
+6. **One-page spec, then MVP.** Only after steps 1-5 survive.
+
+Re-run S9 snapshots after 30 days to see who is actually growing, and re-run the pipeline monthly from cache to see whether the shortlist is moving.

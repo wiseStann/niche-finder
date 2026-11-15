@@ -1,0 +1,537 @@
+# Search queries for the vertical SMB niches (section I of niches.yaml). Key = niche id.
+# Fields: q = query text; i = intent (category | problem | brand | info);
+# anchor: true marks the one anchor query per language (used for trend checks and ambiguity checks);
+# b = brand name for brand queries.
+
+tattoo-pmu-studios:
+  en:
+    - {q: "tattoo studio software", i: category, anchor: true}
+    - {q: "tattoo shop management software", i: category}
+    - {q: "tattoo booking app", i: category}
+    - {q: "tattoo consent form app", i: category}
+    - {q: "tattoo appointment scheduling software", i: category}
+    - {q: "pmu consent form software", i: category}
+    - {q: "tattoo consent form template", i: problem}
+    - {q: "how to take deposits for tattoo appointments", i: problem}
+    - {q: "inkzup", i: brand, b: Inkzup}
+    - {q: "tattoo pro software", i: brand, b: "Tattoo Pro"}
+    - {q: "mango tattoo software", i: brand, b: "Mango Tattoo"}
+    - {q: "pmu sign", i: brand, b: "PMU Sign"}
+
+pet-care-facilities:
+  en:
+    - {q: "dog daycare software", i: category, anchor: true}
+    - {q: "pet boarding software", i: category}
+    - {q: "dog grooming software", i: category}
+    - {q: "kennel management software", i: category}
+    - {q: "pet grooming booking app", i: category}
+    - {q: "dog daycare booking system", i: category}
+    - {q: "how to manage a dog daycare", i: problem}
+    - {q: "dog boarding intake form template", i: problem}
+    - {q: "gingr", i: brand, b: Gingr}
+    - {q: "petexec", i: brand, b: PetExec}
+    - {q: "moego", i: brand, b: MoeGo}
+    - {q: "pawfinity", i: brand, b: Pawfinity}
+
+gym-martial-arts-studios:
+  en:
+    - {q: "martial arts school software", i: category, anchor: true}
+    - {q: "gym management software", i: category}
+    - {q: "martial arts gym management software", i: category}
+    - {q: "crossfit gym software", i: category}
+    - {q: "yoga studio software", i: category}
+    - {q: "fitness studio management software", i: category}
+    - {q: "how to manage gym memberships", i: problem}
+    - {q: "gym membership tracking spreadsheet", i: problem}
+    - {q: "zen planner", i: brand, b: "Zen Planner"}
+    - {q: "gymdesk", i: brand, b: GymDesk}
+    - {q: "kicksite", i: brand, b: Kicksite}
+    - {q: "glofox", i: brand, b: Glofox}
+    - {q: "mindbody software", i: brand, b: Mindbody}
+  ru:
+    - {q: "программа для фитнес клуба", i: category, anchor: true}
+    - {q: "crm для фитнес студии", i: category}
+    - {q: "crm для секции единоборств", i: category}
+    - {q: "учет абонементов фитнес", i: problem}
+    - {q: "1с фитнес клуб", i: brand, b: "1С:Фитнес клуб"}
+    - {q: "gym team", i: brand, b: "Gym Team"}
+
+personal-trainers-coaching:
+  en:
+    - {q: "personal trainer software", i: category, anchor: true}
+    - {q: "online coaching software for personal trainers", i: category}
+    - {q: "personal training app for trainers", i: category}
+    - {q: "fitness coaching app", i: category}
+    - {q: "workout program builder for trainers", i: category}
+    - {q: "how to sell online personal training", i: problem}
+    - {q: "personal trainer client tracking spreadsheet", i: problem}
+    - {q: "trainerize", i: brand, b: Trainerize}
+    - {q: "truecoach", i: brand, b: TrueCoach}
+    - {q: "everfit", i: brand, b: Everfit}
+    - {q: "pt distinction", i: brand, b: "PT Distinction"}
+  ru:
+    - {q: "приложение для фитнес тренера", i: category, anchor: true}
+    - {q: "crm для тренера", i: category}
+    - {q: "программа для онлайн тренера", i: category}
+    - {q: "как вести клиентов тренеру", i: problem}
+    - {q: "7coach", i: brand, b: 7Coach}
+    - {q: "fitlinkpro", i: brand, b: FitLinkPro}
+
+kids-classes-camps:
+  en:
+    - {q: "class registration software", i: category, anchor: true}
+    - {q: "dance studio software", i: category}
+    - {q: "summer camp registration software", i: category}
+    - {q: "after school program software", i: category}
+    - {q: "kids activity booking software", i: category}
+    - {q: "camp management software", i: category}
+    - {q: "how to collect payments for kids classes", i: problem}
+    - {q: "class registration form template", i: problem}
+    - {q: "sawyer tools", i: brand, b: Sawyer}
+    - {q: "jackrabbit dance", i: brand, b: Jackrabbit}
+    - {q: "pike13", i: brand, b: Pike13}
+    - {q: "campminder", i: brand, b: CampMinder}
+
+tutoring-language-schools:
+  en:
+    - {q: "tutoring business software", i: category, anchor: true}
+    - {q: "language school management software", i: category}
+    - {q: "tutor scheduling software", i: category}
+    - {q: "learning center management software", i: category}
+    - {q: "tutoring center software", i: category}
+    - {q: "how to manage tutoring clients", i: problem}
+    - {q: "tutoring invoice template", i: problem}
+    - {q: "teachworks", i: brand, b: Teachworks}
+    - {q: "tutorbird", i: brand, b: TutorBird}
+    - {q: "oases online", i: brand, b: Oases}
+    - {q: "teach n go", i: brand, b: "Teach 'n Go"}
+  ru:
+    - {q: "crm для языковой школы", i: category, anchor: true}
+    - {q: "программа для учебного центра", i: category}
+    - {q: "crm для репетитора", i: category}
+    - {q: "crm для детского центра", i: category}
+    - {q: "учет учеников и оплат", i: problem}
+    - {q: "hollihop", i: brand, b: Hollihop}
+    - {q: "мой класс crm", i: brand, b: "Мой Класс"}
+
+salon-beauty-booking:
+  en:
+    - {q: "salon booking software", i: category, anchor: true}
+    - {q: "salon scheduling app", i: category}
+    - {q: "booking app for hair stylists", i: category}
+    - {q: "nail salon software", i: category}
+    - {q: "beauty salon management software", i: category}
+    - {q: "lash tech booking app", i: category}
+    - {q: "how to take online bookings for salon", i: problem}
+    - {q: "salon client card template", i: problem}
+    - {q: "fresha", i: brand, b: Fresha}
+    - {q: "booksy", i: brand, b: Booksy}
+    - {q: "vagaro", i: brand, b: Vagaro}
+    - {q: "glossgenius", i: brand, b: GlossGenius}
+  ru:
+    - {q: "онлайн запись для салона красоты", i: category, anchor: true}
+    - {q: "программа для салона красоты", i: category}
+    - {q: "приложение для записи клиентов", i: category}
+    - {q: "crm для мастера маникюра", i: category}
+    - {q: "журнал записи клиентов", i: problem}
+    - {q: "yclients", i: brand, b: YCLIENTS}
+    - {q: "dikidi", i: brand, b: DIKIDI}
+    - {q: "арбуз запись клиентов", i: brand, b: Арбуз}
+
+home-bakers-cake-makers:
+  en:
+    - {q: "home bakery software", i: category, anchor: true}
+    - {q: "cake business app", i: category}
+    - {q: "cake order management app", i: category}
+    - {q: "bakery pricing calculator app", i: category}
+    - {q: "cottage food business app", i: category}
+    - {q: "how to price cakes for home bakery", i: problem}
+    - {q: "cake order form template", i: problem}
+    - {q: "bakesy", i: brand, b: Bakesy}
+    - {q: "cakeboss", i: brand, b: CakeBoss}
+    - {q: "bake diary", i: brand, b: BakeDiary}
+  ru:
+    - {q: "приложение для кондитера", i: category, anchor: true}
+    - {q: "калькулятор себестоимости тортов", i: category}
+    - {q: "учет заказов кондитера", i: category}
+    - {q: "как рассчитать стоимость торта", i: problem}
+    - {q: "cakegram", i: brand, b: Cakegram}
+    - {q: "cake wizard", i: brand, b: "Cake Wizard"}
+
+wedding-event-pros-crm:
+  en:
+    - {q: "crm for photographers", i: category, anchor: true}
+    - {q: "wedding planner software", i: category}
+    - {q: "photography business management software", i: category}
+    - {q: "crm for event planners", i: category}
+    - {q: "client management software for creatives", i: category}
+    - {q: "photography contract template", i: problem}
+    - {q: "how to send invoices as a wedding photographer", i: problem}
+    - {q: "honeybook", i: brand, b: HoneyBook}
+    - {q: "dubsado", i: brand, b: Dubsado}
+    - {q: "17hats", i: brand, b: "17hats"}
+    - {q: "tave", i: brand, b: Táve}
+    - {q: "studio ninja", i: brand, b: "Studio Ninja"}
+
+real-estate-photographers:
+  en:
+    - {q: "real estate photography software", i: category, anchor: true}
+    - {q: "real estate photography delivery platform", i: category}
+    - {q: "real estate photo editing service", i: category}
+    - {q: "real estate media scheduling software", i: category}
+    - {q: "property listing video maker", i: category}
+    - {q: "how to start a real estate photography business", i: problem}
+    - {q: "real estate photography pricing", i: problem}
+    - {q: "aryeo", i: brand, b: Aryeo}
+    - {q: "spiro media", i: brand, b: Spiro}
+    - {q: "hdphotohub", i: brand, b: HDPhotoHub}
+    - {q: "boxbrownie", i: brand, b: BoxBrownie}
+
+interior-designers-pm:
+  en:
+    - {q: "interior design project management software", i: category, anchor: true}
+    - {q: "interior design business software", i: category}
+    - {q: "interior design procurement software", i: category}
+    - {q: "interior design client portal", i: category}
+    - {q: "interior design specification software", i: category}
+    - {q: "interior design proposal template", i: problem}
+    - {q: "how to manage interior design projects", i: problem}
+    - {q: "houzz pro", i: brand, b: "Houzz Pro"}
+    - {q: "mydoma studio", i: brand, b: Mydoma}
+    - {q: "designfiles", i: brand, b: DesignFiles}
+    - {q: "studio designer software", i: brand, b: "Studio Designer"}
+    - {q: "programa design", i: brand, b: Programa}
+  ru:
+    - {q: "программа для дизайнера интерьера", i: category, anchor: true}
+    - {q: "crm для дизайн студии", i: category}
+    - {q: "спецификация для дизайн проекта", i: problem}
+    - {q: "как вести проекты дизайнеру интерьера", i: problem}
+
+event-equipment-rental:
+  en:
+    - {q: "equipment rental software", i: category, anchor: true}
+    - {q: "event rental software", i: category}
+    - {q: "party rental software", i: category}
+    - {q: "rental inventory management software", i: category}
+    - {q: "rental booking software", i: category}
+    - {q: "how to track rental inventory", i: problem}
+    - {q: "rental agreement template equipment", i: problem}
+    - {q: "booqable", i: brand, b: Booqable}
+    - {q: "goodshuffle pro", i: brand, b: "Goodshuffle Pro"}
+    - {q: "rentman", i: brand, b: Rentman}
+    - {q: "point of rental", i: brand, b: "Point of Rental"}
+  ru:
+    - {q: "программа для проката оборудования", i: category, anchor: true}
+    - {q: "учет проката", i: category}
+    - {q: "crm для аренды оборудования", i: category}
+    - {q: "учет аренды оборудования excel", i: problem}
+    - {q: "rentprog", i: brand, b: RentProg}
+
+sign-print-shops:
+  en:
+    - {q: "print shop management software", i: category, anchor: true}
+    - {q: "sign shop software", i: category}
+    - {q: "screen printing shop software", i: category}
+    - {q: "print estimating software", i: category}
+    - {q: "print shop order management", i: category}
+    - {q: "how to quote print jobs", i: problem}
+    - {q: "print shop pricing calculator", i: problem}
+    - {q: "shopvox", i: brand, b: shopVOX}
+    - {q: "printavo", i: brand, b: Printavo}
+    - {q: "ordant", i: brand, b: Ordant}
+    - {q: "cyrious", i: brand, b: Cyrious}
+  ru:
+    - {q: "программа для типографии", i: category, anchor: true}
+    - {q: "программа для рекламного агентства расчет заказов", i: category}
+    - {q: "учет заказов типографии", i: category}
+    - {q: "калькулятор стоимости печати", i: problem}
+
+auto-repair-shops:
+  en:
+    - {q: "auto repair shop software", i: category, anchor: true}
+    - {q: "auto shop management software", i: category}
+    - {q: "mechanic shop software", i: category}
+    - {q: "auto body shop software", i: category}
+    - {q: "auto repair invoice software", i: category}
+    - {q: "auto repair estimate template", i: problem}
+    - {q: "how to manage an auto repair shop", i: problem}
+    - {q: "shopmonkey", i: brand, b: Shopmonkey}
+    - {q: "tekmetric", i: brand, b: Tekmetric}
+    - {q: "autoleap", i: brand, b: AutoLeap}
+    - {q: "mitchell 1", i: brand, b: "Mitchell 1"}
+  ru:
+    - {q: "программа для автосервиса", i: category, anchor: true}
+    - {q: "crm для автосервиса", i: category}
+    - {q: "учет заказ нарядов автосервис", i: category}
+    - {q: "заказ наряд автосервис образец", i: problem}
+    - {q: "трицепс автосервис", i: brand, b: Трицепс}
+    - {q: "автодилер программа", i: brand, b: Автодилер}
+
+home-inspectors-reports:
+  en:
+    - {q: "home inspection software", i: category, anchor: true}
+    - {q: "home inspection report software", i: category}
+    - {q: "inspection app for inspectors", i: category}
+    - {q: "property inspection report app", i: category}
+    - {q: "field inspection app", i: category}
+    - {q: "home inspection report template", i: problem}
+    - {q: "how to write a home inspection report", i: problem}
+    - {q: "spectora", i: brand, b: Spectora}
+    - {q: "homegauge", i: brand, b: HomeGauge}
+    - {q: "inspectify", i: brand, b: Inspectify}
+  ru:
+    - {q: "приложение для приемки квартиры", i: category, anchor: true}
+    - {q: "программа для технического обследования зданий", i: category}
+    - {q: "акт осмотра квартиры приложение", i: category}
+    - {q: "чек лист приемки квартиры", i: problem}
+    - {q: "акт приема передачи квартиры с дефектами образец", i: problem}
+
+str-hosts-tools:
+  en:
+    - {q: "airbnb management software", i: category, anchor: true}
+    - {q: "vacation rental software", i: category}
+    - {q: "short term rental software", i: category}
+    - {q: "airbnb pricing tool", i: category}
+    - {q: "airbnb automation tools", i: category}
+    - {q: "airbnb cleaning scheduling app", i: category}
+    - {q: "how to automate airbnb messages", i: problem}
+    - {q: "how to rank higher on airbnb", i: problem}
+    - {q: "hostaway", i: brand, b: Hostaway}
+    - {q: "hospitable", i: brand, b: Hospitable}
+    - {q: "pricelabs", i: brand, b: PriceLabs}
+    - {q: "guesty", i: brand, b: Guesty}
+    - {q: "rankbreeze", i: brand, b: Rankbreeze}
+  ru:
+    - {q: "программа для посуточной аренды", i: category, anchor: true}
+    - {q: "channel manager для посуточной аренды", i: category}
+    - {q: "шахматка бронирования", i: category}
+    - {q: "как автоматизировать посуточную аренду", i: problem}
+    - {q: "realtycalendar", i: brand, b: RealtyCalendar}
+    - {q: "bnovo", i: brand, b: Bnovo}
+
+small-landlords-pm:
+  en:
+    - {q: "landlord software", i: category, anchor: true}
+    - {q: "property management software for small landlords", i: category}
+    - {q: "rent collection app", i: category}
+    - {q: "tenant screening service", i: category}
+    - {q: "rental property management app", i: category}
+    - {q: "landlord app", i: category}
+    - {q: "how to collect rent online", i: problem}
+    - {q: "rental property spreadsheet", i: problem}
+    - {q: "tenantcloud", i: brand, b: TenantCloud}
+    - {q: "rentredi", i: brand, b: RentRedi}
+    - {q: "avail landlord", i: brand, b: Avail}
+    - {q: "buildium", i: brand, b: Buildium}
+  ru:
+    - {q: "программа для учета аренды квартир", i: category, anchor: true}
+    - {q: "приложение для арендодателя", i: category}
+    - {q: "учет арендаторов и платежей", i: category}
+    - {q: "программа для управляющей компании", i: category}
+    - {q: "как вести учет сдачи квартир в аренду", i: problem}
+    - {q: "аренда про приложение", i: brand, b: "Аренда Про"}
+    - {q: "doma ai", i: brand, b: "Doma.ai"}
+
+small-nonprofits-donor-crm:
+  en:
+    - {q: "donor management software", i: category, anchor: true}
+    - {q: "nonprofit crm", i: category}
+    - {q: "fundraising software for small nonprofits", i: category}
+    - {q: "donor database software", i: category}
+    - {q: "nonprofit donation platform", i: category}
+    - {q: "volunteer management software", i: category}
+    - {q: "how to track donors in a spreadsheet", i: problem}
+    - {q: "donor thank you letter template", i: problem}
+    - {q: "bloomerang", i: brand, b: Bloomerang}
+    - {q: "little green light", i: brand, b: "Little Green Light"}
+    - {q: "givebutter", i: brand, b: Givebutter}
+    - {q: "zeffy", i: brand, b: Zeffy}
+    - {q: "kindful", i: brand, b: Kindful}
+
+churches-tools:
+  en:
+    - {q: "church presentation software", i: category, anchor: true}
+    - {q: "church management software", i: category}
+    - {q: "church live translation", i: category}
+    - {q: "church giving app", i: category}
+    - {q: "worship planning software", i: category}
+    - {q: "church app builder", i: category}
+    - {q: "how to translate church service live", i: problem}
+    - {q: "church bulletin template", i: problem}
+    - {q: "planning center", i: brand, b: "Planning Center"}
+    - {q: "propresenter", i: brand, b: ProPresenter}
+    - {q: "proclaim software", i: brand, b: Proclaim}
+    - {q: "tithely", i: brand, b: "Tithe.ly"}
+
+subcontractor-takeoff-estimating:
+  en:
+    - {q: "takeoff software", i: category, anchor: true}
+    - {q: "construction estimating software", i: category}
+    - {q: "electrical estimating software", i: category}
+    - {q: "concrete takeoff software", i: category}
+    - {q: "ai takeoff software", i: category}
+    - {q: "roofing estimating software", i: category}
+    - {q: "how to do a material takeoff", i: problem}
+    - {q: "construction estimate template excel", i: problem}
+    - {q: "stack takeoff", i: brand, b: STACK}
+    - {q: "planswift", i: brand, b: PlanSwift}
+    - {q: "togal ai", i: brand, b: "Togal.AI"}
+    - {q: "kreo", i: brand, b: Kreo}
+    - {q: "bluebeam", i: brand, b: Bluebeam}
+
+small-trucking-fleets:
+  en:
+    - {q: "trucking software for small fleets", i: category, anchor: true}
+    - {q: "trucking dispatch software", i: category}
+    - {q: "owner operator trucking software", i: category}
+    - {q: "eld device for trucks", i: category}
+    - {q: "trucking accounting software", i: category}
+    - {q: "load board app", i: category}
+    - {q: "how to start a trucking company", i: problem}
+    - {q: "trucking invoice template", i: problem}
+    - {q: "motive eld", i: brand, b: Motive}
+    - {q: "trucklogics", i: brand, b: TruckLogics}
+    - {q: "axon trucking software", i: brand, b: Axon}
+    - {q: "truckingoffice", i: brand, b: TruckingOffice}
+  ru:
+    - {q: "программа для грузоперевозок", i: category, anchor: true}
+    - {q: "crm для транспортной компании", i: category}
+    - {q: "учет рейсов грузоперевозки", i: category}
+    - {q: "тахограф контроль", i: category}
+    - {q: "как найти груз для перевозки", i: problem}
+    - {q: "ати су", i: brand, b: "ATI.SU"}
+    - {q: "трак радар", i: brand, b: "Трак Радар"}
+
+home-services-field-ops:
+  en:
+    - {q: "field service software for small business", i: category, anchor: true}
+    - {q: "plumbing business software", i: category}
+    - {q: "cleaning business software", i: category}
+    - {q: "lawn care business software", i: category}
+    - {q: "hvac software for small business", i: category}
+    - {q: "pest control software", i: category}
+    - {q: "ai answering service for contractors", i: category}
+    - {q: "how to schedule jobs for a service business", i: problem}
+    - {q: "cleaning business invoice template", i: problem}
+    - {q: "jobber", i: brand, b: Jobber}
+    - {q: "housecall pro", i: brand, b: "Housecall Pro"}
+    - {q: "servicetitan", i: brand, b: ServiceTitan}
+    - {q: "workiz", i: brand, b: Workiz}
+    - {q: "fieldpulse", i: brand, b: FieldPulse}
+  ru:
+    - {q: "программа для клининговой компании", i: category, anchor: true}
+    - {q: "crm для выездного сервиса", i: category}
+    - {q: "программа для сервисной службы заявки", i: category}
+    - {q: "crm для сантехников", i: category}
+    - {q: "учет заявок мастеров", i: problem}
+    - {q: "planado", i: brand, b: Planado}
+
+staffing-agencies-ats:
+  en:
+    - {q: "recruiting software for staffing agencies", i: category, anchor: true}
+    - {q: "staffing agency software", i: category}
+    - {q: "recruitment crm", i: category}
+    - {q: "applicant tracking system for recruiters", i: category}
+    - {q: "ai sourcing tool for recruiters", i: category}
+    - {q: "video interviewing software", i: category}
+    - {q: "how to start a staffing agency", i: problem}
+    - {q: "candidate tracking spreadsheet", i: problem}
+    - {q: "bullhorn", i: brand, b: Bullhorn}
+    - {q: "recruit crm", i: brand, b: "Recruit CRM"}
+    - {q: "manatal", i: brand, b: Manatal}
+    - {q: "loxo", i: brand, b: Loxo}
+    - {q: "vincere", i: brand, b: Vincere}
+  ru:
+    - {q: "crm для кадрового агентства", i: category, anchor: true}
+    - {q: "программа для рекрутера", i: category}
+    - {q: "ats система", i: category}
+    - {q: "система подбора персонала", i: category}
+    - {q: "как вести базу кандидатов", i: problem}
+    - {q: "huntflow", i: brand, b: Huntflow}
+    - {q: "e-staff", i: brand, b: "E-Staff"}
+    - {q: "поток рекрутинг", i: brand, b: Поток}
+
+distributors-order-entry-ai:
+  en:
+    - {q: "order entry automation software", i: category, anchor: true}
+    - {q: "ai order processing for distributors", i: category}
+    - {q: "sales order automation", i: category}
+    - {q: "purchase order automation software", i: category}
+    - {q: "email order to erp automation", i: category}
+    - {q: "wholesale distribution software", i: category}
+    - {q: "how to automate order entry from emails", i: problem}
+    - {q: "manual order entry errors", i: problem}
+    - {q: "comena", i: brand, b: Comena}
+    - {q: "mercura", i: brand, b: Mercura}
+    - {q: "pepper app wholesale", i: brand, b: Pepper}
+    - {q: "cut and dry app", i: brand, b: "Cut+Dry"}
+    - {q: "choco app", i: brand, b: Choco}
+
+accounting-practices-client-portal:
+  en:
+    - {q: "accounting practice management software", i: category, anchor: true}
+    - {q: "client portal for accountants", i: category}
+    - {q: "document collection software for accountants", i: category}
+    - {q: "workflow software for accounting firms", i: category}
+    - {q: "bookkeeping practice management software", i: category}
+    - {q: "tax practice management software", i: category}
+    - {q: "how to collect documents from clients", i: problem}
+    - {q: "accounting firm client onboarding checklist", i: problem}
+    - {q: "karbon", i: brand, b: Karbon}
+    - {q: "taxdome", i: brand, b: TaxDome}
+    - {q: "canopy tax", i: brand, b: Canopy}
+    - {q: "client hub", i: brand, b: "Client Hub"}
+    - {q: "financial cents", i: brand, b: "Financial Cents"}
+  ru:
+    - {q: "программа для бухгалтерской фирмы", i: category, anchor: true}
+    - {q: "crm для бухгалтерских услуг", i: category}
+    - {q: "личный кабинет клиента бухгалтерия", i: category}
+    - {q: "сбор документов от клиентов бухгалтерия", i: problem}
+    - {q: "как вести клиентов бухгалтеру аутсорсеру", i: problem}
+
+law-firm-intake:
+  en:
+    - {q: "law firm intake software", i: category, anchor: true}
+    - {q: "legal crm", i: category}
+    - {q: "client intake software for lawyers", i: category}
+    - {q: "law firm crm software", i: category}
+    - {q: "legal intake forms online", i: category}
+    - {q: "ai receptionist for law firms", i: category}
+    - {q: "client intake form template law firm", i: problem}
+    - {q: "how to get more clients as a lawyer", i: problem}
+    - {q: "lawmatics", i: brand, b: Lawmatics}
+    - {q: "clio grow", i: brand, b: "Clio Grow"}
+    - {q: "caseflood", i: brand, b: Caseflood}
+    - {q: "clientrock", i: brand, b: ClientRock}
+    - {q: "smith ai", i: brand, b: "Smith.ai"}
+
+ru-online-schools-experts:
+  ru:
+    - {q: "платформа для онлайн школы", i: category, anchor: true}
+    - {q: "платформа для продажи курсов", i: category}
+    - {q: "сервис для создания онлайн курсов", i: category}
+    - {q: "lms для онлайн школы", i: category}
+    - {q: "автоворонка для онлайн школы", i: category}
+    - {q: "как создать онлайн курс и продавать", i: problem}
+    - {q: "как запустить онлайн школу", i: problem}
+    - {q: "геткурс", i: brand, b: GetCourse}
+    - {q: "getcourse", i: brand, b: GetCourse}
+    - {q: "zenclass", i: brand, b: Zenclass}
+    - {q: "skillspace", i: brand, b: Skillspace}
+    - {q: "антитренинги", i: brand, b: АнтиТренинги}
+    - {q: "prodamus", i: brand, b: Prodamus}
+
+airline-maritime-crew-tools:
+  en:
+    - {q: "crew roster app", i: category, anchor: true}
+    - {q: "flight attendant roster app", i: category}
+    - {q: "pilot logbook app", i: category}
+    - {q: "non rev flight app", i: category}
+    - {q: "roster to calendar app", i: category}
+    - {q: "seafarer app", i: category}
+    - {q: "how to sync crew roster with google calendar", i: problem}
+    - {q: "how to find non rev seats", i: problem}
+    - {q: "rosterbuster", i: brand, b: RosterBuster}
+    - {q: "crewlounge", i: brand, b: CrewLounge}
+    - {q: "stafftraveler", i: brand, b: StaffTraveler}
+    - {q: "staff airlines app", i: brand, b: "Staff Airlines"}

@@ -1,0 +1,112 @@
+# Reddit buyer voice (S10): per niche, where the audience lives and which phrases to look for.
+#   subs    subreddits of the niche audience (listed by date from the Arctic Shift archive).
+#   terms   phrases and brands matched locally in posts (title + selftext) and comments (body). Generic words
+#           ("app") do not go into API queries (the archive times out on them); they work as local markers.
+#   brands  subset of terms used for share of voice and the switching map. Put distinctive names first
+#           (not "nomad" in r/digitalnomad, not "abide" in r/Bible).
+# Keys starting with "_" are settings, not niches.
+_settings:
+  history_start: "2022-01-01"   # native subreddits: posts from this date (the 2022 trend base year is derived from it)
+  native_max_posts: 70000       # a subreddit with at most this many posts in total counts as native: everything is kept
+  recent_months: 12             # comments window (native) and posts window (big subreddits), ending at the run date
+
+tcg-sports-card-scanners:
+  subs: [PokemonTCG, baseballcards, sportscards, mtgfinance]
+  terms: [collectr, collx, ludex, "card ladder", "tcgplayer app", "scanner app", "scanning app", "collection app", "track my collection", "inventory app", "card scanner", "price app"]
+  brands: [collectr, collx, ludex, "card ladder", tcgplayer, "card dealer pro", "pokemon tcg pocket"]
+workout-log-trackers:
+  subs: [weightroom, Fitness, StrongLifts5x5, GYM]
+  terms: [hevy, "strong app", fitbod, jefit, gymverse, boostcamp, "workout app", "workout tracker", "lifting app", "log my workouts", "training app", "tracking app"]
+  brands: [hevy, fitbod, jefit, gymverse, boostcamp, "alpha progression", "strong app", "stronglifts app", liftin, "gym app"]
+personal-budgeting-apps:
+  subs: [ynab, personalfinance, budget, MonarchMoney, Frugal]
+  terms: [ynab, "monarch money", "copilot money", "rocket money", "mint app", "mint shutting", "mint alternative", "budgeting app", "budget app", "expense tracker", simplifi, "empower app", "every dollar", pocketguard, "actual budget"]
+  brands: [ynab, "monarch money", "copilot money", "rocket money", simplifi, pocketguard, "actual budget", goodbudget, everydollar, "every dollar", "mint app", mint, monarch, copilot, empower, quicken, fudget]
+ai-phone-receptionist-local:
+  subs: [smallbusiness, sweatystartup, Entrepreneur, Plumbing]
+  terms: ["ai receptionist", "answering service", "missed calls", "phone answering", "virtual receptionist", goodcall, "smith.ai", "rosie ai", "ai answer", "ai phone"]
+  brands: [goodcall, "smith.ai", "rosie ai", "slang.ai", dialzara, "ruby receptionist", answerconnect, "answer connect", "my ai front desk", "simple phones", rosie]
+recipe-manager-meal-planner:
+  subs: [MealPrepSunday, mealprep, EatCheapAndHealthy, Cooking, budgetfood]
+  terms: [paprika, recime, crouton, "samsung food", mealie, "recipe app", "meal planning app", "meal planner app", "grocery list app", "save recipes", "recipe manager", "meal plan app", "plan to eat", "anylist"]
+  brands: [paprika, recime, crouton, "samsung food", mealie, "plan to eat", anylist, cooklist, mealime, "eat this much"]
+calorie-counters-ai:
+  subs: [loseit, CICO, 1200isplenty, intermittentfasting]
+  terms: [myfitnesspal, "cal ai", yazio, cronometer, lifesum, "lose it app", "calorie app", "calorie counter", "tracking app", macrofactor, "fat secret", fatsecret, "snap a photo", "photo of food"]
+  brands: [myfitnesspal, "cal ai", yazio, cronometer, lifesum, macrofactor, fatsecret, "fat secret", "lose it app", loseit, mfp, "carbon diet"]
+reseller-crosslisting-scanners:
+  subs: [Flipping, poshmark, Mercari, Ebay, ThriftStoreHauls]
+  terms: [vendoo, "list perfectly", crosslist, flipwise, crossposting, "cross listing", "cross-listing", "inventory app", "listing app", "sold app", "scanner app", "scouting app"]
+  brands: [vendoo, "list perfectly", crosslist, flipwise, sellhound, primelister, "posher va", "closet assistant", thriftai, "ebay app"]
+travel-esim-apps:
+  subs: [eSIM, digitalnomad, travel, solotravel, JapanTravel, Europetravel]
+  terms: [esim, airalo, holafly, saily, ubigi, "nomad esim", roaming, "sim card", "data plan", "esim app"]
+  brands: [airalo, holafly, saily, ubigi, "nomad esim", yesim, alosim, mobimatter, jetpac, "esim.me", instabridge, gigsky, "sim local", simoptions, roamless, kolet]
+anglers-fishing-apps:
+  subs: [Fishing, bassfishing, FishingForBeginners, kayakfishing, flyfishing]
+  terms: [fishbrain, "fishing points", navionics, onx, "fishing app", "app for fishing", "fishing log", "catch log", "solunar", "fish finder app", "anglr"]
+  brands: [fishbrain, "fishing points", navionics, anglr, "fish rules", fishangler, "pro angler", onx, "deeper sonar", garmin]
+digital-wardrobe-outfit-planner:
+  subs: [femalefashionadvice, malefashionadvice, capsulewardrobe, minimalism, frugalmalefashion]
+  terms: [whering, indyx, acloset, "wardrobe app", "closet app", "outfit planner", "outfit app", "catalog my closet", stylebook, "digital closet", "digital wardrobe", "cladwell"]
+  brands: [whering, indyx, acloset, stylebook, cladwell, "smart closet", pureple, combyne, getwardrobe, openwardrobe, "save your wardrobe"]
+licence-exam-prep-apps:
+  subs: [driving, realtors, Trucking, CDL, Insurance]
+  terms: [zutobi, "dmv genie", "permit test", "practice test", "exam prep", "real estate exam", "cdl test", "study app", "prep app", "practice exam app", "aceable", "dmv app"]
+  brands: [zutobi, "dmv genie", aceable, "driving-tests.org", prepagent, "pocket prep", "cdl prep", "real estate exam prep", kaplan]
+gig-worker-mileage-tax:
+  subs: [doordash_drivers, uberdrivers, InstacartShoppers, couriersofreddit, lyftdrivers]
+  terms: [mileiq, everlance, driversnote, hurdlr, "solo app", "stride app", "mileage app", "track mileage", "mileage tracker", gridwise, "track my miles", "write off", "tax app"]
+  brands: [mileiq, everlance, driversnote, hurdlr, gridwise, triplog, "solo app", "stride app", "para app", "keeper tax", "quickbooks self"]
+shopify-upsell-bundles:
+  subs: [shopify, ecommerce, dropship, ShopifyeCommerce, Entrepreneur]
+  terms: [upsell, "bundle app", bundles, "cross sell", "post purchase", reconvert, kaching, selleasy, "aov", "frequently bought together", "cart drawer", "checkout upsell"]
+  brands: [reconvert, kaching, selleasy, bundler, "frequently bought together", "monster upsell", "candy rack", zipify, bogos, pumper, "essential upsell", "upsell wizard", rebuy, aftersell, carthook, vitals, honeycomb]
+dog-training-apps:
+  subs: [Dogtraining, puppy101, dogs, OpenDogTraining, reactivedogs]
+  terms: [dogo, woofz, puppr, goodpup, "training app", "dog app", "puppy app", "app for training", "clicker app", "trainer app", "online training", "zigzag"]
+  brands: [dogo, woofz, puppr, goodpup, zigzag, pupford, "spirit dog", spiritdog, fenzi, "susan garrett", petcube]
+invoice-estimate-mobile-apps:
+  subs: [smallbusiness, Contractor, freelance, Plumbing, electricians, HVAC, landscaping]
+  terms: ["invoice app", "invoicing app", "invoice simple", joist, "invoice fly", billdu, "estimate app", "estimating app", "wave invoice", freshbooks, "invoice software", "quote app", "invoice2go"]
+  brands: [joist, "invoice simple", "invoice fly", billdu, "invoice home", freshbooks, invoice2go, "zoho invoice", "square invoices", jobber, housecall, "hello bonsai", vcita, quickbooks, "wave accounting", "wave invoicing"]
+cookie-consent-gdpr-widgets:
+  subs: [gdpr, webdev, privacy, Wordpress, webflow, Squarespace]
+  terms: ["cookie banner", "cookie consent", "consent banner", cookiebot, cookieyes, complianz, iubenda, termly, "consent management", "cookie popup", "cookie notice", "gdpr banner"]
+  brands: [cookiebot, cookieyes, complianz, iubenda, termly, osano, usercentrics, onetrust, "cookie notice", "cookie script", cookiefirst, enzuzo, consentmo, pandectes]
+gym-martial-arts-studios:
+  subs: [martialarts, bjj, gymowners, personaltraining, CrossFit, Boxing]
+  terms: [mindbody, "zen planner", gymdesk, kicksite, glofox, pushpress, "gym software", "membership software", "gym management", wodify, "billing software", "gym app", "member app", "software for my gym"]
+  brands: [mindbody, "zen planner", gymdesk, kicksite, glofox, pushpress, wodify, clubready, "abc fitness", "abc ignite", "mariana tek", teamup, gymmaster, martialytics, "spark membership", "exercise.com", vagaro, trainerize]
+sobriety-quit-trackers:
+  subs: [stopdrinking, stopsmoking, leaves, alcoholicsanonymous, QuitVaping, stopgaming]
+  terms: ["i am sober", reframe, "sober time", quitzilla, "sobriety app", "quit app", "tracker app", "day counter", "smoke free app", "quit smoking app", "counter app", "sober app", "quit vaping app", "quitting app"]
+  brands: ["i am sober", "sober time", quitzilla, "reframe app", "smoke free app", quitnow, nomo, sunnyside, drinkcontrol, kwit, "quit genius", loosid, "sober grid", "recovery record", reframe]
+small-nonprofits-donor-crm:
+  subs: [nonprofit, Nonprofit_Jobs, fundraising, NonprofitLeaders]
+  terms: [bloomerang, "little green light", givebutter, zeffy, kindful, "donor management", "donor database", "crm", "neon one", donorperfect, "salesforce npsp", "donor software", "fundraising software", "donorbox"]
+  brands: [bloomerang, "little green light", givebutter, zeffy, kindful, "neon one", "neon crm", donorperfect, donorbox, "virtuous crm", "raiser's edge", "raisers edge", "network for good", bonterra, keela, civicrm, npsp, "monday.com", salesforce]
+faith-devotional-apps:
+  subs: [Christianity, Bible, Catholicism, TrueChristian, Christian]
+  terms: [hallow, youversion, "bible app", "bible chat", "abide app", "pray.com", glorify, "prayer app", "devotional app", "bible study app", "app for reading the bible", "logos app", "olive tree"]
+  brands: [hallow, youversion, "bible chat", "pray.com", glorify, "abide app", "dwell app", "olive tree", "bible gateway", "blue letter bible", "lectio 365", "echo prayer", superbook, "bible.is", accordance, iprayer, logos]
+astrology-human-design:
+  subs: [astrology, AskAstrologers, humandesign, astrologymemes]
+  terms: ["co-star", costar, "co star app", chani, "nebula app", "the pattern", "astrology app", "birth chart app", "human design app", "app for charts", "time passages", "astro-seek", "sanctuary app"]
+  brands: ["co-star", costar, "co star", chani, "nebula app", "the pattern app", timepassages, "time passages", "astro-seek", "astro seek", "sanctuary app", astromatrix, moonly, mybodygraph, "genetic matrix", astrofuture, nebula, "the pattern"]
+coin-antique-identifiers:
+  subs: [coins, Antiques, coincollecting, CRH, Silverbugs]
+  terms: [coinsnap, "coin identifier", "identifier app", "app to identify", numista, "curio app", "app says", "scanning app", "value app", "coin app", "pcgs app", "coinoscope", "numiis", "greysheet"]
+  brands: [coinsnap, numista, coinoscope, numiis, "curio app", pcgs, ngc, greysheet, "coin identifier", coinflation, "coin id"]
+indie-music-distribution-stems:
+  subs: [WeAreTheMusicMakers, musicproduction, musicmarketing, edmproduction, Songwriting]
+  terms: [distrokid, tunecore, unitedmasters, "cd baby", moises, "lalal", "stem separation", "vocal remover", "distribution", "ditto music", amuse, "landr distribution", "spotify for artists", "release my music"]
+  brands: [distrokid, tunecore, unitedmasters, "cd baby", cdbaby, moises, lalal, "ditto music", landr, symphonic, "too lost", toolost, "stem roller", "ultimate vocal remover", uvr, demucs, "izotope rx"]
+churches-tools:
+  subs: [pastors, churchtech, Reformed]
+  terms: ["planning center", propresenter, proclaim, "tithe.ly", breeze, pushpay, subsplash, "church management", "church software", chms, "church app", "giving platform", "online giving", "presentation software", "church website"]
+  brands: ["planning center", propresenter, "tithe.ly", tithely, pushpay, subsplash, "breeze chms", "church center", easyworship, mediashout, faithlife, "acs realm", ccb, churchtrac, aplos, givelify, elvanto, pewbeam, proclaim]
+golf-gps-handicap:
+  subs: [golf, GolfSwing, golftips]
+  terms: [18birdies, golfshot, hole19, swingu, thegrint, ghin, arccos, "golf app", "gps app", "rangefinder app", "handicap app", "scorecard app", "shot tracker", "golf watch"]
+  brands: [18birdies, golfshot, hole19, swingu, thegrint, "the grint", arccos, golflogix, "golf pad", golfpad, "shot scope", ghin, garmin, bushnell, "v1 golf", sportsbox, onform, "blue tees"]

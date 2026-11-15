@@ -1,0 +1,766 @@
+# Per-niche manual judgments (everything the data stages cannot measure). Keyed by niche id from niches.yaml.
+# A niche may be missing or have only some fields; defaults are in brackets.
+#
+#   platform_risk  0 - no free native / platform feature covers the task; 1 - partially covered; 2 - covered (gate G3: red).
+#   platform_note  one line: which platform feature, and what it leaves open.
+#   lock_in        0 - data is easy to export / leave; 1 - accumulated data or integrations; 2 - annual contracts + data.  [1]
+#   feas           feasibility for a small team, four 0/1 checks (gate G5: the sum must be >= 2):
+#                  indie_exists, stack_commodity, no_regulated_data, self_serve.
+#   feas_note      evidence for the feasibility checks (who already does it with a small team).
+#   supply_manual  for niches where the Capterra / App Store category is a weak proxy (gate S5 = NA): a short manual estimate
+#                  of who the players are. Presence of this field turns an unmeasured S5 gate into PASS*.
+#   lens           optional free text for the passport: distribution, what the next model release changes, switching cost,
+#                  regulation, repeatability, accumulation.
+#   fit            founder fit 0-3 for the path-to-goal grade [nf.yaml default_fit]: 3 - stack or domain transfer directly;
+#                  2 - same shape of product, experience shortens the path; 1 - ordinary app, learn everything; 0 - needs
+#                  physical work, licences or partnerships outside your competence (grade C).
+#   fit_note       one line of justification.
+#   size_override  payers in the niche (number), for niches with no App Store / Capterra / Shopify proxy, where the search proxy
+#                  understates the market by 10-100x. A manual estimate: verify against the players' own sites.
+#   size_note      where the estimate comes from.
+#   excluded       true - leave the niche out of the path-to-goal grading (grade "—").
+#   verdict        OPTIONAL manual verdict (green / yellow). Without it the verdict is automatic: gates failed -> red;
+#                  otherwise green when score >= nf.yaml verdict.green_min_score, else yellow. Gates always win.
+#   verdict_note   OPTIONAL text shown next to the verdict (used with `verdict`).
+
+pet-care-facilities:
+  platform_risk: 0
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Pawfinity, KennelBooker, Savvy Pet Spa and DoTimely are small teams; one TinySeed company; involves payments"
+  lens: "Distribution: paid search (CPC $54) and industry trade shows. The model release does not change much. Switching is heavy (schedule and client records). Repeatable revenue of $25-140/month. Vertical SMB software sold in person. Capterra: 79 + 109 + 62 products, top-1 holds 19%."
+
+gym-martial-arts-studios:
+  platform_risk: 0
+  platform_note: "Mindbody and Vagaro are general-purpose but not platforms; no native feature covers the task"
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Gymdesk is a small team with 148 reviews; Kicksite and Zen Planner are SMB-scale; payments (PCI) and member data mean moderate regulation"
+  lens: "Distribution: paid search (CPC $107), federation partnerships, word of mouth. The model release is not a threat. Switching is heavy (member billing, annual contracts), so lock-in runs both ways. High repeatability ($100-300/month per club); accumulation is the member base. Classic vertical SMB software."
+
+auto-repair-shops:
+  platform_risk: 0
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 0}
+  feas_note: "AutoLeap and Shopmonkey are venture-backed; Tekmetric grew out of a repair shop; median price $179/month with only 33% under $100, so sales go through demos; VIN data and payments"
+  lens: "Distribution: paid search (CPC $46), parts distributors, trade shows. AI diagnostics and estimates become a feature. Switching is heavy (vehicle and customer history). Repeatable revenue of $100-500/month. Capterra: 206 products, top-1 holds 14%, 12 have 100+ reviews."
+
+str-hosts-tools:
+  platform_risk: 1
+  platform_note: "Airbnb adds host tools (co-host, pricing); API access is limited"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Rankbreeze, Hospitable (grew out of indie) and PriceLabs are small; 2 Flippa listings; guest payments"
+  lens: "Distribution: host Facebook groups and YouTube. AI guest replies are a commodity. Switching is medium. Repeatable revenue of $15-30/month per property. Capterra: 369 products, top-1 Hostaway holds 9%, 52 have 100+ reviews, so very fragmented. But demand is down 64% and the short-term-rental market is shrinking (city regulation)."
+
+small-landlords-pm:
+  platform_risk: 1
+  platform_note: "Zillow Rental Manager is free (listing, screening, leases); Avail and TurboTenant are freemium"
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "RentRedi and TenantCloud are small to mid-sized; payments and tenant screening (FCRA) are regulated"
+  lens: "Distribution: SEO and the BiggerPockets community, CPC $64. The model release does not change much. Switching is heavy (payment history). Repeatable revenue of $15-50/month. Regulation: tenant screening (FCRA), payments. Capterra: 581 products, top-1 Buildium holds 9%, 51 have 100+ reviews, so fragmented; but Trends is DOWN (41 to 27) and Zillow is free."
+
+small-nonprofits-donor-crm:
+  platform_risk: 0
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Little Green Light is a small team of 15+ years; Zeffy runs a free model (fee on donations); payment data"
+  lens: "Distribution: SEO, grants and consultants, CPC $44. AI donor letters become a feature. Switching is heavy (donor history). Repeatable revenue of $50-150/month. Regulation: payments and tax receipts. Bloomerang at $125 and DonorPerfect at $119 suggest a price ceiling."
+
+churches-tools:
+  platform_risk: 1
+  platform_note: "YouVersion and Bible apps are free for content; Planning Center leads management (not a platform); ProPresenter holds 53% of presentation software"
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Pewbeam, OneAccord and Text In Church are small; donations mean payments"
+  lens: "Distribution: conferences, church networks, word of mouth. Real-time service translation with AI is a new niche. Switching is heavy (congregation database). Repeatable revenue of $20-80/month. Capterra: 213 management products, top-1 holds 12%, 43 have 100+ reviews, so fragmented."
+
+law-firm-intake:
+  platform_risk: 0
+  platform_note: "Clio Grow is a module of the practice-management leader, not a platform"
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 0}
+  feas_note: "Caseflood and ClientRock are small; but 8 legal companies joined YC in two years (capital is flowing in); law-firm client data is confidential; sales go through demos"
+  lens: "Distribution: paid search (CPC $185), legal conferences, Clio integrations. AI intake is the core product, with risk from Clio and Smith.ai. Switching is heavy. High repeatability ($100-500/month). Regulation: confidentiality, bar rules. Domain expertise is required."
+
+ai-phone-receptionist-local:
+  platform_risk: 1
+  platform_note: "Call-screening and on-device assistant features cover part of the task; telephony vendors (RingCentral, OpenPhone) add an AI answering service as a feature"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Rosie, Beside and Goodcall are small teams; the stack is Twilio + LLM + TTS (commodity)"
+  supply_manual: "Players (unverified estimate): Goodcall, Smith.ai (humans + AI), Slang.ai, Rosie, Beside, Dialzara, My AI Front Desk, Simple Phones, Sameday, Echowin, Bland/Vapi/Retell (platforms): more than 15 products, no leader above 30%; there is no matching Capterra category."
+  lens: "Distribution: paid search (CPC $34) and vertical partnerships (salons, clinics, plumbers). The next model release is a threat from platforms (Vapi, Retell) and telephony; the defense is vertical integrations (booking, CRM). Switching is easy; revenue is repeatable ($30-200/month); accumulation is call history and customers."
+  size_override: 30000
+  size_note: "unverified estimate: more than 15 products with 0.5-5k SMB customers each; the search proxy (12.8k) is a lower bound and the Capterra telephony category (257k) an upper bound"
+
+invoice-estimate-mobile-apps:
+  platform_risk: 1
+  platform_note: "Square Invoices, PayPal, Wave and Zoho Invoice are free; buyers pay for speed, offline use and contractor estimates"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Invoice Simple grew out of indie; Billdu, Invoice Fly, Tiny Invoice and Freebie are small teams; 14 apps in top-grossing; payment data"
+  lens: "Distribution: ASO (expensive, CPC $35) and SEO for 'invoice template'. AI estimates from photos are a new hook. Switching is easy, but invoice history keeps users. Repeatable revenue of $10-30/month. Local accounting ecosystems differ by country."
+
+shift-scheduling-deskless:
+  platform_risk: 1
+  platform_note: "Square, Toast and Lightspeed embed scheduling in the POS; Homebase is free for one location"
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Sling and Shyft grew out of small teams; employee and payroll data"
+  lens: "Distribution: paid search (CPC $50) and POS partnerships. AI shift building becomes a feature. Switching is heavy. Repeatable revenue of $2-5 per employee per month. Capterra: 618 products, top-1 holds 14%, 89 have 100+ reviews, so very fragmented; App Store: 41 players with 1k+ ratings, top-1 holds 16%."
+
+digital-business-cards:
+  platform_risk: 1
+  platform_note: "Phone-to-phone contact sharing and QR codes in social apps cover basic exchange; buyers pay for brand, teams and lead capture"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Blinq (131k ratings), Popl, HiHello and Linq all started as indie projects; Capterra: only 3 products with 100+ reviews, so the B2B part is small"
+  lens: "Distribution: ASO, NFC hardware and team sales. The model release is not a threat. Switching is easy. Repeatable revenue: $5-10/month subscription plus team plans; accumulation is contacts and leads."
+
+loyalty-wallet-passes:
+  platform_risk: 1
+  platform_note: "Phone wallets are a platform, but a pass generator is not native; Square and Toast embed loyalty in the POS"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Loopy Loyalty, Stamp Me, Pass2U and WinStamp are small teams; regional players exist (UDS, Cardbox)"
+  supply_manual: "Players: PassKit, Loopy Loyalty, Pass2U, Stamp Me, WinStamp, Passcreator, Wallet Pass Generator, Boomerangme, Cardbox, UDS: more than 10, no leader."
+  lens: "Distribution: SEO for 'digital loyalty card', agencies and POS partners. The model release does not change much. Switching is easy. Repeatable revenue of $20-50/month per location; accumulation is the merchant customer base (moderate lock-in). The Russian market is active (Boomerangme)."
+
+local-seo-gbp-agencies:
+  platform_risk: 1
+  platform_note: "Google Business Profile is the platform itself and changes its API and rules; Semrush and Ahrefs added local features"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Two Flippa listings ($261k ARR and $39k MRR) show real deals; Local Falcon, Localo and Local Viking are small"
+  lens: "Distribution: SEO, agencies (white-label), affiliate programs. AI replies to reviews and posts are a commodity. Switching is easy. Repeatable revenue of $30-100/month per location; platform risk from Google. Capterra: 7 products with 100+ reviews, a small category."
+
+ai-search-visibility-geo:
+  platform_risk: 1
+  platform_note: "Semrush, Ahrefs and Similarweb added AI visibility tracking; model providers expose no visibility API"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Otterly, Peec AI and PromptSignal are small teams; 2 YC companies; 4 Product Hunt launches"
+  supply_manual: "Players (unverified estimate): Profound, Peec AI, Otterly, Scrunch, AthenaHQ, PromptSignal, Rankshift, Goodie, Evertune, Bluefish, Semrush AI Toolkit, Ahrefs Brand Radar: more than 12, no leader above 30%; there is no matching Capterra category."
+  lens: "Distribution: SEO community, LinkedIn, agencies. The next model release is a risk from Semrush and Ahrefs (already added) and from the LLM providers themselves (visibility analytics). Switching is easy. Repeatable revenue of $40-300/month; accumulation is mention history."
+
+cold-email-deliverability:
+  platform_risk: 1
+  platform_note: "Mailbox providers tightened filters (2024+), warm-up is a gray area; Instantly and Smartlead include warm-up for free"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Mailreach, Warmup Inbox and Lemwarm are small teams; one TinySeed portfolio company"
+  supply_manual: "Players: Instantly, Smartlead, Lemlist/lemwarm, Mailreach, Warmup Inbox, Warmbox, ZeroBounce, NeverBounce, MillionVerifier, Bouncer, Emailable, Reoon: more than 12, no leader above 30%."
+  lens: "Distribution: SEO and affiliate programs in cold-email communities. The next release is a risk from mailbox providers (blocking warm-up) and from all-in-one tools (Instantly). Repeatable revenue of $30-100/month. Regulation: CAN-SPAM and GDPR gray area. Fad risk combined with regulatory risk."
+  size_override: 60000
+  size_note: "unverified estimate: Instantly 30k+ and lemlist 37k+ customers (self-reported), plus Smartlead, Woodpecker and Mailreach; the search proxy (2.5k) is unusable"
+
+marketplace-seller-analytics:
+  platform_risk: 2
+  platform_note: "The marketplace owns the data and API (SP-API) and changes access; the brand analytics tool is free for brand owners"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Sellerboard (small, Germany), Shopkeeper and DataDive are small; regional analytics vendors (MPSTATS, Moneyplace) are larger"
+  supply_manual: "US (unverified estimate): Helium 10, Jungle Scout, Sellerboard, AMZScout, Keepa, SellerApp, Viral Launch, DataDive, SmartScout, Shopkeeper: more than 10; Helium 10 + Jungle Scout hold about half the market. Russian marketplaces (Wildberries/Ozon): MPSTATS, Moneyplace, Mayak, Anabar, Stat4Market, Shopstat: more than 8; check Wordstat."
+  lens: "Distribution: marketplace-seller YouTube creators and affiliate programs. The model release does not change much. Repeatable revenue of $30-100/month. Platform risk 2 (API). The Wildberries/Ozon market is large and growing but competitive."
+
+pod-kdp-etsy-seller-tools:
+  platform_risk: 2
+  platform_note: "Etsy and Amazon own the data and change API and terms; Etsy banned some AI listing tools"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Flippa: 6 listings, 5 with revenue, max $19k MRR (KDPScore, a puzzle-book generator), so deals are real; Everbee and eRank are small teams"
+  supply_manual: "Players: eRank, Everbee, Alura, Sale Samurai, Marmalead, Merch Informer, Book Bolt, Publisher Rocket, KDSpy, Podly: more than 10, no leader; there is no matching Capterra category."
+  lens: "Distribution: print-on-demand and KDP YouTube creators, affiliate programs. AI-generated designs and books make the topic overheated. Switching cost is zero. Repeatable revenue of $10-30/month with high churn. Platform risk 2. A fad, but with working deals."
+
+reseller-crosslisting-scanners:
+  platform_risk: 1
+  platform_note: "Marketplaces add AI listing; cross-listing depends on marketplace APIs (terms-of-service risk)"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Vendoo, Crosslist, Flipwise and ThriftAI are small teams"
+  lens: "Distribution: reseller YouTube and TikTok, communities. AI item valuation from a photo is already a commodity. Switching is medium (inventory). Repeatable revenue of $20-50/month. No regulation; dependence on marketplace APIs is the main risk."
+
+saas-product-feedback-boards:
+  platform_risk: 1
+  platform_note: "Linear, Notion and GitHub Discussions cover the basics; Canny leads and Featurebase is growing"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Frill, Nolt and Upvoty are indie products with revenue; Featurebase is a small team"
+  lens: "Distribution: SEO, Product Hunt, integrations. AI feedback clustering becomes a feature. Switching is easy. Repeatable revenue of $8-80/month (median $8, a cheap market). Search demand is 300/month: the category is known by brand, not by class."
+
+course-creator-affiliate-payouts:
+  platform_risk: 1
+  platform_note: "Course platforms have built-in affiliate programs; Stripe and PayPal handle payouts"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Rewardful, Tolt and FirstPromoter are small or indie with revenue (unverified); payouts mean financial data"
+  lens: "Distribution: SEO and integrations (Stripe apps). The model release does not change much. Switching is medium. Repeatable revenue of $30-200/month. Capterra: 13 products with 100+ reviews, top-1 holds 15%."
+
+indie-app-dev-aso-tools:
+  platform_risk: 1
+  platform_note: "App Store Connect and Play Console give basic analytics for free; Apple limits data"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "A Flippa listing: an ASO tool with $29k MRR for sale; Astro, Launch Shots and AppFigures are indie or small"
+  supply_manual: "Players: AppFigures, AppTweak, MobileAction, Sensor Tower (enterprise), AppRadar, Astro, ASOMobile, Launch Shots, AppBot, RevenueCat (adjacent): more than 10; Capterra: 34 products, 6 with 10+ reviews, because developers do not write reviews on Capterra."
+  lens: "Distribution: indie developers on social media, the RevenueCat ecosystem. AI screenshots and keywords are a commodity. Repeatable revenue of $15-80/month. The audience is growing (14.7k new apps per month). A small but reachable market."
+
+n8n-openclaw-managed-hosting:
+  platform_risk: 2
+  platform_note: "The workflow tool's own cloud is official managed hosting; Railway and Render offer one-click deploys; the agent project has terms and security issues"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Flippa: a profitable workflow-hosting platform with $8k MRR for sale; Product Hunt: 16 launches in a year"
+  supply_manual: "Players: Sliplane, Elestio, Railway/Render templates, Hostinger n8n, Agent 37, KiloClaw, IronClaw, Clawi, BetterClaw, ZeroHuman: more than 10, all under 2 years old; the leader is the platform's own cloud."
+  lens: "Distribution: SEO and YouTube for 'n8n hosting', communities. The next model or platform release is the main risk (official cloud, hosted agents). Switching is easy (containers). Repeatable revenue of $10-30/month; accumulation is the customer's workflows. A 12-24 month window: a classic fad riding a wave."
+
+ai-video-dubbing-captions:
+  platform_risk: 2
+  platform_note: "YouTube auto-dubbing, short-video app auto-captions and voice-AI dubbing products are platform features"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Flippa: 5 listings with revenue (dubbing $6.2k MRR, captioning $5.5k MRR), so deals exist; Captions (venture-backed) has 37k"
+  lens: "Distribution: TikTok and YouTube creators, Product Hunt (3 launches). The next model release is a direct threat (voice-AI vendors, YouTube auto-dub, general models). Switching cost is zero. Repeatable revenue: subscription with high churn; no accumulation. A fad: Flippa listings mean founders are exiting."
+
+tcg-sports-card-scanners:
+  platform_risk: 1
+  platform_note: "eBay, TCGplayer and PSA are marketplaces with price data; PSA built its own scanner (56k ratings)"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Collectr (64k), CollX (48k), Ludex, HoloDex, Acorn (solo) and Dex (solo) are indie with revenue; 24 apps in top-grossing"
+  lens: "Distribution: collector TikTok and YouTube, Discord. Card recognition is a commodity; the defense is prices and the collection. Repeatable revenue of $5-15/month; accumulation is the collection (real lock-in). The trading-card hype cycle of 2024-26 is cyclical."
+
+coin-antique-identifiers:
+  platform_risk: 1
+  platform_note: "Visual-lookup features recognize coins only roughly; the value is the catalog and price estimate"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "17 apps in top-grossing; but 51% of ratings belong to one app factory (CoinSnap, AntiqSnap, NoteSnap, VinylSnap)"
+  lens: "Distribution: ASO and paid user acquisition (clone factories). Recognition is a commodity; the defense is catalog and prices. Weak repeatability (a one-off task turns into weekly subscriptions); accumulation is the collection. A typical fad: margin goes to user acquisition."
+
+recipe-manager-meal-planner:
+  platform_risk: 1
+  platform_note: "General chat assistants generate recipes and menus; a phone-maker's food app is free; but 'save from Instagram/TikTok + shopping list' is not covered natively"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "ReciMe (small team, Australia) gained 291k ratings in 3 years; Crouton is a solo developer; Paprika is 2 people"
+  lens: "Distribution: TikTok and Instagram (import from social networks is a viral channel). The next model release is a risk from chat agents; the defense is the recipe collection and shared family list. Strong accumulation (a personal recipe base)."
+
+nature-id-mushroom-bird-insect:
+  platform_risk: 2
+  platform_note: "Merlin (Cornell) and iNaturalist Seek are free; the OS visual lookup recognizes plants and animals"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Next Vision (Picture Mushroom/Bird/Insect) is an app factory; Glority (PictureThis) holds 61% of ratings"
+  lens: "Distribution: paid user acquisition. Recognition is a commodity. Weak repeatability (seasonal). Two app factories plus free scientific apps."
+
+digital-wardrobe-outfit-planner:
+  platform_risk: 1
+  platform_note: "Pinterest and chat stylists cover part of the task; virtual try-on is not a wardrobe"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Whering (UK, small, seed-funded), Indyx, Acloset, Fits (solo) and Stylebook (2 people, 15 years) show indie products survive"
+  lens: "Distribution: TikTok and Instagram (#capsulewardrobe), ASO. AI wardrobe digitization from photos is a commodity; the defense is the user's item catalog (lock-in). Repeatable revenue: $5-10/month subscription; accumulation is the wardrobe."
+
+couples-relationship-apps:
+  platform_risk: 0
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Couple Joy (small, Italy), Cozy Couples and Evergreen are indie"
+  lens: "The top-1 by ratings is a day-counter app at 61% (solo developer); Paired has 207k. The category is widgets plus quizzes; weak repeatability."
+
+co-parenting-apps:
+  platform_risk: 0
+  platform_note: "Courts recommend specific apps (OFW, TalkingParents): a barrier to entry, not a platform"
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "AppClose is a small team; family data and court use"
+  lens: "Distribution: family-law attorneys and courts. High repeatability (years). Switching is heavy (message history used in court). The market is 3 paid players (OFW 43%, TalkingParents, AppClose) plus 42 new apps, all under 1k ratings."
+
+sobriety-quit-trackers:
+  platform_risk: 0
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "I Am Sober (solo grown to a small team) has 186k ratings; Sober Time, Nomo and Quit Vaping are solo; Reframe is venture-backed"
+  lens: "Distribution: recovery communities on Reddit, ASO. An AI coach becomes a feature. Repeatable revenue through subscription, but users leave once recovered; accumulation is streaks and a journal (emotional lock-in). A sensitive topic but not medical (no expertise needed)."
+
+screen-time-focus-apps:
+  platform_risk: 2
+  platform_note: "iOS Screen Time and Android Digital Wellbeing are free and native; paid apps (Opal, one sec, Brick) sell strictness and UX on top of the Screen Time API"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "one sec is a solo developer; Brick is hardware plus an app from a small team; ScreenZen is solo"
+  lens: "Distribution: TikTok ('digital detox'), ASO. The model release does not change much. Repeatable revenue: $50-100/year subscription; accumulation is streaks. Risk: the platform vendor may tighten or extend Screen Time."
+
+gig-worker-mileage-tax:
+  platform_risk: 1
+  platform_note: "Ride and delivery platforms provide mileage summaries; tax software covers the tax part; the OS map app does not log trips"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Driversnote (small, Denmark), Hurdlr and Gridwise are small to mid-sized; tax data"
+  lens: "Distribution: SEO for 'mileage log IRS', gig-worker Reddit, tax season. The model release does not change much. Repeatable revenue of $5-10/month with seasonal churn; accumulation is the tax log (strong lock-in within the year). US-specific (IRS)."
+
+astrology-human-design:
+  platform_risk: 0
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Flippa: an astrology app with $16.9k MRR for sale; Moonly (Russian team) is in top-grossing"
+  lens: "Distribution: TikTok and Instagram, ASO. An AI astrologer is a commodity; the only defense is brand and content. Switching cost is zero. Medium repeatability (seasonality, churn); weak accumulation. A fad with fast churn but proven monetization (Nebula, Co-Star, Moonly)."
+
+faith-devotional-apps:
+  platform_risk: 1
+  platform_note: "YouVersion (Bible, 13.8M ratings) is free and covers reading; the paid segment is prayer, meditation and AI chat (Hallow, Pray.com, Bible Chat)"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Bible Chat (Book Vitals) is a small team with 362k ratings; dozens of indie apps in top-grossing (34)"
+  lens: "Distribution: ASO and church communities rather than paid traffic. The next model release strengthens AI chat, but content and community are the defense. Repeatable subscription; accumulation is habit and streaks. Fad risk: there are already dozens of Bible Chat clones."
+
+licence-exam-prep-apps:
+  platform_risk: 0
+  platform_note: "State DMVs provide free handbooks and tests, but apps with exam simulation are the paid standard"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Zutobi (small team, Sweden) has 237k ratings; DMV Genie (Elegant eLearning) is solo; dozens of indie apps for CDL and real estate exams"
+  lens: "Distribution: ASO for 'state + exam' (long tail), SEO. AI generates questions and lowers the entry barrier. Zero repeatability (pass and leave), but the flow of new users is constant; accumulation is the question bank and error analytics. A flow business, not a subscription one."
+
+ai-language-speaking-tutors:
+  platform_risk: 1
+  platform_note: "General voice assistants offer free conversation practice; a large language-learning app added AI video calls"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Praktika (163k), Loora (38k) and BoldVoice (53k) are small teams with revenue; Learna gained 402k in 2 years"
+  lens: "Distribution: TikTok and Instagram, ASO in non-English-speaking countries. The next model release is a direct risk (platform voice modes); the defense is course structure and audience (Russia, Latin America, Asia). Repeatable subscription; accumulation is progress."
+
+sign-language-learning:
+  platform_risk: 0
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Lingvano (small team, Austria) has 116k; ASL Bloom (Norway) has 34k; Pocket Sign is solo"
+  lens: "Distribution: ASO, TikTok (sign language is viral). Camera-based sign recognition is a differentiator. Repeatable subscription; the market is small (13 players with 1k+ ratings)."
+
+music-instrument-learning:
+  platform_risk: 0
+  platform_note: "YouTube lessons are free, but interactive play recognition is a paid category"
+  lock_in: 1
+  feas: {indie_exists: 0, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Simply (JoyTunes) holds 42% of ratings across 3 apps; Yousician and flowkey are venture-backed; no indie products with revenue found; content is expensive (song licenses)"
+  lens: "Distribution: paid user acquisition (expensive), YouTube. An AI teacher could break the incumbents. Repeatable subscription of $10-20/month; accumulation is progress. Entry is expensive: content plus licenses."
+
+workout-log-trackers:
+  platform_risk: 1
+  platform_note: "Platform fitness apps track activity but do not replace a strength-training log; strong free freemium competitors (Hevy, Strong)"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Hevy (Hevy Studios, small team) has 92k ratings; Strong and Liftoff are indie"
+  lens: "Distribution: ASO, Reddit, fitness YouTube. The model release is not a threat (a UX product); accumulation is workout history (real lock-in); repeatable subscription. But the market is a leader plus 60 clones; differentiation is social features or AI plans."
+
+dog-training-apps:
+  platform_risk: 0
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Puppr (2 people) has 27k; Dogo (Berlin, small) 17k; Woofz (Cyprus) 56k; PawChamp is new with 15k"
+  lens: "Distribution: puppy TikTok and Instagram, ASO for 'puppy'. An AI trainer or video analysis becomes a feature. Subscription lasts for the puppy period (6-12 months), so churn is built in; weak accumulation."
+
+parental-control-family-locator:
+  platform_risk: 2
+  platform_note: "Native family-controls and device-finder features from the OS vendors are free; one app holds 81% of ratings"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Children's data and geolocation mean regulation (COPPA)"
+  lens: "One leader plus the native platforms. Regional markets are separate (check Wordstat)."
+
+anglers-fishing-apps:
+  platform_risk: 1
+  platform_note: "Weather and tides are free (Windy, NOAA); buyers pay for bite forecasts, depth maps and a log"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Fishing Points (small team, Croatia) has 30k; BassForecast is indie; Fish AI (Liftoff Labs) gained 25k in a year"
+  lens: "Distribution: fishing YouTube, ASO, seasonality. AI fish identification is a commodity. Repeatable annual subscription of $30-100; accumulation is the catch log and spots (strong lock-in). Regional markets are separate."
+
+restock-drop-alerts:
+  platform_risk: 1
+  platform_note: "Retailers send their own notifications; bots are a hostile zone (anti-bot measures)"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "HotStock (UK, solo), Sole Retriever and Distill are small"
+  lens: "Distribution: Discord and Twitter drop communities. The model release does not change much. Repeatable subscription of $5-20/month, with churn when hype fades (consoles, trading cards); retailer hostility; zero accumulation."
+
+trip-planners:
+  platform_risk: 2
+  platform_note: "Maps apps, chat planners and OS itinerary features are free"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Wanderlog is a small team with revenue"
+  lens: "One app holds 62% of ratings; platform risk 2 (chat assistants, maps). Seasonal repeatability."
+
+calorie-counters-ai:
+  platform_risk: 1
+  platform_note: "Platform health apps do not count calories from photos; general chat assistants estimate roughly"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Cal AI (Viral Development, two teenage founders) gained 364k ratings in 1.5 years; 22 apps in top-grossing"
+  lens: "Distribution: TikTok and Instagram (Cal AI is a textbook of viral acquisition), ASO. AI photo recognition is a commodity; the defense is habit and data. Subscription of $10/month with high churn; accumulation is the food diary (strong lock-in for incumbents)."
+
+golf-gps-handicap:
+  platform_risk: 1
+  platform_note: "Watch GPS apps (Garmin Golf is free with the watch); the official handicap system is free"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "TheGrint, Golf Pad, Roundabout and Golf GPS++ are small teams; course data needs a license or own digitization"
+  lens: "Distribution: ASO, golf YouTube, clubs. The model release is not a threat. Switching is medium (round history). Subscription of $30-100/year from an audience with spending power; accumulation is round statistics."
+
+flight-tracking-deals-award-travel:
+  platform_risk: 1
+  platform_note: "OS mail and wallet apps and Google show flight status; airlines have their own apps; flight data APIs are paid (raw material cost)"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Flighty (small team) has 152k ratings at $50/year; Seats.aero (solo developer, profitable) searches award seats; Travel Freely and AwardWallet are small teams"
+  supply_manual: "Trackers: Flightradar24, FlightAware, Flighty, Flight Tracker+, Planes Live, FlightStats, App in the Air (closed): 6+ players, leader Flightradar24 at about 40%. Award travel: Seats.aero, Point.me, AwardWallet, Roame, PointsYeah, MaxMyPoint: fragmented."
+  lens: "A composite niche. Trackers have stable demand (Trends 26 to 55 to 53), paid data and a clear leader. Award travel is a growing indie field with an audience that pays; distribution through blogs and Reddit. The model release is not a threat; switching is easy; annual subscription."
+
+indie-music-distribution-stems:
+  platform_risk: 1
+  platform_note: "Streaming-service artist dashboards give analytics for free; open-source stem separation (Demucs) makes separation free, so apps sell UX"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Stem apps (Stemz, Vocal Remover, Stemify) are small teams on Demucs; distribution (RouteNote, Amuse) needs contracts with the streaming services (DDEX) and royalty accounting, a barrier for indie"
+  supply_manual: "Distribution (unverified estimate): DistroKid dominates (roughly 40-50% of indie releases), TuneCore, CD Baby, Amuse, UnitedMasters, LANDR, Ditto, RouteNote, Symphonic, ONErpm: about 10 players, leader above 40%. Stems: Moises, LALAL.ai, Stemz and dozens of clones: fragmented."
+  lens: "A composite niche: distribution has a high entry barrier (service contracts) and one strong leader; stems are a commodity after Demucs and compete on price. Distribution has paying users (subscription of $20-40/year times millions of artists); Trends UP 1 to 20."
+
+collection-trackers-lego-watches-vinyl:
+  platform_risk: 1
+  platform_note: "Discogs (vinyl) and the building-set vendor's own catalog are free and act as de facto databases; WatchCharts is web only"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Brickit (22k ratings, part recognition), CLZ (family company, 20+ years), iCollect Everything, VinylSnap and Record Scanner are indie; catalogs (Discogs API, Rebrickable) are open"
+  lens: "Several micro-communities (building sets, vinyl, watches, figures), each with 1-3 indie players; distribution through Reddit and collector forums. The model release is not a threat (catalog data). Switching is medium (the collection catalog). Monetization: one-off or $10-30/year subscription; accumulation is the collection."
+
+ai-hairstyle-tryon:
+  platform_risk: 2
+  platform_note: "General image-editing assistants do it for free ('show me with a bob'); photo-editing apps ship hairstyles as a feature"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "47 new apps in 12 months in the US results (a clone factory on generative APIs), weekly subscriptions"
+  lens: "Distribution: paid user acquisition and TikTok. The next model release kills the product. Switching is instant; weekly subscription; no accumulation. A classic fad."
+
+travel-journal-map:
+  platform_risk: 1
+  platform_note: "OS journaling, photo memories and map timelines cover 'where have I been' for free; Polarsteps monetizes through printed photo books, not subscription"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Mark O'Travel (solo) leads the RU results at 38%; Visited (small team) leads the US at 18%; Pin Traveler and TravelBoast are indie"
+  lens: "Distribution: ASO and map sharing on social networks (the 'been' virality). The model release is not a threat. Switching is easy. Monetization is weak (one-off $3-10; photo books); accumulation is the map and diary."
+
+youth-sports-team-management:
+  platform_risk: 1
+  platform_note: "GameChanger is free and subsidized by a retailer (896k ratings); SportsEngine serves leagues; TeamSnap leads by brand at 73%"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Heja (small team, Sweden) has 24k ratings; sportsYou, InstaTeam and Crossbar (clubs and leagues) are small; children's data means COPPA caution, but children themselves are not in the app (parents and coaches are)"
+  lens: "Distribution: through clubs and leagues (B2B2C) and volunteer coaches. The model release is not a threat. Switching is seasonal (easy once a season). Monetization: team subscription of $10-15/month or the league pays; accumulation is schedules, rosters and payments."
+
+pregnancy-baby-milestones:
+  platform_risk: 0
+  platform_note: "Platform health apps track cycles, not pregnancy; free content apps (WTE, BabyCenter) cover week-by-week content, the paid segment is baby, sleep and feeding trackers"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Wachanga (small team) leads RU with 118k ratings and 14k in the US; a solo contraction counter has 69k US + 31k RU; Sprout (Med ART Studios); pregnancy data is sensitive (privacy after US court rulings) but not regulated as medical"
+  lens: "Distribution: ASO (high-frequency 'pregnancy app', Trends 77 to 71, stable) and word of mouth. The model release is not a threat. Switching is easy, but the life cycle of 9 months plus 1-2 years is a natural cohort; subscription for the period; accumulation is the baby diary (Wachanga moves users from pregnancy to a baby diary)."
+
+immigration-case-trackers:
+  platform_risk: 2
+  platform_note: "The data is a public status on the agency website; the agency itself offers an account and notifications; apps scrape a government site (blocking and terms risk)"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "35 new apps in 12 months (clones: 'Case Tracker for USCIS' x 20); leaders Immivision, MigraConnect and Lawfully are small teams"
+  lens: "Distribution: ASO for 'uscis case tracker' (Trends 32 to 53 to 41). Switching is instant. Monetization: subscription of $5-10/month for notifications; no accumulation; regulatory and political risk (policy changes, scraping blocks)."
+
+personal-budgeting-apps:
+  platform_risk: 1
+  platform_note: "Bank apps and OS wallets show spending by category but not a budget or goals; a major budgeting service shut down in January 2024, a vacuum that drove growth (Trends 21 to 49, KP 71k to 389k)"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Copilot and Monarch (former users of the closed service), Fleur (solo developer, 12.8k ratings), Buddy (Sweden); in the US bank connections mean Plaid ($0.3-1 per user per month), so manual entry or SMS parsing is cheaper (Russia: Zenmoney, CoinKeeper)"
+  lens: "Distribution: ASO, Reddit r/personalfinance and migration from the closed service. The model release is not a threat (UX plus data aggregation). Switching is painful (history, categories), so lock-in is real; repeatable subscription of $5-15/month; accumulation is transaction history."
+
+credit-card-points-optimizers:
+  platform_risk: 1
+  platform_note: "Banks show their own rewards; wallet apps exist; but platforms do not offer cross-bank optimization ('which card to pay with')"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "CardPointers (solo developer, publicly profitable, 10k ratings); MaxRewards, Kudos (YC), Travel Freely and AwardWallet are small teams; auto-tracking needs Plaid (financial data), so manual mode is cheaper"
+  lens: "Distribution: r/churning, miles blogs, YouTube. The model release is not a threat. Switching is easy. Subscription of $30-100/year; accumulation is card history and strategy. US-only (European and Russian reward-card markets are small)."
+
+homework-solvers-ai:
+  platform_risk: 2
+  platform_note: "General chat assistants and visual search solve photo problems for free and better than specialized solvers; the leading solver is owned by a platform vendor"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Dozens of GPT wrappers (Nerd AI, Solvely, MathGPT), a trivial stack; leaders Gauth (ByteDance), Photomath (Google), Mathway (Chegg)"
+  lens: "Distribution: paid TikTok user acquisition (school-year seasonality). The next model release kills differentiation: a classic fad. Switching is instant; weekly subscription (churn); no accumulation."
+
+brain-training-memory:
+  platform_risk: 0
+  platform_note: "No native features; free puzzle games substitute by time, not by task"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Impulse (a subscription factory), Clever and IQ Masters are small teams with aggressive paid user acquisition; the content is a set of mini-games (production work)"
+  lens: "Distribution: paid acquisition (Meta, TikTok) with weekly subscriptions. The model release is not a threat. Switching is instant; low repeatability (churn); no accumulation; regulatory tail: a consumer-protection regulator fined a leading brain-training app for efficacy claims, so promising 'better memory' is not allowed."
+
+kids-learning-games-preschool:
+  platform_risk: 1
+  platform_note: "Public-broadcaster and nonprofit kids apps are free and high quality; video kids apps; the app store kids category forbids third-party trackers and ads (COPPA)"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 1}
+  feas_note: "Bimi Boo (Dubai/CIS team) holds 41% of US ratings and 83% of RU across dozens of apps; Bytwice, Bebi and Amaya Soft are indie; but the product is content production (hundreds of mini-games, art, voice-over) and children's data means COPPA/GDPR-K"
+  lens: "Distribution: ASO in the Kids category (Trends 'learning apps for toddlers' DOWN 14 to 11). The model release is not a threat (art content), but generative art lowers production cost. Switching is instant; subscription of $5-10/month or one-off purchases; no accumulation."
+
+book-summaries-microlearning:
+  platform_risk: 1
+  platform_note: "General chat assistants summarize any book for free; the product rests on curation, audio and habit, but the content has become a commodity"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Headway (about $100M revenue on paid acquisition), Imprint (visual courses), Wiser and BeFreed; AI summary generation is cheap; the legal status of summaries is a gray area but established (a leading incumbent has run 10+ years)"
+  lens: "Distribution: paid acquisition and ASO ('book summaries' Trends UP 2 to 20). The next model release devalues the content; the defense is format (Imprint) and habit. Switching is easy; annual subscription ($60-90) is repeatable; accumulation is progress and library."
+
+muslim-apps-ru-cis:
+  platform_risk: 0
+  platform_note: "No native features; free foundation-run apps (Quran.com) cover reading but not prayer times, supplications or learning"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "1Muslim (indie) has 129k ratings in RU; Sajda (Kazakhstan); IslamApp has 35k; Muslim Pro (Bitsmedia, Singapore) sells a premium subscription"
+  lens: "Distribution: communities, mosques, ASO for 'prayer time'. The model release is not a threat. Switching is easy. Revenue: subscription plus donations (moderate ARPU); accumulation is habit and streaks; sensitivity: religious authority of the content (verified texts are required)."
+
+funeral-homes-software:
+  platform_risk: 0
+  platform_note: "No platforms; competition is a consolidator (private-equity backed: websites, obituaries, funeral-home software) plus case-management vendors (Passare, Osiris, SRS, Halcyon)"
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 0}
+  feas_note: "Parting Pro (online arrangement, small team) and Gather are small; but integrations with state electronic death registration systems, conservative buyers and conference sales (NFDA) make it sales-led with a long cycle"
+  supply_manual: "Unverified estimate: Passare (case-management leader, about 30%), Osiris/FDMS, SRS Computing, Halcyon, Mortware, Continental, Tribute Technology (web and obituaries, roll-up), Gather, Parting Pro, Tukios: about 10 players; Capterra: 56 products, none with 100+ reviews, so reviews are not a channel."
+  lens: "Distribution: conferences, associations and word of mouth among about 19k US homes. Switching is heavy (annual contracts, case data); ARPU $100-500/month; accumulation is cases and families; search is small (KP 2.2k, a spike), Trends NA; private-equity consolidation."
+
+pest-control-software:
+  platform_risk: 1
+  platform_note: "Horizontal field-service tools (Jobber, Housecall Pro, ServiceTitan) cover SMB; vertical specifics are pesticide reports, routes and repeat visits"
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 0}
+  feas_note: "GorillaDesk (bootstrapped, about $5M ARR) is proof; but FieldRoutes was bought by ServiceTitan (2022), PestPac belongs to WorkWave (private equity) and Briostack is consolidating; regulatory specifics (state chemical reporting) require expertise"
+  lens: "Distribution: paid search (CPC $125, the most expensive click), trade shows, word of mouth. Switching is heavy (routes, contracts, annual terms). High ARPU ($100-300/month); accumulation is the customer base and treatment history. But the category is consolidating and search fell 4x (Trends 30 to 7)."
+
+daycare-childcare-software:
+  platform_risk: 0
+  platform_note: "No native platform features; competition is venture-backed or private-equity-backed leaders"
+  lock_in: 2
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 0, self_serve: 0}
+  feas_note: "brightwheel ($55M round), Procare (a $1.86B deal in 2024), Lillio, Playground (YC) and Famly (Denmark) are all funded; children's data plus state daycare licensing (subsidy reporting) means regulation; sales go to the daycare director (sales-led)"
+  lens: "The top-3 hold 89% of parent-app ratings; Trends 'daycare software' 32 to 10 (down 70%). Switching is heavy (billing, records, annual contracts), which protects incumbents."
+
+coaching-business-platforms:
+  platform_risk: 1
+  platform_note: "Calendly + Stripe + Notion/Google Docs is the DIY stack of most coaches; horizontal tools for freelancers (HoneyBook, Bonsai) and course platforms (Kajabi, Circle) add coaching; Zoom hosts sessions"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Paperbell (bootstrapped, 58% of brand demand), CoachAccountable (solo developer, 10+ years), Satori, Delenta and Simply.Coach are small; Practice.do (venture-backed) is an exception"
+  supply_manual: "Unverified estimate: Paperbell, CoachAccountable, Practice, Satori, Simply.Coach, Nudge Coach, Delenta, Quenza (psychologists), CoachVantage, Bonsai/HoneyBook (horizontal), Kajabi (courses): more than 10 players, leader Paperbell under 35%; the Capterra coaching-software category is a proxy (its leader serves salons)."
+  lens: "Distribution: SEO ('coaching software'), coach communities (ICF), partnerships with coaching schools. AI session notes become a feature. Switching is easy (the client base is small); subscription $30-60/month; accumulation is clients, packages and history; coach supply is growing (Trends 'coaching platform' 1 to 32 UP, although the phrase is broader)."
+  size_override: 60000
+  size_note: "unverified estimate: Practice Better (15k+ practitioners, self-reported), Paperbell, CoachAccountable, Simply.Coach, Delenta and Satori together have tens of thousands of payers; the search proxy (290) is unusable"
+
+sms-marketing-smb:
+  platform_risk: 1
+  platform_note: "Email and CRM platforms (Klaviyo, Mailchimp, HubSpot, Square, Podium) add SMS as a feature (bundling); 10DLC/TCPA registration is a compliance barrier, not a platform one"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "SlickText (bootstrapped), Textedly and Mobile Text Alerts are small; the Twilio/Telnyx stack is a commodity; TCPA lawsuits and 10DLC registration are an operational load"
+  lens: "Distribution: paid search (CPC $84, expensive) and integrations (Shopify: Postscript, Attentive). AI copywriting becomes a feature. Switching is medium (lists, short codes). Subscription plus per-message fees (repeatable, transactional); accumulation is the subscriber base."
+
+digital-signage-smb:
+  platform_risk: 1
+  platform_note: "TV vendors' built-in players, Chrome OS kiosk mode and open-source Xibo/Screenly; design tools offer screen templates but not fleet management"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "OptiSigns (bootstrapped, $10/screen), Play Digital Signage (Denmark, small), PosterBooking and Look Digital Signage are indie; the cost is supporting a zoo of players (Android sticks, Raspberry Pi, Fire TV, smart-TV OSes)"
+  lens: "Distribution: SEO and paid search (CPC $24), marketplace player hardware, integrator partners. The model release is not a threat (AI content generation is a feature). Switching is medium (hardware plus content). Repeatable subscription of $8-15 per screen per month; accumulation is screens and templates."
+
+cookie-consent-gdpr-widgets:
+  platform_risk: 1
+  platform_note: "Store builders and CMS themes give a basic banner for free; Google Consent Mode v2 (March 2024) made a consent platform mandatory for EU advertising, a regulatory tailwind for the niche"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "CookieYes (small team, 1.5M sites), Complianz (WordPress plugin, 800k installs), CookieScript and Cookie Information are indie successes; the stack is a JS widget + site scan + Google CMP Partner certification (a formality)"
+  supply_manual: "Unverified estimate: Cookiebot/Usercentrics (leader, roughly 25-35%), OneTrust (enterprise), CookieYes, Termly, iubenda, Osano, Complianz, CookieScript, Cookie Information, Didomi, Axeptio, Enzuzo, illow, Consentmanager: more than 14 players; the Capterra categories (gdpr-compliance with 10 products at 100+ reviews, data-privacy) are a weak proxy."
+  lens: "Distribution: SEO ('cookie banner', 'cmp'), CMS marketplaces (WordPress, Shopify, Webflow), the Google CMP Partner list. The model release is not a threat. Switching is easy (one script), a low barrier both to enter and to leave. Repeatable subscription of $10-50/month; accumulation is consent logs (legal value); regulation is a tailwind (Consent Mode v2, US state laws, ePrivacy)."
+  size_override: 100000
+  size_note: "unverified estimate from WordPress.org active installs: CookieYes 1M + Complianz 1M + Cookie Compliance 0.9M + CookieAdmin 0.4M, about 3.3M sites, times roughly 3% paid"
+
+web-accessibility-widgets:
+  platform_risk: 1
+  platform_note: "Browsers and operating systems provide screen readers and zoom; overlay products are under fire: a regulator fined a leading overlay vendor $1M in January 2025 for misleading claims, and the accessibility community opposes overlays"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "EqualWeb, Accessibly and Adally are small teams; but UserWay was bought by Level Access (2024) and AudioEye is public; reputational risk for a newcomer"
+  supply_manual: "Unverified estimate: accessiBe (leader, about 50%), UserWay/Level Access, AudioEye, EqualWeb, Accessibly, Adally, MaxAccess, All in One Accessibility: 8 players, consolidating."
+  lens: "Demand comes from ADA lawsuits and the EU accessibility act (June 2025), a regulatory tailwind, but the overlay product is discredited (regulator action, lawsuits against the leader's customers), the leader holds 51%, and the category is consolidating. An honest alternative is audit and remediation, a different niche that needs expertise."
+
+shopify-upsell-bundles:
+  platform_risk: 1
+  platform_note: "The platform's free first-party Bundles app (2023) covers simple fixed bundles; upsells in cart, checkout and post-purchase remain for apps; app store commission is 0% up to $1M per year"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Kaching Bundles (small team, 5.9k reviews), Bundler (2 people), Selleasy and Essential Apps are indie successes; the stack is Shopify Functions and Checkout Extensions (commodity)"
+  lens: "Distribution: search inside the app store (not Google: Trends NA, KP 1.5k) plus agencies and platform partners. AI recommendations become a feature. Switching is instant (install or uninstall), a low barrier both ways. Monetization: $10-50/month and/or a percentage of upsell revenue (transactional); weak accumulation (offer settings)."
+
+shopify-loyalty-rewards:
+  platform_risk: 1
+  platform_note: "The platform has no native merchant loyalty program (its Shop Cash is a platform cashback in the Shop app, not merchant-owned); email and review platforms (Klaviyo, Yotpo, Okendo) bundle loyalty"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "BON Loyalty (Vietnam, small team), Joy (Avada, Vietnam) and Rivo (small) entered against Smile.io, Yotpo and LoyaltyLion on price ($0-25/month); customer points balances are a migration pain that protects incumbents"
+  lens: "Distribution: the app store and agencies. The model release is not a threat. Switching is painful (points balances, VIP tiers), which favors incumbents. Subscription of $20-200/month by order volume (scales with the merchant); accumulation is loyalty data."
+
+shopify-product-options-variants:
+  platform_risk: 1
+  platform_note: "The platform raised the variant limit from 100 to 2,048 (2024) and added Combined Listings, so part of the variants demand is covered; personalization (text, file upload, configurators with surcharges) remains for apps"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Infinite Options (small team, 2.6k reviews), Inkybay and Avis are indie; Easify, Globo, BSS and Aris are app factories (Globo leads with 13%); Bold and Hulk are mid-sized"
+  lens: "Distribution: the app store. The model release is not a threat. Switching is painful (options on hundreds of products). Monetization $10-30/month, 97% with a free plan; accumulation is the option configuration."
+
+shopify-popups-notifications:
+  platform_risk: 2
+  platform_note: "The platform's first-party Forms app (free, 2022) covers email and SMS capture popups; its Email app; Klaviyo and Omnisend include forms in the email platform, so the popup task is covered by the platform and bundles"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Pop Convert (small team, 8.8k reviews), Attrac and Essential Apps are indie on free plans; monetization is low ($5-30/month, 99% with a free plan)"
+  lens: "Distribution: the app store. Switching is instant; low ARPU, everyone has a free plan (99%); no accumulation; the first-party app gains features with every release."
+
+shopify-back-in-stock-preorder:
+  platform_risk: 1
+  platform_note: "The platform has no native 'notify me when back in stock' (its Shop app only reaches shop followers); but Klaviyo and Omnisend provide back-in-stock as a built-in trigger (bundling); preorder with partial payment is Shopify Functions without a first-party UI"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Kbite/CartBite (leader, small team, 4.1k reviews), STOQ, Timesact, REZ and Essential Apps are an indie category; the stack is webhooks plus email/SMS (commodity)"
+  lens: "Distribution: the app store. The model release is not a threat. Switching is instant (the waitlist moves). Monetization $10-50/month by notification volume, 89% with a free plan; weak accumulation."
+
+shopify-translation-currency:
+  platform_risk: 2
+  platform_note: "The platform's first-party Translate & Adapt (free, 2022; 1.4k reviews, #2 in the category) and Markets (multi-currency, geo-redirects, local domains) cover the task in the core; apps remain on AI translation quality and SEO localization"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Transcy (Vietnam, leader 14%), Hextom Translate (Canada, small), T Lab (indie), Langify (solo, an indie classic), Weglot (France, VC-backed)"
+  lens: "Distribution: the app store. The model release is a threat (LLM translation is a commodity). Switching is painful (translations stored in metafields). Monetization $10-50/month."
+
+shopify-seo-image-optimizer:
+  platform_risk: 1
+  platform_note: "The platform covers basic SEO (meta, sitemap, alt tags, a CDN with compression and WebP); apps sell audits, AI alt/meta generation, schema, speed and 'AEO/GEO' as a layer on top"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "TinyIMG (small team, 2.5k reviews), SEOAnt and Plug in SEO (an indie classic) are indie; Booster Apps (mid-sized); Avada, Tapita and SearchPie are app factories with free plans"
+  lens: "Distribution: the app store (Google 780/month, CPC $24, Trends 'shopify seo' UP 36 to 50). The model release is a threat (an LLM generates meta and alt text for pennies, so value shifts to audit and monitoring). Switching is instant; monetization $10-40/month, 93% with a free plan; no accumulation."
+
+shopify-dropshipping-pod-sourcing:
+  platform_risk: 1
+  platform_note: "The platform's first-party dropshipping network (2023) connects Shopify stores in the US; AliExpress, Temu and CJ ship their own apps; Printful and Printify are platforms with APIs"
+  lock_in: 1
+  feas: {indie_exists: 0, stack_commodity: 0, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Leaders are logistics companies with warehouses (DSers, an official AliExpress partner; CJdropshipping, Printful, Printify, Trendsi, Zendrop with US fulfillment); the pure software layer (AutoDS, Spocket, Zopi) is VC-backed, and the value is the supplier network and delivery SLAs, not code"
+  lens: "Distribution: the app store plus dropshipping YouTube creators (an audience of beginners, high churn). The model release is not a threat. Switching is painful (catalog, orders in transit). Monetization: subscription of $20-50 plus a percentage of orders; accumulation is order and supplier history."
+
+shopify-order-tracking:
+  platform_risk: 1
+  platform_note: "The platform's order status page and Shop app show tracking for free; apps live on a branded tracking page, shipping-status notifications, upsells on the tracking page and invoice/packing-slip printing"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Track123 (small team, 1.7k reviews), Rush (Bulgaria, small), Wonderment (US, small), Vify Order Printer and Order Printer Pro (2 people) are indie; carrier data comes through APIs (17TRACK, TrackingMore, AfterShip), a commodity, though the data supplier is also a competitor"
+  lens: "Distribution: the app store (Google 960/month, CPC $62, the most expensive Shopify niche in its batch). The model release is not a threat. Switching is instant. Monetization $10-100/month by order volume, 93% with a free plan; weak accumulation."
+
+shopify-labels-badges:
+  platform_risk: 1
+  platform_note: "Online Store 2.0 themes show 'Sale' and 'Sold out' badges natively; custom labels, trust badges and payment icons are theme blocks or an app"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "DECO (indie), Hoppy Trust Badges and Essential Apps are indie on free plans; BSS and Sami are app factories"
+  lens: "Distribution: the app store. Switching is instant; ARPU $5-20/month, 99% with a free plan; no accumulation."
+
+shopify-marketplace-sync:
+  platform_risk: 2
+  platform_note: "The platform's first-party Marketplace Connect (free up to 50 orders per month, 2023, acquired from Codisto) syncs Amazon, Walmart, eBay and Target; TikTok Shop, Facebook, Google and Pinterest are official free channels; outside the core are Etsy and niche marketplaces"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "QuickSync (Etsy, small team, 2k reviews), DPL (eBay/Etsy, small) and syncX Stock Sync are indie on the tails outside Marketplace Connect; CedCommerce and LitCommerce are the mid-sized players"
+  lens: "Distribution: the app store. The model release is not a threat. Switching is painful (catalog mapping, order history). Monetization $20-100/month; accumulation is mappings and rules."
+
+shopify-reports-profit-analytics:
+  platform_risk: 1
+  platform_note: "The platform's analytics (updated in 2024: ShopifyQL, custom reports on Advanced plans and above) covers sales and traffic; outside the core are net profit with ad spend and COGS, LTV cohorts and session recordings (a free tool exists)"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Better Reports (Australia, indie, 1.2k reviews), Report Pundit (mid), Mipler (indie), TrueProfit and BeProfit, Lifetimely (indie, acquired in 2022: a deal), Peel; at the top Triple Whale and Northbeam (VC-backed, $300+/month)"
+  lens: "Distribution: the app store plus DTC operator communities. The model release is a partial threat (AI analytics in the platform's assistant). Switching is moderate (reports and ad integrations). Monetization $20-150/month by store revenue; accumulation is history and cohorts."
+
+shopify-bulk-edit-import:
+  platform_risk: 1
+  platform_note: "The platform has a native bulk editor (spreadsheet-style) and CSV import/export; apps add rollback, scheduling, metafields, filters and store-to-store migrations"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Matrixify (Estonia, 2-3 people, 1k brand queries/month, Trends UP 2 to 19) and Ablestar (US, small) are profitable indie; Hextom (Canada, small); EZ Importer (indie)"
+  lens: "Distribution: the app store plus agencies and migrations (Matrixify is the standard for moving to the platform). The model release is not a threat. Switching is moderate (rules and schedules). Monetization $10-50/month (up to $200 by volume); accumulation is saved jobs."
+
+shopify-b2b-wholesale:
+  platform_risk: 1
+  platform_note: "Native B2B (companies, price lists, net terms) exists only on the top plan ($2,300/month); below it apps cover B2B; the platform publicly names B2B a priority and gradually moves features down"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Wholesale Helper (US, small), B2B Wholesale Club (Canada, indie), Sami and BSS (app factories, review leaders), SparkLayer (UK, VC-lite); the stack is Shopify Functions and customer accounts (commodity)"
+  lens: "Distribution: the app store plus agencies (B2B projects are agency-led). The model release is not a threat. Switching is painful (price lists, customers, terms). Monetization $20-100/month, 96% with a free plan; accumulation is B2B customers and prices."
+
+shopify-search-filter-menus:
+  platform_risk: 2
+  platform_note: "The platform's first-party Search & Discovery (free, 2022) covers filters, synonyms and recommendations, with semantic search since 2024; mega-menus are partly in themes; apps remain for complex catalogs (500+ SKUs, AI ranking, merchandising)"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Smart Product Filter (Globo, Vietnam), Boost Commerce (Vietnam, mid), Searchanise (small), Doofinder (Spain, VC-backed), Fast Simon (VC-backed) and Qikify/Buddha (indie mega-menu)"
+  lens: "Distribution: the app store. Switching is moderate (configured filters). Monetization $10-100/month by product count; accumulation is configuration."
+
+phone-as-security-baby-camera:
+  platform_risk: 1
+  platform_note: "There is no native 'camera from a second phone' (the OS continuity camera is a webcam for desktop); the main substitute is hardware: $20-30 home cameras with a free app cover home monitoring"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "AlfredCamera (Taiwan, 70M+ installs, 111k US ratings) has led since 2015; Annie/Nancy Baby Monitor (Czechia, small), Bibino, Cloud Baby Monitor and Nani are indie; the stack is WebRTC and cloud (commodity, but traffic and storage cost money)"
+  lens: "Distribution: ASO ('baby monitor', 'security camera'), parent word of mouth. The model release is not a threat. Switching is instant; median subscription $9.99/month, all 8 top apps monetized; no accumulation."
+
+star-maps-astronomy-apps:
+  platform_risk: 0
+  platform_note: "No native planetariums; free open-source Stellarium (desktop) and an abandoned sky-map app cover the basic scenario"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Sky Guide (3 people), Night Sky (small studio) and Stellarium Mobile (2 people) are indie leaders since 2011-2013; one publisher (Vito Technology) holds about 26% of US ratings and 64% of RU across four apps"
+  lens: "Distribution: ASO and seasonality (meteor showers, eclipses, comets). The model release is not a threat (AR plus an object catalog). Switching is instant; weak monetization: one-off purchases of $3-5, subscriptions in 1 of 8 apps, median $0.99/month; no accumulation."
+
+family-chore-reward-apps:
+  platform_risk: 1
+  platform_note: "OS reminders and task apps share lists within a family but without rewards or points; family calendars (Cozi with 399k ratings, FamilyWall) bundle chore checklists"
+  lock_in: 1
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Chorsee (indie, 2022, 11.7k ratings), Neat Kid (2024, 0.9k), Chorly and MyChoreBoard are an indie wave of 2022-26; Joon (ADHD kids, VC-backed) enters through a segment; Greenlight and BusyKid are kids' debit cards (regulated finance, out of scope)"
+  lens: "Distribution: ASO, parent communities (r/Parenting 6M), school and ADHD niches. The model release is not a threat. Switching is painful once points and habits accumulate (moderate lock-in); median subscription $6.99/month, all 8 top apps monetized; accumulation is the child's reward history."
+
+bedtime-stories-kids-audio:
+  platform_risk: 1
+  platform_note: "Free substitutes: video kids apps, music-streaming audio stories, general chat assistants generate a story on request; no specialized native product from audiobook platforms for children"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Little Stories (Diveo Media, Estonia, indie, 46k US ratings, #1 in RU results), Readmio (Czechia, small), Zoog (Israel), Storytime AI, Okudu and WunderKind are AI generators of 2023-25; RU: Storiko, Gusgus, MySkazka and a free ad-supported bedtime-story factory; the stack is TTS + LLM (commodity)"
+  lens: "Distribution: ASO, parent communities, RU via Google Play with an ad model. The model release is a partial threat (an LLM generates text; the value is voice, characters and ritual). Switching is instant; median subscription $9.99/month, 7 of 8 monetized; weak accumulation (library of heard stories)."
+
+travel-esim-apps:
+  platform_risk: 1
+  platform_note: "Phone vendors promote eSIM (eSIM-only phones in the US since 2022) and carriers sell roaming packs in their apps; platforms have no native eSIM store (Apple shows a provider list in settings: distribution, not replacement)"
+  lock_in: 0
+  feas: {indie_exists: 1, stack_commodity: 1, no_regulated_data: 1, self_serve: 1}
+  feas_note: "Entry without a telecom license through aggregators (eSIM Go, Telna, 1GLOBAL, Airalo Partner): a white-label store in weeks; a listing on Flippa for a 'fully automated eSIM store' at $730/month; 19 new apps in 12 months in the US App Store, none reached 1k ratings, so entry through ASO is closed and an own channel is needed"
+  lens: "Distribution: SEO content ('esim for japan'), travel-blogger affiliate programs, comparison sites, ASO. The model release is not a threat. Switching cost is zero (a purchase per trip), so competition is on price and brand. Transactional monetization: 20-40% margin on a $5-30 pack, repeat purchase on each trip; no accumulation (no lock-in), but repeat purchases at the leaders are high."

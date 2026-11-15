@@ -1,0 +1,327 @@
+# Russian B2B niche universe (market `ru`). A separate branch: the global tools (Keyword Planner, App Store, Capterra) do not see
+# Russian B2B, and Wordstat category phrases are close to zero because demand lives in brand searches. Five measures per niche:
+#   reestr    - domestic software register (reestr.digital.gov.ru): search by product name -> products, new per year, AI flag   (supply)
+#   bitrix    - Bitrix24 Market: search -> apps, installs, leader share                                                         (supply inside the SMB platform)
+#   zakupki   - zakupki.gov.ru: exact phrase, last 12 months vs the 12 before -> procurements and RUB                           (demand with money, B2B/B2G)
+#   hh_roles  - hh.ru: vacancies for the role the product automates ("secretary on the phone", "estimator")                     (labour = automation potential)
+#   hh_brands - hh.ru: vacancies that name a brand                                                                              (adoption)
+#   ws_brands / ws_cat / ws_dyn - Wordstat: sum of brands = category size; category phrases; 36-month dynamics                  (demand, trend)
+# Search terms are Russian on purpose (they are queries against Russian sites); everything else is English.
+# stack_fit 0-3 is your own judgment of how well a niche fits your technical stack (3 = same stack, 0 = outside your competence).
+# It is shown beside the score and is not part of it. Every niche ships with the neutral 1; set your own.
+# `product` prices are rough pointers from vendor sites (RUB per month per site/user); verify them when shortlisting.
+
+- id: ru-ai-receptionist-voicebot
+  name: AI receptionist / voice bot for inbound calls of small businesses (RU)
+  who: car repair shops, beauty clinics, delivery, services - any business that misses calls
+  product: SaaS 3-15 thousand RUB/month + minutes (Yandex SpeechKit; telephony Mango, MTS Exolve, Zadarma)
+  stack_fit: 1
+  reestr: [голосовой робот, голосовой помощник, голосовой ассистент, робот для обзвона, автоответчик]
+  bitrix: [голосовой робот, автоответчик, робот обзвон]
+  zakupki: [голосовой робот, голосовой помощник, робот для обзвона]
+  hh_roles: [оператор входящих звонков, секретарь на телефоне, оператор call-центра]
+  hh_brands: [звонобот, voximplant, twin]
+  ws_brands: [звонобот, voximplant, twin ai, neuro.net, робот макс]
+  ws_cat: [голосовой робот для бизнеса, ии секретарь, робот для обзвона клиентов, виртуальный секретарь]
+  ws_dyn: голосовой робот
+  notes: Russian version of the global AI-receptionist niche; telephony and speech recognition are available from Russian providers
+
+- id: ru-speech-analytics-calls
+  name: Call speech analytics for sales teams and small call centres (RU)
+  who: sales teams of 5-50 managers, outsourced call centres, clinics, developers
+  product: SaaS 5-30 thousand RUB/month or RUB per minute
+  stack_fit: 1
+  reestr: [речевая аналитика, анализ звонков, контроль качества звонков]
+  bitrix: [речевая аналитика, анализ звонков, контроль звонков]
+  zakupki: [речевая аналитика]
+  hh_roles: [контролер качества звонков, специалист по контролю качества звонков, менеджер по контролю качества]
+  hh_brands: [imot, speech analytics, calltouch]
+  ws_brands: [imot, calltouch, comagic, sipuni, mango office]
+  ws_cat: [речевая аналитика, анализ звонков менеджеров, контроль качества звонков]
+  ws_dyn: речевая аналитика
+  notes: speech-to-text plus an LLM over the conversation; telephony vendors (MTS, Mango) add it as a feature, which is a platform risk
+
+- id: ru-ai-interviewer-mass-hiring
+  name: AI interviewer and candidate screening for mass hiring (RU)
+  who: retail, logistics, call centres, HoReCa - HR teams with 100+ applications a week
+  product: SaaS 10-50 thousand RUB/month or RUB per interview
+  stack_fit: 1
+  reestr: [интервью, скрининг кандидатов, рекрутер, видеоинтервью]
+  bitrix: [подбор персонала, рекрутинг, hr бот]
+  zakupki: [автоматизация подбора персонала, робот рекрутер]
+  hh_roles: [специалист по массовому подбору, рекрутер массовый подбор, оператор hr-колл-центра]
+  hh_brands: [робот вера, хантфлоу, skillaz]
+  ws_brands: [робот вера, хантфлоу, potok, skillaz, talantix]
+  ws_cat: [ии рекрутер, автоматизация подбора персонала, робот для собеседований, видеоинтервью кандидатов]
+  ws_dyn: автоматизация подбора персонала
+  notes: hh.ru itself builds AI hiring tools, which is a platform risk
+
+- id: ru-sales-call-copilot-trainer
+  name: Real-time prompter and AI trainer for sales managers on calls (RU)
+  who: SMB sales teams, heads of sales, business trainers
+  product: SaaS 2-5 thousand RUB/month per manager
+  stack_fit: 1
+  reestr: [тренажер продаж, тренажер переговоров, скрипт продаж, суфлер]
+  bitrix: [скрипты продаж, тренажер продаж, подсказки менеджеру]
+  zakupki: [тренажер продаж, тренажер переговоров]
+  hh_roles: [тренер по продажам, бизнес-тренер продажи, руководитель отдела продаж]
+  hh_brands: [hyperscript, скриптогенератор]
+  ws_brands: [hyperscript, скриптогенератор, salesai]
+  ws_cat: [тренажер по продажам, скрипты продаж программа, суфлер для менеджера по продажам, ии тренажер переговоров]
+  ws_dyn: скрипты продаж
+  notes: real-time hints during calls; Russian demand had not been measured before
+
+- id: ru-chatbots-business
+  name: Chatbots and auto-replies in Telegram/WhatsApp/VK for small businesses (RU)
+  who: SMBs with leads in messengers - salons, delivery, online schools
+  product: SaaS 1-10 thousand RUB/month
+  stack_fit: 1
+  reestr: [чат-бот, чат бот, конструктор ботов]
+  bitrix: [чат-бот, telegram бот, whatsapp бот]
+  zakupki: [чат-бот]
+  hh_roles: [оператор чата, менеджер по работе с клиентами в мессенджерах]
+  hh_brands: [salebot, bothelp, aimylogic]
+  ws_brands: [salebot, bothelp, botmother, aimylogic, textback, smartbot pro]
+  ws_cat: [чат бот для бизнеса, конструктор чат ботов, бот для телеграм для бизнеса]
+  ws_dyn: чат бот для бизнеса
+  notes: competitive (dozens of bot builders); LLM agents are a new wave
+
+- id: ru-auto-repair
+  name: Car repair shops - work orders, booking, stock (RU)
+  who: independent car repair shops, tyre fitting, detailing, 1-20 bays
+  product: 2-8 thousand RUB/month
+  stack_fit: 1
+  reestr: [автосервис, шиномонтаж, автотехцентр, автомойк]
+  bitrix: [автосервис, сто]
+  zakupki: [автосервис программное обеспечение]
+  hh_roles: [мастер-приемщик, администратор автосервиса]
+  hh_brands: [автодилер, трицепс, 1с автосервис]
+  ws_brands: [автодилер, трицепс, 1с автосервис, wilgood soft, carpark]
+  ws_cat: [программа для автосервиса, crm для автосервиса, программа для сто]
+  ws_dyn: программа для автосервиса
+  notes: has live category demand, which is rare in Russian B2B
+
+- id: ru-beauty-salons
+  name: Beauty salons and freelancers - online booking, client base (RU)
+  who: salons, barbershops, nail studios, private masters
+  product: 1-5 thousand RUB/month
+  stack_fit: 1
+  reestr: [салон красоты, онлайн-запись, онлайн запись]
+  bitrix: [салон красоты, онлайн-запись]
+  zakupki: [салон красоты программа]
+  hh_roles: [администратор салона красоты, администратор студии красоты]
+  hh_brands: [yclients, dikidi, sonline]
+  ws_brands: [yclients, dikidi, sonline, arnica, beauty pro]
+  ws_cat: [программа для салона красоты, crm для салона красоты, онлайн запись для салона красоты]
+  ws_dyn: yclients
+  notes: a leader (YCLIENTS) is expected - a concentration control niche for the Russian branch
+
+- id: ru-fitness-clubs
+  name: Fitness clubs and studios - memberships, schedule, CRM (RU)
+  who: clubs and studios with 1-5 locations, sports sections
+  product: 3-15 thousand RUB/month
+  stack_fit: 1
+  reestr: [фитнес, спортивных клубов, абонемент]
+  bitrix: [фитнес, спортивный клуб]
+  zakupki: [фитнес клуб программное обеспечение]
+  hh_roles: [администратор фитнес-клуба, администратор фитнес клуба]
+  hh_brands: [1с фитнес клуб, fitbase, mobifitness]
+  ws_brands: [1с фитнес клуб, fitbase, mobifitness, gym team, fitness live]
+  ws_cat: [программа для фитнес клуба, crm для фитнес клуба, приложение для фитнес клуба]
+  ws_dyn: программа для фитнес клуба
+  notes: Russian counterpart of the global gym and martial-arts studios niche
+
+- id: ru-edu-centers
+  name: Training centres, language schools, children's centres - CRM and schedule (RU)
+  who: private schools and centres with 50-2000 students
+  product: 2-10 thousand RUB/month
+  stack_fit: 1
+  reestr: [учебный центр, образовательный центр, языковая школа, детский центр]
+  bitrix: [учебный центр, образовательный центр, школа]
+  zakupki: [crm учебный центр]
+  hh_roles: [администратор учебного центра, администратор языковой школы, администратор детского центра]
+  hh_brands: [мой класс, hollihop, alfa crm]
+  ws_brands: [мой класс crm, hollihop, alfa crm, параплан]
+  ws_cat: [crm для учебного центра, программа для языковой школы, crm для детского центра]
+  ws_dyn: crm для учебного центра
+  notes: ~
+
+- id: ru-hotels-guesthouses
+  name: Hotels, guest houses, apartments - PMS and booking (RU)
+  who: properties with 5-100 rooms, short-term rentals
+  product: 2-10 thousand RUB/month
+  stack_fit: 1
+  reestr: [гостиниц, отель, отелей, хостел]
+  bitrix: [отель, гостиница, бронирование]
+  zakupki: [гостиница программа бронирования, система управления отелем]
+  hh_roles: [администратор гостиницы, администратор отеля, администратор хостела]
+  hh_brands: [bnovo, travelline, shelter]
+  ws_brands: [bnovo, travelline, shelter pms, контур отель, 1с отель]
+  ws_cat: [программа для гостиницы, система бронирования для отеля, pms для отеля]
+  ws_dyn: программа для гостиницы
+  notes: domestic tourism is growing; Bnovo and TravelLine are strong
+
+- id: ru-restaurants-cafes
+  name: Restaurants and cafes - automation, delivery, loyalty (RU)
+  who: cafes, coffee shops, delivery with 1-5 locations
+  product: 2-10 thousand RUB/month
+  stack_fit: 1
+  reestr: [ресторан, общепит, кафе, доставка еды]
+  bitrix: [ресторан, кафе, доставка еды]
+  zakupki: [автоматизация общественного питания]
+  hh_roles: [администратор ресторана, администратор кафе, хостес]
+  hh_brands: [iiko, r-keeper, presto]
+  ws_brands: [iiko, r keeper, presto сбис, quick resto, poster pos]
+  ws_cat: [программа для кафе, автоматизация ресторана, программа для доставки еды]
+  ws_dyn: iiko
+  notes: a duopoly of iiko and r_keeper is expected - a control niche
+
+- id: ru-logistics-dispatch
+  name: Freight and courier logistics - dispatch, TMS (RU)
+  who: transport companies and sole traders with 5-50 vehicles, courier services
+  product: 3-20 thousand RUB/month
+  stack_fit: 1
+  reestr: [грузоперевоз, tms, транспортной логистики, маршрутизации]
+  bitrix: [грузоперевозки, логистика, tms]
+  zakupki: [транспортная логистика программное обеспечение, tms система]
+  hh_roles: [диспетчер грузоперевозок, логист диспетчер, диспетчер транспортного отдела]
+  hh_brands: [умная логистика, 1с tms, мегалогист]
+  ws_brands: [умная логистика, 1с tms, мегалогист, яндекс маршрутизация, atrucks]
+  ws_cat: [программа для грузоперевозок, tms система, программа для диспетчера грузоперевозок]
+  ws_dyn: программа для грузоперевозок
+  notes: ~
+
+- id: ru-construction-estimates
+  name: Estimates and accounting for renovation crews and contractors (RU)
+  who: crews, foremen, small contractors
+  product: 1-5 thousand RUB/month
+  stack_fit: 1
+  reestr: [смета, сметн, прораб]
+  bitrix: [смета, строительство]
+  zakupki: [сметная программа]
+  hh_roles: [сметчик, инженер-сметчик]
+  hh_brands: [гранд-смета, смета ру, турбосметчик]
+  ws_brands: [гранд смета, смета ру, турбосметчик, сметный калькулятор]
+  ws_cat: [программа для составления смет, смета на ремонт онлайн, программа для прораба]
+  ws_dyn: программа для составления смет
+  notes: Grand-Smeta leads the professional segment; the small-crew segment may be open
+
+- id: ru-housing-management
+  name: Management companies and homeowner associations - dispatch, requests, resident app (RU)
+  who: management companies with 5-100 buildings, homeowner associations
+  product: 5-30 thousand RUB/month
+  stack_fit: 1
+  reestr: [жкх, управляющих компаний, тсж, диспетчерская]
+  bitrix: [жкх, управляющая компания]
+  zakupki: [жкх программное обеспечение, диспетчерская служба жкх]
+  hh_roles: [диспетчер управляющей компании, диспетчер жкх, паспортист]
+  hh_brands: [домиленд, диспетчер 24, 1с жкх]
+  ws_brands: [домиленд, диспетчер 24, квартплата 24, бурмистр, 1с жкх]
+  ws_cat: [программа для управляющей компании, приложение для жильцов ук, диспетчерская жкх программа]
+  ws_dyn: программа для управляющей компании
+  notes: state housing information system (GIS ZhKH) and regulation; voice intake of requests is an AI angle
+
+- id: ru-field-service
+  name: Field service companies - requests, visits, maintenance (RU)
+  who: service companies (HVAC, security, IT outsourcing, elevators) with 5-50 engineers
+  product: 5-30 thousand RUB/month
+  stack_fit: 1
+  reestr: [выездного обслуживания, выездных, сервисной службы, service management]
+  bitrix: [выездное обслуживание, сервисная служба, fsm]
+  zakupki: [выездное обслуживание программное обеспечение]
+  hh_roles: [диспетчер сервисной службы, координатор выездных инженеров, диспетчер сервисного центра]
+  hh_brands: [planado, hubex, okdesk]
+  ws_brands: [planado, hubex, okdesk, мобифорс]
+  ws_cat: [программа для выездного обслуживания, fsm система, учет заявок сервисной службы]
+  ws_dyn: программа для выездного обслуживания
+  notes: ~
+
+- id: ru-marketplace-sellers
+  name: Wildberries/Ozon sellers - analytics, auto-replies, management (RU)
+  who: sellers with a turnover of 0.5-20 million RUB/month
+  product: 3-30 thousand RUB/month
+  stack_fit: 1
+  reestr: [маркетплейс, wildberries, ozon, селлер]
+  bitrix: [wildberries, ozon, маркетплейс]
+  zakupki: [аналитика маркетплейсов]
+  hh_roles: [менеджер маркетплейсов, менеджер wildberries, менеджер ozon]
+  hh_brands: [mpstats, moneyplace, маяк]
+  ws_brands: [mpstats, moneyplace, маяк аналитика, shopstat, анабар, eggheads]
+  ws_cat: [аналитика вайлдберриз, сервис аналитики маркетплейсов, автоответы на отзывы wildberries]
+  ws_dyn: mpstats
+  notes: platform risk from Wildberries/Ozon APIs; the number of sellers is flat to slightly down
+
+- id: ru-tender-search
+  name: Tender search and support for suppliers (RU)
+  who: SMB suppliers taking part in 44-FZ/223-FZ procurement
+  product: 3-15 thousand RUB/month
+  stack_fit: 1
+  reestr: [тендер, закупок, госзакуп]
+  bitrix: [тендер, закупки]
+  zakupki: [поиск тендеров сервис]
+  hh_roles: [тендерный специалист, специалист по тендерам, специалист по закупкам 44-фз]
+  hh_brands: [контур закупки, seldon, bicotender]
+  ws_brands: [контур закупки, селдон, bicotender, тендерплан, ростендер, синапс тендеры]
+  ws_cat: [поиск тендеров, агрегатор тендеров, сервис поиска закупок]
+  ws_dyn: поиск тендеров
+  notes: Russia-specific, no global counterpart; LLM analysis of procurement documents is the entry point
+
+- id: ru-helpdesk-smb
+  name: Helpdesk / service desk for small service and IT companies (RU)
+  who: IT outsourcers, service companies, SaaS support teams
+  product: 500-2,000 RUB/agent/month
+  stack_fit: 1
+  reestr: [helpdesk, service desk, служба поддержки, техподдержк]
+  bitrix: [helpdesk, техподдержка, service desk]
+  zakupki: [service desk]
+  hh_roles: [специалист технической поддержки, оператор службы поддержки]
+  hh_brands: [okdesk, юздеск, omnidesk]
+  ws_brands: [okdesk, юздеск, happydesk, omnidesk, itsm 365]
+  ws_cat: [helpdesk система, сервис деск, программа для службы поддержки]
+  ws_dyn: helpdesk
+  notes: ~
+
+- id: ru-lms-smb
+  name: Employee training and onboarding - LMS for mid-size business (RU)
+  who: companies with 50-1000 employees, retail, HoReCa
+  product: 10-50 thousand RUB/month
+  stack_fit: 1
+  reestr: [дистанционного обучения, обучение сотрудников, lms, электронные курсы]
+  bitrix: [обучение сотрудников, lms, курсы]
+  zakupki: [система дистанционного обучения]
+  hh_roles: [менеджер по обучению персонала, специалист по обучению и развитию персонала]
+  hh_brands: [ispring, websoft, eduson]
+  ws_brands: [ispring, websoft, eduson, unicraft, teachbase, skill cup]
+  ws_cat: [платформа для обучения сотрудников, lms система, система дистанционного обучения персонала]
+  ws_dyn: платформа для обучения сотрудников
+  notes: AI conversation trainers (voice role-play) are an AI angle
+
+- id: ru-recruiting-ats
+  name: ATS / CRM for recruiting (RU)
+  who: HR departments of SMBs, recruitment agencies
+  product: 3-20 thousand RUB/month
+  stack_fit: 1
+  reestr: [подбор персонала, рекрутинг, кадровое агентство]
+  bitrix: [подбор персонала, рекрутинг]
+  zakupki: [подбор персонала программное обеспечение]
+  hh_roles: [рекрутер, менеджер по подбору персонала]
+  hh_brands: [хантфлоу, potok, e-staff]
+  ws_brands: [хантфлоу, potok, e-staff, talantix, skillaz, friendwork]
+  ws_cat: [crm для рекрутинга, ats система, программа для подбора персонала]
+  ws_dyn: программа для подбора персонала
+  notes: hh.ru (Talantix) is a platform; for AI screening see ru-ai-interviewer-mass-hiring
+
+- id: ru-vet-clinics
+  name: Veterinary clinics - booking, patient records, stock (RU)
+  who: veterinary clinics with 1-5 doctors
+  product: 2-8 thousand RUB/month
+  stack_fit: 1
+  reestr: [ветеринар, ветклиник]
+  bitrix: [ветеринар]
+  zakupki: [ветеринарная клиника программа]
+  hh_roles: [администратор ветеринарной клиники, администратор ветклиники]
+  hh_brands: [ветменеджер, vetmanager]
+  ws_brands: [ветменеджер, vetmanager, 1с ветеринария, vetera]
+  ws_cat: [программа для ветклиники, crm для ветеринарной клиники]
+  ws_dyn: программа для ветклиники
+  notes: borderline with healthcare; included as a check

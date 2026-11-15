@@ -1,0 +1,553 @@
+# Search queries for horizontal SMB / prosumer niches (section II of niches.yaml).
+
+ai-phone-receptionist-local:
+  en:
+    - {q: "ai receptionist", i: category, anchor: true}
+    - {q: "ai phone answering service for small business", i: category}
+    - {q: "ai answering service", i: category}
+    - {q: "virtual receptionist for small business", i: category}
+    - {q: "ai receptionist for restaurants", i: category}
+    - {q: "ai receptionist for salons", i: category}
+    - {q: "missed call text back service", i: category}
+    - {q: "how to stop missing calls small business", i: problem}
+    - {q: "how much does an answering service cost", i: problem}
+    - {q: "goodcall", i: brand, b: Goodcall}
+    - {q: "smith ai receptionist", i: brand, b: "Smith.ai"}
+    - {q: "slang ai", i: brand, b: "Slang.ai"}
+    - {q: "rosie ai receptionist", i: brand, b: Rosie}
+    - {q: "beside ai receptionist", i: brand, b: Beside}
+  ru:
+    - {q: "ии секретарь на телефон", i: category, anchor: true}
+    - {q: "голосовой робот для приема звонков", i: category}
+    - {q: "виртуальный секретарь для бизнеса", i: category}
+    - {q: "автоответчик с ии для бизнеса", i: category}
+    - {q: "робот для обработки входящих звонков", i: category}
+    - {q: "пропущенные звонки клиентов что делать", i: problem}
+    - {q: "колл тулз", i: brand, b: "Колл-тулз"}
+    - {q: "voximplant", i: brand, b: Voximplant}
+
+whatsapp-telegram-business-messaging:
+  en:
+    - {q: "whatsapp marketing software", i: category, anchor: true}
+    - {q: "whatsapp business api provider", i: category}
+    - {q: "whatsapp crm", i: category}
+    - {q: "whatsapp chatbot for business", i: category}
+    - {q: "whatsapp shared inbox", i: category}
+    - {q: "whatsapp bulk message sender", i: category}
+    - {q: "how to send bulk messages on whatsapp business", i: problem}
+    - {q: "whatsapp broadcast limit", i: problem}
+    - {q: "wati", i: brand, b: Wati}
+    - {q: "interakt", i: brand, b: Interakt}
+    - {q: "respond io", i: brand, b: "Respond.io"}
+    - {q: "aisensy", i: brand, b: AiSensy}
+  ru:
+    - {q: "рассылка в whatsapp для бизнеса", i: category, anchor: true}
+    - {q: "рассылка в телеграм для бизнеса", i: category}
+    - {q: "чат бот для бизнеса в телеграм", i: category}
+    - {q: "интеграция whatsapp с crm", i: category}
+    - {q: "рассылка в max мессенджере", i: category}
+    - {q: "как сделать рассылку клиентам в мессенджере", i: problem}
+    - {q: "wazzup", i: brand, b: Wazzup}
+    - {q: "textback", i: brand, b: TextBack}
+    - {q: "bothelp", i: brand, b: BotHelp}
+    - {q: "senler", i: brand, b: Senler}
+
+invoice-estimate-mobile-apps:
+  en:
+    - {q: "invoice app", i: category, anchor: true}
+    - {q: "invoice maker app", i: category}
+    - {q: "estimate app for contractors", i: category}
+    - {q: "free invoice app for small business", i: category}
+    - {q: "invoice and estimate app", i: category}
+    - {q: "receipt maker app", i: category}
+    - {q: "how to make an invoice on iphone", i: problem}
+    - {q: "invoice template for self employed", i: problem}
+    - {q: "invoice simple", i: brand, b: "Invoice Simple"}
+    - {q: "invoice fly", i: brand, b: "Invoice Fly"}
+    - {q: "joist app", i: brand, b: Joist}
+    - {q: "billdu", i: brand, b: Billdu}
+    - {q: "invoice home", i: brand, b: "Invoice Home"}
+  ru:
+    - {q: "приложение для выставления счетов", i: category, anchor: true}
+    - {q: "выставить счет онлайн бесплатно", i: category}
+    - {q: "составить смету онлайн", i: category}
+    - {q: "программа для составления смет для мастеров", i: category}
+    - {q: "как выставить счет на оплату ип", i: problem}
+    - {q: "мой склад", i: brand, b: "МойСклад"}
+
+shift-scheduling-deskless:
+  en:
+    - {q: "employee scheduling software", i: category, anchor: true}
+    - {q: "shift scheduling app", i: category}
+    - {q: "staff scheduling app for small business", i: category}
+    - {q: "restaurant scheduling software", i: category}
+    - {q: "time clock app for small business", i: category}
+    - {q: "shift swap app", i: category}
+    - {q: "employee schedule template", i: problem}
+    - {q: "how to make a work schedule for employees", i: problem}
+    - {q: "deputy app", i: brand, b: Deputy}
+    - {q: "when i work", i: brand, b: "When I Work"}
+    - {q: "homebase scheduling", i: brand, b: Homebase}
+    - {q: "7shifts", i: brand, b: "7shifts"}
+    - {q: "sling scheduling", i: brand, b: Sling}
+  ru:
+    - {q: "программа для составления графика смен", i: category, anchor: true}
+    - {q: "приложение для графика работы сотрудников", i: category}
+    - {q: "учет рабочего времени сотрудников программа", i: category}
+    - {q: "табель учета рабочего времени онлайн", i: category}
+    - {q: "график сменности образец", i: problem}
+    - {q: "verme", i: brand, b: Verme}
+    - {q: "скользящий график приложение", i: brand, b: "Скользящий график"}
+
+sop-process-documentation:
+  en:
+    - {q: "sop software", i: category, anchor: true}
+    - {q: "process documentation software", i: category}
+    - {q: "standard operating procedure software", i: category}
+    - {q: "employee training software for small business", i: category}
+    - {q: "screen recording to documentation", i: category}
+    - {q: "sop template", i: problem}
+    - {q: "how to write standard operating procedures", i: problem}
+    - {q: "trainual", i: brand, b: Trainual}
+    - {q: "scribe how", i: brand, b: Scribe}
+    - {q: "tango app documentation", i: brand, b: Tango}
+    - {q: "whale sop", i: brand, b: Whale}
+    - {q: "guidde", i: brand, b: Guidde}
+
+esignature-smb:
+  en:
+    - {q: "electronic signature software", i: category, anchor: true}
+    - {q: "esignature app", i: category}
+    - {q: "docusign alternative", i: category}
+    - {q: "free e signature", i: category}
+    - {q: "esign api", i: category}
+    - {q: "how to sign a pdf electronically", i: problem}
+    - {q: "is electronic signature legally binding", i: problem}
+    - {q: "docusign", i: brand, b: DocuSign}
+    - {q: "pandadoc", i: brand, b: PandaDoc}
+    - {q: "signwell", i: brand, b: SignWell}
+    - {q: "documenso", i: brand, b: Documenso}
+    - {q: "dropbox sign", i: brand, b: "Dropbox Sign"}
+  ru:
+    - {q: "электронная подпись документов онлайн", i: category, anchor: true}
+    - {q: "сервис подписания документов", i: category}
+    - {q: "подписать договор онлайн", i: category}
+    - {q: "как подписать документ электронной подписью", i: problem}
+    - {q: "контур сайн", i: brand, b: "Контур.Сайн"}
+    - {q: "sign me", i: brand, b: "Sign.Me"}
+
+digital-business-cards:
+  en:
+    - {q: "digital business card", i: category, anchor: true}
+    - {q: "nfc business card", i: category}
+    - {q: "digital business card app", i: category}
+    - {q: "qr code business card", i: category}
+    - {q: "digital business card for teams", i: category}
+    - {q: "how to make a digital business card", i: problem}
+    - {q: "business card scanner app", i: category}
+    - {q: "blinq", i: brand, b: Blinq}
+    - {q: "popl", i: brand, b: Popl}
+    - {q: "hihello", i: brand, b: HiHello}
+    - {q: "linq app", i: brand, b: Linq}
+  ru:
+    - {q: "электронная визитка", i: category, anchor: true}
+    - {q: "nfc визитка", i: category}
+    - {q: "qr визитка создать", i: category}
+    - {q: "как сделать электронную визитку", i: problem}
+    - {q: "myqrcards", i: brand, b: MyQRcards}
+
+loyalty-wallet-passes:
+  en:
+    - {q: "apple wallet loyalty card", i: category, anchor: true}
+    - {q: "digital loyalty card app for small business", i: category}
+    - {q: "digital stamp card", i: category}
+    - {q: "wallet pass generator", i: category}
+    - {q: "loyalty program for small business", i: category}
+    - {q: "how to create apple wallet pass", i: problem}
+    - {q: "coffee shop loyalty program ideas", i: problem}
+    - {q: "passkit", i: brand, b: PassKit}
+    - {q: "loopy loyalty", i: brand, b: "Loopy Loyalty"}
+    - {q: "pass2u", i: brand, b: Pass2U}
+    - {q: "stamp me", i: brand, b: "Stamp Me"}
+  ru:
+    - {q: "электронные карты лояльности для бизнеса", i: category, anchor: true}
+    - {q: "карта лояльности в apple wallet", i: category}
+    - {q: "программа лояльности для кофейни", i: category}
+    - {q: "система лояльности для малого бизнеса", i: category}
+    - {q: "как сделать карту в wallet", i: problem}
+    - {q: "uds", i: brand, b: UDS}
+    - {q: "cardbox", i: brand, b: Cardbox}
+
+reviews-reputation-local:
+  en:
+    - {q: "review management software", i: category, anchor: true}
+    - {q: "google review software", i: category}
+    - {q: "reputation management software for small business", i: category}
+    - {q: "review request software", i: category}
+    - {q: "ai review response tool", i: category}
+    - {q: "how to get more google reviews", i: problem}
+    - {q: "how to respond to negative reviews", i: problem}
+    - {q: "birdeye", i: brand, b: Birdeye}
+    - {q: "podium reviews", i: brand, b: Podium}
+    - {q: "nicejob", i: brand, b: NiceJob}
+    - {q: "localyser", i: brand, b: Localyser}
+  ru:
+    - {q: "управление отзывами на картах", i: category, anchor: true}
+    - {q: "сервис сбора отзывов", i: category}
+    - {q: "мониторинг отзывов о компании", i: category}
+    - {q: "как получить больше отзывов на яндекс картах", i: problem}
+    - {q: "как отвечать на негативные отзывы", i: problem}
+    - {q: "rocketdata", i: brand, b: Rocketdata}
+    - {q: "точка отзывы", i: brand, b: "Точка Отзывы"}
+
+local-seo-gbp-agencies:
+  en:
+    - {q: "local seo software", i: category, anchor: true}
+    - {q: "google business profile management tool", i: category}
+    - {q: "local rank tracker", i: category}
+    - {q: "google maps rank tracker", i: category}
+    - {q: "citation building service", i: category}
+    - {q: "local seo tools for agencies", i: category}
+    - {q: "how to rank in google map pack", i: problem}
+    - {q: "google business profile optimization checklist", i: problem}
+    - {q: "brightlocal", i: brand, b: BrightLocal}
+    - {q: "local falcon", i: brand, b: "Local Falcon"}
+    - {q: "whitespark", i: brand, b: Whitespark}
+    - {q: "localo", i: brand, b: Localo}
+    - {q: "local viking", i: brand, b: "Local Viking"}
+
+ai-search-visibility-geo:
+  en:
+    - {q: "ai search visibility tool", i: category, anchor: true}
+    - {q: "generative engine optimization tools", i: category}
+    - {q: "chatgpt brand monitoring", i: category}
+    - {q: "ai visibility tracking", i: category}
+    - {q: "llm brand tracking", i: category}
+    - {q: "aeo tools", i: category}
+    - {q: "how to get mentioned by chatgpt", i: problem}
+    - {q: "how to rank in ai overviews", i: problem}
+    - {q: "profound ai", i: brand, b: Profound}
+    - {q: "peec ai", i: brand, b: "Peec AI"}
+    - {q: "otterly ai", i: brand, b: Otterly}
+    - {q: "scrunch ai", i: brand, b: Scrunch}
+    - {q: "athenahq", i: brand, b: AthenaHQ}
+
+cold-email-deliverability:
+  en:
+    - {q: "email warmup tool", i: category, anchor: true}
+    - {q: "cold email software", i: category}
+    - {q: "email verification tool", i: category}
+    - {q: "email deliverability tool", i: category}
+    - {q: "cold email infrastructure", i: category}
+    - {q: "bulk email verifier", i: category}
+    - {q: "how to warm up email domain", i: problem}
+    - {q: "cold emails going to spam", i: problem}
+    - {q: "instantly ai", i: brand, b: Instantly}
+    - {q: "smartlead", i: brand, b: Smartlead}
+    - {q: "warmup inbox", i: brand, b: "Warmup Inbox"}
+    - {q: "mailreach", i: brand, b: Mailreach}
+    - {q: "zerobounce", i: brand, b: ZeroBounce}
+
+creator-niche-social-scheduling:
+  en:
+    - {q: "reddit post scheduler", i: category, anchor: true}
+    - {q: "twitter scheduling tool", i: category}
+    - {q: "linkedin post scheduler", i: category}
+    - {q: "x growth tool", i: category}
+    - {q: "linkedin carousel generator", i: category}
+    - {q: "thread maker for twitter", i: category}
+    - {q: "how to schedule reddit posts", i: problem}
+    - {q: "best time to post on linkedin", i: problem}
+    - {q: "hypefury", i: brand, b: Hypefury}
+    - {q: "typefully", i: brand, b: Typefully}
+    - {q: "taplio", i: brand, b: Taplio}
+    - {q: "postpone app", i: brand, b: Postpone}
+    - {q: "later for reddit", i: brand, b: "Later for Reddit"}
+
+marketplace-seller-analytics:
+  en:
+    - {q: "amazon seller tools", i: category, anchor: true}
+    - {q: "amazon product research tool", i: category}
+    - {q: "amazon ppc software", i: category}
+    - {q: "amazon fba profit calculator", i: category}
+    - {q: "amazon repricer", i: category}
+    - {q: "amazon keyword research tool", i: category}
+    - {q: "how to find products to sell on amazon", i: problem}
+    - {q: "amazon fba fees", i: problem}
+    - {q: "helium 10", i: brand, b: "Helium 10"}
+    - {q: "jungle scout", i: brand, b: "Jungle Scout"}
+    - {q: "sellerboard", i: brand, b: Sellerboard}
+  ru:
+    - {q: "сервис аналитики wildberries", i: category, anchor: true}
+    - {q: "аналитика маркетплейсов", i: category}
+    - {q: "сервис аналитики ozon", i: category}
+    - {q: "биддер для wildberries", i: category}
+    - {q: "юнит экономика wildberries калькулятор", i: category}
+    - {q: "как найти нишу на вайлдберриз", i: problem}
+    - {q: "mpstats", i: brand, b: MPSTATS}
+    - {q: "moneyplace", i: brand, b: Moneyplace}
+    - {q: "marketguru", i: brand, b: MarketGURU}
+    - {q: "маяк аналитика", i: brand, b: Маяк}
+
+pod-kdp-etsy-seller-tools:
+  en:
+    - {q: "etsy seo tool", i: category, anchor: true}
+    - {q: "print on demand research tool", i: category}
+    - {q: "kdp niche research tool", i: category}
+    - {q: "low content book creator", i: category}
+    - {q: "merch by amazon research tool", i: category}
+    - {q: "etsy listing generator ai", i: category}
+    - {q: "how to find profitable kdp niches", i: problem}
+    - {q: "how to rank on etsy", i: problem}
+    - {q: "merch informer", i: brand, b: "Merch Informer"}
+    - {q: "book bolt", i: brand, b: "Book Bolt"}
+    - {q: "everbee", i: brand, b: Everbee}
+    - {q: "erank", i: brand, b: eRank}
+    - {q: "podly", i: brand, b: Podly}
+
+reseller-crosslisting-scanners:
+  en:
+    - {q: "crosslisting app", i: category, anchor: true}
+    - {q: "reseller app", i: category}
+    - {q: "thrift scanner app", i: category}
+    - {q: "reseller inventory app", i: category}
+    - {q: "ebay listing tool", i: category}
+    - {q: "poshmark crosslister", i: category}
+    - {q: "how to crosslist on poshmark and mercari", i: problem}
+    - {q: "reseller spreadsheet", i: problem}
+    - {q: "vendoo", i: brand, b: Vendoo}
+    - {q: "list perfectly", i: brand, b: "List Perfectly"}
+    - {q: "crosslist", i: brand, b: Crosslist}
+    - {q: "flipwise", i: brand, b: Flipwise}
+  ru:
+    - {q: "приложение для перекупов", i: category, anchor: true}
+    - {q: "программа для перепродажи товаров", i: category}
+    - {q: "учет товара для перекупа", i: category}
+    - {q: "как вести учет перепродаж", i: problem}
+    - {q: "перекуппро", i: brand, b: ПерекупПро}
+
+subscription-cancel-flow-retention:
+  en:
+    - {q: "churn reduction software", i: category, anchor: true}
+    - {q: "cancellation flow software", i: category}
+    - {q: "saas retention tool", i: category}
+    - {q: "failed payment recovery software", i: category}
+    - {q: "churn prevention tool for subscription", i: category}
+    - {q: "how to reduce churn saas", i: problem}
+    - {q: "cancellation flow best practices", i: problem}
+    - {q: "churnkey", i: brand, b: Churnkey}
+    - {q: "prosperstack", i: brand, b: ProsperStack}
+    - {q: "raaft", i: brand, b: Raaft}
+    - {q: "chargebee retention", i: brand, b: "Chargebee Retention"}
+    - {q: "churn buster", i: brand, b: Churnbuster}
+
+saas-product-feedback-boards:
+  en:
+    - {q: "product feedback tool", i: category, anchor: true}
+    - {q: "feature request software", i: category}
+    - {q: "public roadmap tool", i: category}
+    - {q: "changelog tool", i: category}
+    - {q: "customer feedback board", i: category}
+    - {q: "feature voting board", i: category}
+    - {q: "how to collect feature requests", i: problem}
+    - {q: "how to prioritize feature requests", i: problem}
+    - {q: "canny io", i: brand, b: Canny}
+    - {q: "featurebase", i: brand, b: Featurebase}
+    - {q: "frill co", i: brand, b: Frill}
+    - {q: "nolt", i: brand, b: Nolt}
+    - {q: "upvoty", i: brand, b: Upvoty}
+
+waitlist-referral-launch:
+  en:
+    - {q: "waitlist software", i: category, anchor: true}
+    - {q: "viral waitlist tool", i: category}
+    - {q: "referral waitlist", i: category}
+    - {q: "pre launch landing page builder", i: category}
+    - {q: "waitlist widget", i: category}
+    - {q: "how to build a waitlist for a product", i: problem}
+    - {q: "waitlist landing page template", i: problem}
+    - {q: "viral loops", i: brand, b: "Viral Loops"}
+    - {q: "kickofflabs", i: brand, b: KickoffLabs}
+    - {q: "prefinery", i: brand, b: Prefinery}
+    - {q: "launchlist", i: brand, b: LaunchList}
+
+course-creator-affiliate-payouts:
+  en:
+    - {q: "affiliate program software", i: category, anchor: true}
+    - {q: "affiliate tracking software for saas", i: category}
+    - {q: "referral program software", i: category}
+    - {q: "affiliate management platform", i: category}
+    - {q: "affiliate software for online courses", i: category}
+    - {q: "how to start an affiliate program", i: problem}
+    - {q: "affiliate commission structure", i: problem}
+    - {q: "rewardful", i: brand, b: Rewardful}
+    - {q: "firstpromoter", i: brand, b: FirstPromoter}
+    - {q: "partnerstack", i: brand, b: PartnerStack}
+    - {q: "leaddyno", i: brand, b: LeadDyno}
+    - {q: "tolt", i: brand, b: Tolt}
+
+wordpress-niche-plugins:
+  en:
+    - {q: "affiliate link plugin wordpress", i: category, anchor: true}
+    - {q: "wordpress affiliate plugin", i: category}
+    - {q: "link cloaking plugin", i: category}
+    - {q: "amazon affiliate wordpress plugin", i: category}
+    - {q: "product display plugin wordpress", i: category}
+    - {q: "how to cloak affiliate links", i: problem}
+    - {q: "how to add amazon affiliate links to wordpress", i: problem}
+    - {q: "lasso plugin", i: brand, b: Lasso}
+    - {q: "thirstyaffiliates", i: brand, b: ThirstyAffiliates}
+    - {q: "pretty links", i: brand, b: "Pretty Links"}
+    - {q: "affiliatewp", i: brand, b: AffiliateWP}
+
+niche-job-board-builders:
+  en:
+    - {q: "job board software", i: category, anchor: true}
+    - {q: "create a job board website", i: category}
+    - {q: "job board builder", i: category}
+    - {q: "niche job board platform", i: category}
+    - {q: "job board wordpress theme", i: category}
+    - {q: "how to start a job board", i: problem}
+    - {q: "how much do job boards make", i: problem}
+    - {q: "niceboard", i: brand, b: Niceboard}
+    - {q: "jboard", i: brand, b: jBoard}
+    - {q: "smartjobboard", i: brand, b: SmartJobBoard}
+
+indie-app-dev-aso-tools:
+  en:
+    - {q: "aso tools", i: category, anchor: true}
+    - {q: "app store keyword tool", i: category}
+    - {q: "app store screenshot generator", i: category}
+    - {q: "app store rank tracker", i: category}
+    - {q: "app review management tool", i: category}
+    - {q: "app store optimization software", i: category}
+    - {q: "how to get more app downloads", i: problem}
+    - {q: "app store screenshot sizes", i: problem}
+    - {q: "appfigures", i: brand, b: AppFigures}
+    - {q: "apptweak", i: brand, b: AppTweak}
+    - {q: "astro aso", i: brand, b: Astro}
+    - {q: "appradar", i: brand, b: AppRadar}
+
+n8n-openclaw-managed-hosting:
+  en:
+    - {q: "n8n hosting", i: category, anchor: true}
+    - {q: "self hosted n8n", i: category}
+    - {q: "openclaw hosting", i: category}
+    - {q: "managed n8n", i: category}
+    - {q: "n8n cloud alternative", i: category}
+    - {q: "host ai agent 24/7", i: category}
+    - {q: "how to self host n8n", i: problem}
+    - {q: "how to run openclaw without mac mini", i: problem}
+    - {q: "sliplane", i: brand, b: Sliplane}
+    - {q: "elestio", i: brand, b: Elestio}
+    - {q: "railway app", i: brand, b: Railway}
+    - {q: "n8n cloud", i: brand, b: "n8n Cloud"}
+    - {q: "agent 37", i: brand, b: "Agent 37"}
+
+product-demo-screen-recorders:
+  en:
+    - {q: "screen recorder for product demos", i: category, anchor: true}
+    - {q: "interactive demo software", i: category}
+    - {q: "product demo video maker", i: category}
+    - {q: "screen recording software mac", i: category}
+    - {q: "ai video tutorial maker", i: category}
+    - {q: "demo automation platform", i: category}
+    - {q: "how to record a product demo", i: problem}
+    - {q: "how to make software tutorial videos", i: problem}
+    - {q: "screen studio", i: brand, b: "Screen Studio"}
+    - {q: "tella", i: brand, b: Tella}
+    - {q: "loom", i: brand, b: Loom}
+    - {q: "guideflow", i: brand, b: Guideflow}
+    - {q: "arcade software", i: brand, b: Arcade}
+    - {q: "focusee", i: brand, b: FocuSee}
+
+ux-research-ops:
+  en:
+    - {q: "user research recruiting tool", i: category, anchor: true}
+    - {q: "research repository software", i: category}
+    - {q: "participant recruitment platform", i: category}
+    - {q: "user research panel software", i: category}
+    - {q: "consent form for user research", i: category}
+    - {q: "how to recruit participants for user research", i: problem}
+    - {q: "user interview incentives", i: problem}
+    - {q: "dovetail", i: brand, b: Dovetail}
+    - {q: "great question", i: brand, b: "Great Question"}
+    - {q: "rally uxr", i: brand, b: Rally}
+    - {q: "ethnio", i: brand, b: Ethnio}
+    - {q: "maze design", i: brand, b: Maze}
+
+ai-explainer-whiteboard-videos:
+  en:
+    - {q: "ai explainer video maker", i: category, anchor: true}
+    - {q: "whiteboard animation software", i: category}
+    - {q: "text to explainer video", i: category}
+    - {q: "animated explainer video generator", i: category}
+    - {q: "ai animation video maker", i: category}
+    - {q: "how to make an explainer video", i: problem}
+    - {q: "explainer video cost", i: problem}
+    - {q: "videoscribe", i: brand, b: VideoScribe}
+    - {q: "doodly", i: brand, b: Doodly}
+    - {q: "vyond", i: brand, b: Vyond}
+    - {q: "golpo ai", i: brand, b: Golpo}
+    - {q: "lunair ai", i: brand, b: Lunair}
+
+ai-video-dubbing-captions:
+  en:
+    - {q: "ai video dubbing", i: category, anchor: true}
+    - {q: "ai video translator", i: category}
+    - {q: "video dubbing software", i: category}
+    - {q: "ai caption generator", i: category}
+    - {q: "voice cloning dubbing", i: category}
+    - {q: "auto subtitle generator", i: category}
+    - {q: "how to dub a video in another language", i: problem}
+    - {q: "how to add captions to video", i: problem}
+    - {q: "rask ai", i: brand, b: "Rask AI"}
+    - {q: "heygen video translate", i: brand, b: HeyGen}
+    - {q: "elevenlabs dubbing", i: brand, b: "ElevenLabs Dubbing"}
+    - {q: "captions app", i: brand, b: Captions}
+  ru:
+    - {q: "ии дубляж видео", i: category, anchor: true}
+    - {q: "перевод видео нейросеть", i: category}
+    - {q: "ии озвучка видео", i: category}
+    - {q: "субтитры к видео автоматически", i: category}
+    - {q: "перевод видео с английского на русский с озвучкой", i: category}
+    - {q: "как перевести видео на русский язык", i: problem}
+    - {q: "rask ai", i: brand, b: "Rask AI"}
+    - {q: "heygen", i: brand, b: HeyGen}
+
+faceless-youtube-automation:
+  en:
+    - {q: "faceless youtube channel", i: category, anchor: true}
+    - {q: "faceless video generator", i: category}
+    - {q: "youtube automation software", i: category}
+    - {q: "ai shorts generator", i: category}
+    - {q: "ai tiktok video generator", i: category}
+    - {q: "text to video ai for youtube", i: category}
+    - {q: "how to start a faceless youtube channel", i: problem}
+    - {q: "faceless youtube channel ideas", i: problem}
+    - {q: "autoshorts ai", i: brand, b: AutoShorts}
+    - {q: "crayo ai", i: brand, b: Crayo}
+    - {q: "faceless video", i: brand, b: "Faceless.video"}
+    - {q: "vydora ai", i: brand, b: Vydora}
+    - {q: "invideo ai", i: brand, b: InVideo}
+
+ai-headshots-photos:
+  en:
+    - {q: "ai headshot generator", i: category, anchor: true}
+    - {q: "ai headshots", i: category}
+    - {q: "professional headshot ai", i: category}
+    - {q: "ai dating photos", i: category}
+    - {q: "linkedin headshot generator", i: category}
+    - {q: "ai photo generator from selfies", i: category}
+    - {q: "how to take a professional headshot at home", i: problem}
+    - {q: "best photos for dating profile", i: problem}
+    - {q: "aragon ai", i: brand, b: "Aragon AI"}
+    - {q: "headshotpro", i: brand, b: HeadshotPro}
+    - {q: "betterpic", i: brand, b: BetterPic}
+    - {q: "photo ai", i: brand, b: "Photo AI"}
+  ru:
+    - {q: "ии фото на аватарку", i: category, anchor: true}
+    - {q: "нейросеть деловое фото", i: category}
+    - {q: "фото для резюме нейросеть", i: category}
+    - {q: "нейросеть фото для знакомств", i: category}
+    - {q: "как сделать деловое фото дома", i: problem}

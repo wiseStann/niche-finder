@@ -1,0 +1,196 @@
+# Per-niche inputs for the Russian leaderboard (stage s6_ru). Read with niches.overrides(ws, "overrides_ru.yaml").
+# Every key is optional; a niche without an entry gets platform 0 and no note.
+#
+#   platform: 0|1|2          2 = a government service, Yandex, a bank or a dominant free platform already covers the task
+#                            (gate G3, the niche turns red); 1 = partly covered; 0 = not covered
+#   verdict: green|yellow|red  optional manual verdict. By default the stage derives it: any failed gate -> red; all gates
+#                            pass -> green when score_ru >= verdict.green_min_score (nf.yaml), otherwise yellow. A verdict
+#                            written here replaces that rule for niches that pass the gates (a failed gate is always red).
+#                            This file ships without any, so every verdict is derived.
+#   note: text shown in the S6-ru report
+#   trap_anchor: phrase      the anchor query is informational or about something else (see the nested phrases);
+#                            it is left out of demand
+#   trap_brands: [phrases]   brand queries polluted by another meaning; left out of the brand sum
+#   dynamics_phrases: [..]   corrected or extra phrases for the dynamics stage (s4_wordstat_dynamics); the first one also
+#                            replaces the anchor as the growth signal in the leaderboard
+#
+# Niches whose App Store RU results were cleaned by hand are listed in config/appstore_ru_reviewed.yaml.
+#
+# The entries below are examples built from one measured run; replace them with your own judgments.
+
+ru-car-fines-checks:
+  platform: 2
+  trap_anchor: проверка штрафов гибдд
+  note: "fine checks go through Gosuslugi, the traffic police site and banks; 152k searches a month go to government services, not SaaS"
+package-trackers:
+  platform: 2
+  note: "'where is my parcel' is 91% of brand searches; Russian Post, marketplaces and Yandex track parcels themselves"
+esignature-smb:
+  platform: 2
+  note: "Goskey, Kontur, Sber/Tinkoff are platforms; SignMe is 66% of brand searches"
+invoice-estimate-mobile-apps:
+  platform: 2
+  note: "'moy sklad' is 100% of brand searches (150k); invoices in Russia are issued from banks (Tinkoff/Sber) and 1C"
+ai-video-dubbing-captions:
+  platform: 2
+  trap_anchor: ии дубляж видео
+  dynamics_phrases: [перевод видео нейросеть, озвучка видео нейросетью]
+  note: "the anchor 'ии дубляж видео' is 84% 'web-drama all episodes' (viewing); Yandex Browser translates video for free; heygen is 93% of brand searches"
+whatsapp-telegram-business-messaging:
+  platform: 2
+  note: "fragmented (wazzup 37%, radist, textback, umnico), but WhatsApp is restricted in Russia in 2025 (calls, promotion of the domestic messenger) - regulatory risk"
+small-trucking-fleets:
+  platform: 1
+  note: "'ati su' is 87% of brand searches - a freight exchange, not software; about 12% of the category is news noise; 1C and Kontur cover accounting"
+salon-beauty-booking:
+  platform: 1
+  note: "YCLIENTS is 63% of 94k brand searches - the de facto standard in Russia; category demand 172"
+ru-online-schools-experts:
+  platform: 1
+  note: "GetCourse is 58% of 150k brand searches - dominant"
+loyalty-wallet-passes:
+  platform: 1
+  note: "UDS is the only brand with volume (27k); category demand 79; Cardbox/Boomerangme are not searched - the loyalty market in Russia is brand-driven"
+reviews-reputation-local:
+  platform: 1
+  note: "'tochka otzyvy' 80k is probably reviews of the Tochka bank, not the product (broad-match trap); category 146"
+marketplace-seller-analytics:
+  platform: 2
+  dynamics_phrases: [аналитика вайлдберриз, mpstats]
+  note: "MPSTATS is 73% of brand searches (9.4k), Moneyplace/Mayak are the tail; category phrases about 100; Wildberries/Ozon change their APIs; a big market with a clear leader"
+parental-control-family-locator:
+  note: "'Gde moi deti' is 90% of brand searches and 53% of App Store RU ratings; Kids360 and Pingo are the tail"
+ai-study-flashcards:
+  note: "quizlet is 99% of brand searches; 'нейросеть для учебы' 231k broad demand is general AI, not flashcards"
+ai-interior-design-apps:
+  note: "3.7k 'нейросеть для дизайна интерьера', Planner 5D is 81% of brand searches (17.8k) plus free online generators; only 2 brands with volume, so the brand gate did not fire formally"
+nature-id-mushroom-bird-insect:
+  note: "PictureThis has 80% of App Store RU ratings; 'определитель грибов по фото' 1.6k, searched for online and free"
+faith-devotional-apps:
+  note: "Russian queries were about Orthodox apps (1.6k) while App Store RU shows the Muslim segment: 31 apps with 1k+ ratings, Muslim Pro 21%, 1Muslim, Sajda, IslamApp, Namaz - fragmented and paid. Needs its own query set ('время намаза', 'коран приложение' 1.6k): a Muslim-apps niche for Russia/CIS rather than Orthodox apps"
+licence-exam-prep-apps:
+  note: "traffic rules + industrial safety + medical test + small-vessel licence + vocational accreditation: 22 apps with 1k+ ratings, leader 48% (483k ratings); a long tail of exams; monetization via in-app purchases and ads"
+calorie-counters-ai:
+  dynamics_phrases: [счетчик калорий]
+  note: "App Store RU: 17 apps with 1k+ ratings, Yazio 32%, FatSecret, Arise; new Russian players in 2024-25 (CalZen 12k, Welmi 12k ratings in a year); see the dynamics of 'счетчик калорий'"
+auto-repair-shops:
+  note: "'программа для автосервиса' 3.1k is a rare Russian B2B niche with live category demand; Avtodiler is about 25% of nested phrases, then a tail (Tricepts, AvtoPredpriyatie, Wilgood); a vertical B2B niche"
+couples-relationship-apps:
+  note: "6.6k 'приложение для пар' (YouMe 393); App Store RU: 7 apps with 1k+ ratings, day-counter widgets (Love Widget 18k, We Are Together 14k), Couple Joy 4k - a cheap segment"
+digital-wardrobe-outfit-planner:
+  note: "4.2k 'приложение для гардероба', the Russian brand Fits (2.6k ratings, searched with 'crack'), GetWardrobe 2.2k; a small market"
+anglers-fishing-apps:
+  note: "2.3k plus 6.4k problem searches ('прогноз клёва'); App Store RU: TipTop Fishing 4k, Dap Drift, Fishing Points - 4 apps with 1k+ ratings; the Russian specifics (bite forecast) are real, the market is small"
+astrology-human-design:
+  note: "category 2k plus 25k problem searches (moon calendar and the like); App Store RU: 15 apps with 1k+ ratings, leader 20% - fragmented, but a trend topic"
+sobriety-quit-trackers:
+  note: "category demand about 1k, App Store RU: 12 apps with 1k+ ratings, leader 16% ('Ne kuryu'); small, fits an indie developer"
+recipe-manager-meal-planner:
+  note: "2k, but about 20% is about air fryers and multicookers; App Store RU 3 apps with 1k+ ratings; cookmate is 91% of brand searches (a single brand)"
+digital-business-cards:
+  note: "3k 'электронная визитка' (create/free/qr); App Store RU has no players with 1k+ ratings, MyQRcards 985 - a web market"
+workout-log-trackers:
+  note: "'дневник тренировок приложение' 369 - Russians search 'программа тренировок' (2.6k); App Store RU: ProFit, Forma, Fitsession - 5 apps with 1k+ ratings"
+music-instrument-learning:
+  note: "yousician is 77% of 3.3k brand searches; category 334; App Store RU 4 apps with 1k+ ratings"
+baby-first-foods-blw:
+  note: "category 505, problem searches 22.8k (questions about first foods) - content demand; first spoon is the only brand"
+plant-care-id:
+  note: "PictureThis is 54% of brand searches; 2.3k 'определитель растений по фото'"
+car-diagnostics-logs:
+  note: "1.9k, but 'car scanner elm obd' is 89% - tied to the ELM327 hardware"
+ai-language-speaking-tutors:
+  note: "642 'ии репетитор английского', praktika is 90% of 8k brand searches"
+gym-martial-arts-studios:
+  dynamics_phrases: [crm для фитнес клуба]
+  note: "category 160, brands 1.8k (1C:Fitness Club 57%, Mobifitness); see the corrected phrase 'crm для фитнес клуба'"
+shift-scheduling-deskless:
+  dynamics_phrases: [график смен приложение]
+  note: "category 40 (!), Verme is 99% of 13k brand searches - a brand-driven market with a leader; Russians search 'график смен' (see the corrected phrase)"
+ai-phone-receptionist-local:
+  dynamics_phrases: [голосовой робот для бизнеса, ии автоответчик для бизнеса]
+  note: "'ии секретарь на телефон' 9; Russian terms are 'голосовой робот' / 'ии автоответчик' (see the corrected phrases); voximplant is a platform"
+ai-headshots-photos:
+  note: "'ии фото на аватарку' -82% in a year - the 2024 hype is over"
+wine-whiskey-cellar-tracking:
+  platform: 2
+  note: "all demand is the brand Vivino (13k), a free platform"
+fiber-crafts-patterns-counters:
+  note: "'приложение для вязания' 833; cross stitch saga is 99% of 2.2k (2 brands)"
+personal-budgeting-apps:
+  platform: 1
+  dynamics_phrases: [приложение для бюджета]
+  note: "dynamics: 'приложение для бюджета' -24% in a year (DOWN), 'приложение для учета расходов' +5% (FLAT) - a mature Russian market without the Mint vacuum; banks (Tinkoff/Sber) show spending analytics for free but not budgets/goals and not across banks; App Store RU: 19 apps with 1k+ ratings, leader 'Finansy' (Orange dog) 34%; Zen-money and CoinKeeper are Russian indies; 10 apps in the Russian top-grossing Finance"
+muslim-apps-ru-cis:
+  platform: 1
+  trap_anchor: время намаза
+  dynamics_phrases: [коран приложение]
+  note: "the anchor 'время намаза' = 1.47M searches a month is informational (Yandex shows prayer times in the results, sites like namaz.today), not demand for an app; app phrases ('коран приложение', 'приложение для мусульман') need their own Wordstat runs. 1Muslim (indie) 129k, Sajda (KZ), IslamApp (Dagestan) are strong locals; leader Muslim Pro 26%; 'время намаза' DOWN 40 to 25 (Google RU); Ramadan is a seasonal spike"
+homework-solvers-ai:
+  platform: 2
+  note: "Alice/Yandex solve from a photo for free; Photomath (Google) has 65% of ratings in Russia; answer-book sites are content; wrappers over GPT"
+brain-training-memory:
+  platform: 0
+  dynamics_phrases: [игры для мозга]
+  note: "leader Uniqo 31%, NeuroNation, Wikium (Russian, paid trainers); 8 apps with 1k+ ratings - small"
+book-summaries-microlearning:
+  platform: 1
+  note: "Smart Reading 60% (1 app with 1k+ ratings) - almost no market in App Store RU; readers are on Litres/Bookmate; AI summaries are free"
+pregnancy-baby-milestones:
+  platform: 0
+  dynamics_phrases: [приложение для беременных, счетчик схваток]
+  note: "Wachanga 32% (leader, Russian team), Neiman (solo) - 'Contraction counter' 31k; 18 apps with 1k+ ratings; demand is stable, demographics are falling"
+ai-hairstyle-tryon:
+  platform: 2
+  dynamics_phrases: [подбор стрижки онлайн]
+  note: "2 apps with 1k+ ratings; FaceApp/YouCam have it as a feature; Yandex's AI editors/Shedevrum are free"
+kids-learning-games-preschool:
+  platform: 1
+  note: "Bimi Boo has 83% of ratings in the Russian results (one studio, dozens of apps); 1C-Publishing, Bytwice; payment in App Store RU is limited, so monetization goes through RuStore/Google Play"
+travel-journal-map:
+  platform: 1
+  note: "Mark O'Travel (solo developer) 38%, 3 apps with 1k+ ratings - hobby level; Yandex Maps does not cover a journal"
+indie-music-distribution-stems:
+  platform: 1
+  trap_brands: [moises]
+  dynamics_phrases: [убрать вокал из песни]
+  note: "Russian distribution is Believe/ONErpm/Zvonko/BandLink (label aggregators), Yandex Music - few direct indie tools; App Store RU has 2 apps with 1k+ ratings (BandLab, Moises); the brand 'moises' is polluted by the French word 'mois'"
+cookie-consent-gdpr-widgets:
+  platform: 1
+  dynamics_phrases: [согласие на обработку персональных данных на сайте]
+  note: "Federal law 152-FZ requires cookie consent (fines since 2024-25) - the Russian analogue of the trend; players: Cookie Consent by Calltouch/Roistat, 'Soglasie na cookie' (built into Tilda), Nethouse"
+digital-signage-smb:
+  platform: 1
+  note: "Russia: Addreality, SpinetiX partners, 'Ekran.pro', DISPLAYFORCE - there is a market, but demand is small; 'digital signage' is an anglicism, Russian phrases ('программа для рекламных экранов') need their own Wordstat runs"
+sms-marketing-smb:
+  platform: 2
+  dynamics_phrases: [смс рассылка клиентам]
+  note: "SMS mailings in Russia belong to operators + aggregators (SMS Aero, SMSC, Devino, Sigma) + CRMs (YCLIENTS, Bitrix) - an aggregator market rather than SaaS; 2025 regulation (marking of calls/mailings)"
+daycare-childcare-software:
+  platform: 2
+  trap_anchor: программа для детского сада
+  dynamics_phrases: [приложение для детского сада родителям]
+  note: "the anchor 'программа для детского сада' 12.5k is a trap: nested 'программа детский сад для детей', 'программа для группы' mean the educational programme (federal standard), not software; 'crm для частного детского сада' = 0. State kindergartens use the unified information system; private ones use 1C; App Store RU: 0 apps with 1k+ ratings"
+coaching-business-platforms:
+  platform: 1
+  note: "Russian coaches work in Telegram + GetCourse/Prodamus; App Store RU: 7Coach 53 ratings - no market"
+travel-esim-apps:
+  platform: 1
+  dynamics_phrases: [esim для путешествий, esim]
+  note: "Wordstat 'esim для путешествий' 30.7k/month, +95% in a year (UP); 'esim' 4.7M (includes carrier eSIM - informational). App Store RU: 32 apps, 2 with 1k+ ratings (WiFi Map 63% - not a pure eSIM app; MobiMatter), UNISIM (2024, 770 ratings) is the fastest Russian newcomer; Google Play RU: 17 apps with 100k+ installs, Airalo 41%; Yesim, eSIMo, Kaspersky eSIM Store, eSIM.World - 9 in top-grossing. Russian specifics: Russian cards cannot pay foreign services, so local resellers (UNISIM, LetiSim, eSimka) remove the payment barrier - that is the window"
+star-maps-astronomy-apps:
+  platform: 0
+  dynamics_phrases: [звездное небо приложение, карта звездного неба]
+  note: "Wordstat 'карта звездного неба' 330k/month (content/sites), 'звездное небо приложение' 15k, -19% in a year (DOWN); App Store RU: 13 apps with 1k+ ratings, Star Walk 2 Plus 40%, Vito Technology (Russian roots) 64% of ratings; Google Play RU: 18 apps with 100k+ installs, Stellarium 25%. Mature and declining"
+phone-as-security-baby-camera:
+  platform: 1
+  dynamics_phrases: [видеоняня из телефона, радионяня приложение]
+  note: "Wordstat 'радионяня приложение' 3.9k/month FLAT, 'видеоняня из телефона' 520; App Store RU: 3 apps with 1k+ ratings, Alfred (CCTV) 53%; Google Play RU: 11 apps with 100k+ installs, Alfred 61%; Nani (Bitlink, 2023) is a visible newcomer (3.6k ratings). Cheap IP cameras (Xiaomi/Tapo) are the main substitute in Russia"
+bedtime-stories-kids-audio:
+  platform: 1
+  dynamics_phrases: [аудиосказки для детей, сказки на ночь]
+  note: "Wordstat 'сказки на ночь' 7.5M/month, 'аудиосказки для детей' 2.3M - content demand (YouTube, Yandex Music), FLAT; 'сказки на ночь приложение' 410. App Store RU: 6 apps with 1k+ ratings, 'Skazki Volshebnogo Lesa' 53%; Google Play RU: 10 apps with 100k+ installs, 'Malenkie istorii' (Diveo) 31%, 7 apps with 1M+ installs - an ad model. Storiko (1k brand searches), Gusgus (1.3k) are Russian subscription players"
+family-chore-reward-apps:
+  platform: 1
+  dynamics_phrases: [семейный планировщик, домашние обязанности детей]
+  note: "Wordstat: no app phrases (0-10/month), 'домашние обязанности детей' 30k is informational; App Store RU: 0 apps with 1k+ ratings, 17 new in 12 months without ratings (clones); Google Play RU: 6 apps with 100k+ installs, Tody (cleaning) 44%. No Russian market"

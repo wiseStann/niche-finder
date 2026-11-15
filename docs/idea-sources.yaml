@@ -1,0 +1,1427 @@
+# Niche Finder - registry of sources for finding and evaluating business ideas (source of truth, v1 - 2026-09-20).
+# docs/idea-sources.md is generated from this file by scripts/render_idea_sources.py. Edit only this file.
+# The introduction of the generated page lives in docs/idea-sources-intro.md.
+#
+# Entry fields:
+#   group     launch | funding | community | crowdfunding | hiring | vc_portfolio | patents | m_and_a | store | search | ru_registry
+#   geo       global | ru | both
+#   role      discovery  - new entities for the universe (stage group s0)
+#             evaluation - a metric for a niche (s5 / s8 / s6)
+#             voice      - buyer / builder voice (s10)
+#             trend      - dynamics over time (s4 / s9)
+#   stages    pipeline stage groups the signal goes to (s0 universe, s4 trends, s5 supply depth, s6 score/ceiling,
+#             s8 demand outside search, s9 supply over time, s10 buyer voice)
+#   feeds     the columns / files the source fills (or would fill)
+#   freshness realtime | daily | weekly | monthly | quarterly | static - how fast new data appears
+#   status    in_pipeline (a stage exists) | planned (no stage yet) | manual (hand / browser only)
+#             | blocked (no access from the probing network) | paid (paid access only)
+#   adapter   name of the stage module in src/nichefinder/stages/ that fetches the source, or null = not implemented
+#   priority  P1 (implement first) | P2 (next) | P3 (on demand / one niche only) | none (not worth doing)
+#   access[]  ways to get the data; probe = result of a keyless curl probe on the stated date.
+#             Codes: 200 - open; 401 - key required; 403 - Cloudflare / geo / WAF; 000 - connection not established
+#             (retry from another network). A probe is a dated fact, not a guarantee: re-probe before relying on it.
+
+version: 2026-09-20
+
+groups:
+  launch: "Launch platforms - what is entering the market now (rising)"
+  funding: "Funding and rounds - where the money goes (rising; expensive confirmation of demand)"
+  community: "Communities - buyer and builder voice (voice)"
+  crowdfunding: "Crowdfunding - a pre-order as demand before the product (B2C hardware / consumer)"
+  hiring: "Hiring - who hires for which tasks (a proxy for budget and growth)"
+  vc_portfolio: "Fund portfolios - a map of what is already funded (rising; a red ocean a year later)"
+  patents: "Patents - R&D activity and abandoned directions (feasibility / IP risk)"
+  m_and_a: "Business sales - deals, multiples, real revenue of small players (proven, transactions)"
+  store: "App and plugin stores - supply and concentration (proven)"
+  search: "Search demand - volumes, CPC, trend"
+  ru_registry: "Russian registries and open government data - Russian B2B branch"
+
+sources:
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # LAUNCH - launch platforms
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: product_hunt
+    name: Product Hunt
+    group: launch
+    geo: global
+    url: https://www.producthunt.com
+    role: [discovery, evaluation]
+    signals:
+      - "new products for a period: name, tagline, topics, votes - who is launching and with what"
+      - "launch density per topic over 12 months -> ph_launches_12m (s5 deals / liquidity)"
+      - "repeat launches of one product (v2, v3) - a sign of a live market"
+    stages: [s0, s5]
+    feeds: ["data/out/universe.csv (source=ph:*, rising)", "data/out/deals.csv: ph_launches_12m"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s0_producthunt
+    priority: P2
+    access:
+      - method: html_ssr
+        endpoint: "https://www.producthunt.com/leaderboard/{monthly|weekly}/{y}/{m}/all"
+        auth: none
+        cost: $0
+        limits: "~1.5 s between pages; 612 KB per page; JSON inside the HTML (regex on __typename:Post)"
+        probe: {date: 2026-09-20, http: 200, note: "works, same as on 2026-09-15; monthly and weekly leaderboards"}
+      - method: atom
+        endpoint: "https://www.producthunt.com/feed  (?category=<topic-slug>)"
+        auth: none
+        cost: $0
+        limits: "50 latest posts; has title, tagline, published, link; no votes and no topics"
+        probe: {date: 2026-09-20, http: 200, note: "44 KB, 50 entries, the freshest - a daily pulse"}
+      - method: graphql
+        endpoint: "https://api.producthunt.com/v2/api/graphql"
+        auth: "developer token (free, register an application at producthunt.com/v2/oauth/applications)"
+        cost: $0
+        limits: "query complexity <= 6,250 / 15 min; posts(topic, postedAfter) + votesCount, commentsCount, makers, topics"
+        probe: {date: 2026-09-20, http: 401, note: "invalid_oauth_token without a token - expected; with a token it gives an exact slice by topic and date"}
+      - method: html_ssr
+        endpoint: "https://www.producthunt.com/topics/<slug>"
+        auth: none
+        cost: $0
+        limits: "topic page: number of followers and products of the topic - the size of the category audience"
+        probe: {date: 2026-09-20, http: 200, note: "606 KB SSR"}
+    caveats:
+      - "Votes are bought or inflated; the signal is the number of launches and repeats, not votes"
+      - "Biased toward AI wrappers and dev tools; SMB B2B verticals are poorly represented"
+      - "Up to 4 topics per post, labelled by the authors - matching to a niche needs regexes (deal_keywords.yaml)"
+    plan: "Add the Atom feed as a daily pulse (a weekly delta of what launched per topic) and GraphQL for an exact per-topic slice once a token is available"
+
+  - id: product_radar
+    name: Product Radar (RU)
+    group: launch
+    geo: ru
+    url: https://productradar.ru
+    role: [discovery]
+    signals:
+      - "Russian-language launches: name, description, category, awards (product of the week / month), number of comments"
+      - "categories 'looking for a partner / investor / mentor' - who has not found a model yet"
+      - "slices ?groupby=week|month|year|base - what won in a category over a period"
+    stages: [s0]
+    feeds: ["data/out/universe.csv (source=productradar, rising, geo=ru)"]
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: html_ssr
+        endpoint: "https://productradar.ru/category/<cat>/<subcat>/?groupby=month|year|base"
+        auth: none
+        cost: $0
+        limits: "WordPress theme vchunt; cards article.products__item: card__title, card__description, awards, comments; the product post type is hidden from REST"
+        probe: {date: 2026-09-20, http: 200, note: "78 KB, 8 products on a category page; REST /wp-json/wp/v2/product -> 404 (rest_no_route), only posts/blog"}
+      - method: rss
+        endpoint: "https://productradar.ru/feed"
+        auth: none
+        cost: $0
+        limits: "blog only (10 entries), not launches"
+        probe: {date: 2026-09-20, http: 200, note: "187 KB RSS, blog / streams - useless for the universe"}
+    caveats:
+      - "Small volume (tens of launches a month) - weak as a source of niches, useful as an indicator of Russian competitors in a chosen niche"
+      - "No revenue metrics; voting is done by platform residents"
+    plan: "Walk all categories with ?groupby=base (the whole base) once -> universe; then ?groupby=month every month"
+
+  - id: betalist
+    name: BetaList
+    group: launch
+    geo: global
+    url: https://betalist.com
+    role: [discovery]
+    signals:
+      - "products BEFORE launch (beta): name, tagline, topics - a window of 3-6 months before Product Hunt"
+      - "density of beta submissions per topic - where new founders are heading"
+    stages: [s0]
+    feeds: ["data/out/universe.csv (source=betalist, rising)"]
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P1
+    access:
+      - method: html_ssr
+        endpoint: "https://betalist.com/  and  https://betalist.com/topics/<slug>  (?page=N, cursor pagination)"
+        auth: none
+        cost: $0
+        limits: "55 startups on the home page, 21 on a topic page; links /startups/<slug>, a card is name + tagline + topics; /feed and /startups -> 404"
+        probe: {date: 2026-09-20, http: 200, note: "227 KB home page, 111 KB topic; pagination exists (page=2, cursor)"}
+    caveats:
+      - "Many 'ideas without a product'; ~50% never launch - that is a feature (it shows intentions), but mark them source_type=rising/pre in the universe"
+      - "No numbers (votes / subscribers) in a card - only the fact and the date"
+    plan: "Walk topics x pages once a month; dedupe against Product Hunt by domain; in s5 add a betalist_12m column next to ph_launches_12m"
+
+  - id: launching_next
+    name: Launching Next
+    group: launch
+    geo: global
+    url: https://www.launchingnext.com
+    role: [discovery]
+    signals:
+      - "daily launches (mostly micro-SaaS, indie, no-code): name, description, date"
+    stages: [s0]
+    feeds: ["data/out/universe.csv (source=launchingnext, rising)"]
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: rss
+        endpoint: "https://www.launchingnext.com/rss/"
+        auth: none
+        cost: $0
+        limits: "15 latest entries; title, link (/s/<slug>/<id>/), pubDate, description"
+        probe: {date: 2026-09-20, http: 200, note: "7 KB RSS, 15 items, fresh within a day (2026-09-19)"}
+      - method: html_ssr
+        endpoint: "https://www.launchingnext.com/  (categories and archive via /s/<slug>/<id>/ - the id is monotonic, ~152,000 on 2026-09-20)"
+        auth: none
+        cost: $0
+        limits: "33 KB, static HTML; the archive is walked by id"
+        probe: {date: 2026-09-20, http: 200, note: "open"}
+    caveats:
+      - "Low quality (paid placements, SEO sites); the value is only volume and freshness. Match to niches with regexes, do not read by hand"
+    plan: "Collect the RSS daily into a cache (accumulate), merge into the universe once a month; use as a third 'launch density' counter (PH + BetaList + LN)"
+
+  - id: indie_hackers
+    name: Indie Hackers
+    group: community
+    geo: global
+    url: https://www.indiehackers.com
+    role: [discovery, voice]
+    signals:
+      - "products with confirmed revenue (Stripe-verified) -> proven-fragmented niches of small players"
+      - "'how I got to $X MRR' posts - monetization model, channels, time to revenue"
+      - "interviews - what did not work"
+    stages: [s0, s5]
+    feeds: ["data/out/universe.csv (source=ih, proven)", "data/out/deals.csv: ih_products (idea)"]
+    freshness: daily
+    status: manual
+    adapter: null
+    priority: P3
+    access:
+      - method: html_spa
+        endpoint: "https://www.indiehackers.com/products?revenueVerification=stripe&sorting=highest-revenue"
+        auth: none
+        cost: $0
+        limits: "SPA: only 19 /product/* links in the HTML, revenue is rendered by JS; the API is closed; /product/<slug> -> 404 for some slugs"
+        probe: {date: 2026-09-20, http: 200, note: "81 KB shell without data; /feed.xml is HTML, /rss -> 404"}
+      - method: browser
+        endpoint: "the same list through a headless browser (Playwright) or by hand: export the 'Products' table with the revenue filter"
+        auth: none
+        cost: "$0, ~30 min by hand per slice"
+        limits: "a one-off slice of ~1,000 products with MRR"
+        probe: {date: 2026-09-20, http: null, note: "not tried"}
+    caveats:
+      - "Verified revenue is rare (~20% of products); the rest is self-reported"
+      - "Biased toward dev / SaaS tools for indies - the same niches as Product Hunt"
+    plan: "One manual / headless slice of Stripe-verified products -> universe (proven); repeat quarterly"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # FUNDING - funding, rounds
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: crunchbase
+    name: Crunchbase
+    group: funding
+    geo: global
+    url: https://www.crunchbase.com
+    role: [evaluation]
+    signals:
+      - "rounds per company / category: amount, date, investors -> 'how much money entered the niche in 24 months'"
+      - "number of funded companies in a category -> capital concentration (many small rounds = fragmentation; one mega-round = a future monopolist)"
+      - "Crunchbase News - fresh rounds as text (a weak substitute for the API)"
+    stages: [s5, s6]
+    feeds: ["data/out/supply_deep.csv: funding_24m, funded_cos (idea, only with paid access)"]
+    freshness: daily
+    status: paid
+    adapter: null
+    priority: P3
+    access:
+      - method: api
+        endpoint: "https://api.crunchbase.com/api/v4/  (searches/organizations, funding_rounds)"
+        auth: "user_key - only on the Pro / Enterprise plan (~$49-99/month for Pro without API; the API is separate, from ~$1k/month)"
+        cost: "paid"
+        limits: "without a key 401 LA401"
+        probe: {date: 2026-09-20, http: 401, note: "Unauthorized user_key"}
+      - method: html
+        endpoint: "https://www.crunchbase.com/discover/... and /hub/..."
+        auth: none
+        cost: $0
+        limits: "Cloudflare 403 on any request without a browser"
+        probe: {date: 2026-09-20, http: 403, note: "blocked"}
+      - method: rss
+        endpoint: "https://news.crunchbase.com/feed/"
+        auth: none
+        cost: $0
+        limits: "news about rounds (tens a day), text - extract company / amount / category with a regex or an LLM"
+        probe: {date: 2026-09-20, http: 200, note: "106 KB RSS, open"}
+    caveats:
+      - "Expensive for the signal it gives: for SMB niches worth '$5-10M', VC rounds are more of a counter-indication than a plus"
+      - "Free replacements: for the fact of money raised in the US - SEC Form D (see sec_form_d); for 'who is building what' - YC / Product Hunt / BetaList"
+    plan: "Not worth buying. Accumulate the Crunchbase News RSS in a cache and once a month run niche regexes over it -> a funding_news_12m column in the passport as a reference"
+
+  - id: dealroom
+    name: Dealroom
+    group: funding
+    geo: global
+    url: https://dealroom.co
+    role: [evaluation]
+    signals:
+      - "same as Crunchbase, with a focus on Europe; segment reports (open reports per vertical)"
+    stages: [s5]
+    feeds: []
+    freshness: daily
+    status: paid
+    adapter: null
+    priority: none
+    access:
+      - method: api
+        endpoint: "https://api.dealroom.co/api/v2/"
+        auth: "API key - corporate plan only"
+        cost: "paid"
+        limits: "both app.dealroom.co and the API sit behind a Cloudflare 'Just a moment' page without a browser"
+        probe: {date: 2026-09-20, http: 403, note: "Cloudflare"}
+      - method: manual
+        endpoint: "https://dealroom.co/reports  (PDF reports per sector / country, free after a form)"
+        auth: email
+        cost: $0
+        limits: "quarterly reviews, not data"
+        probe: {date: 2026-09-20, http: 200, note: "blog open (HTML), no RSS"}
+    caveats:
+      - "Duplicates Crunchbase; gives little for SMB / prosumer niches. Useful only for reading vertical reports once a niche is chosen"
+    plan: "Not worth implementing. Read the reports by hand when studying a chosen niche"
+
+  - id: pitchbook
+    name: PitchBook
+    group: funding
+    geo: global
+    url: https://pitchbook.com
+    role: [evaluation, trend]
+    signals:
+      - "the fullest base of rounds / M&A / multiples; 'Emerging Spaces' - new segments according to analysts"
+      - "free: PitchBook-NVCA Venture Monitor (quarterly PDF) - volumes by stage and sector"
+    stages: [s6]
+    feeds: []
+    freshness: quarterly
+    status: paid
+    adapter: null
+    priority: none
+    access:
+      - method: html
+        endpoint: "https://pitchbook.com/news, /news/reports, /rss"
+        auth: none
+        cost: $0
+        limits: "Cloudflare 403 on everything, including RSS"
+        probe: {date: 2026-09-20, http: 403, note: "Cloudflare 'Just a moment'"}
+      - method: manual
+        endpoint: "https://nvca.org/research/pitchbook-nvca-venture-monitor/  (PDF)"
+        auth: none
+        cost: $0
+        limits: "once a quarter, macro level (sectors, not niches)"
+        probe: {date: 2026-09-20, http: 200, note: "NVCA page open, PDF behind a link"}
+    caveats:
+      - "A subscription from ~$20k/year is out of scale for a small tool. For the revenue-ceiling estimate only public SaaS M&A multiples are useful (free in reports)"
+    plan: "Not worth implementing. Read the Venture Monitor quarterly to calibrate ceiling assumptions (multiples, volumes by stage)"
+
+  - id: sec_form_d
+    name: SEC EDGAR - Form D (US private placements)
+    group: funding
+    geo: global
+    url: https://www.sec.gov/edgar
+    role: [evaluation]
+    signals:
+      - "every round raised in the US (> $0) must file a Form D: issuer, amount, date, industryGroupType (Other Technology, Business Services...) - a free Crunchbase for the fact of money, without a product description"
+      - "number of new Form D filings by a keyword in the name / industry over 12 months -> 'how many companies in the niche raised money'"
+    stages: [s5]
+    feeds: ["data/out/deals.csv: formd_12m (idea)"]
+    freshness: daily
+    status: blocked
+    adapter: null
+    priority: P3
+    access:
+      - method: bulk_index
+        endpoint: "https://www.sec.gov/Archives/edgar/full-index/{YYYY}/QTR{n}/form.idx  (+ /Archives/edgar/data/<cik>/<accession>.txt - XML Form D)"
+        auth: "a User-Agent with a contact is mandatory (SEC rule), <= 10 requests/s"
+        cost: $0
+        limits: "the index is 42 MB per quarter; 2026-Q3: 9,063 Form D + 4,996 D/A; the index holds only the issuer name, CIK, date -> to get the amount and industry, every XML must be downloaded"
+        probe: {date: 2026-09-20, http: 200, note: "index open from the probing machine"}
+      - method: fulltext_api
+        endpoint: "https://efts.sec.gov/LatestSearch/?q=<phrase>&forms=D&startdt=..."
+        auth: "a User-Agent with a contact"
+        cost: $0
+        limits: "full-text search by name and fields - the most convenient path, but"
+        probe: {date: 2026-09-20, http: 403, note: "Forbidden from the probing IP even with a correct UA (SEC geo filter) - retry from another network"}
+    caveats:
+      - "The issuer name is often a legal entity (Acme Holdings LLC), not the brand; matching to a niche works only through the name -> low recall"
+      - "Industry has 30 coarse classes; 'Other Technology' = all software. The signal is useful as a counter over competitor names from a niche passport, not as a niche discovery tool"
+    plan: "If efts opens from another network, a stage could search Form D filings over 24 months for the competitors of each niche -> funded, amount. Otherwise skip"
+
+  - id: yc_oss
+    name: Y Combinator (yc-oss JSON)
+    group: funding
+    geo: global
+    url: https://yc-oss.github.io/api/
+    role: [discovery, evaluation]
+    signals: ["YC companies by batch: industry, one_liner, team_size, tags - rising entities; yc_companies in deals.csv"]
+    stages: [s0, s5]
+    feeds: ["data/out/universe.csv (source=yc:*)", "data/out/deals.csv: yc_companies"]
+    freshness: quarterly
+    status: in_pipeline
+    adapter: s0_yc
+    priority: P2
+    access:
+      - method: json
+        endpoint: "https://yc-oss.github.io/api/batches/<batch>.json"
+        auth: none
+        cost: $0
+        limits: "updated with every batch"
+        probe: {date: 2026-09-15, http: 200, note: "1,157 companies W25-F26"}
+    caveats: ["YC only; strong bias toward AI infrastructure in 2025-26"]
+    plan: "Add new batches as they come out"
+
+  - id: tinyseed
+    name: TinySeed (portfolio)
+    group: funding
+    geo: global
+    url: https://tinyseed.com/portfolio
+    role: [discovery, evaluation]
+    signals: ["B2B SaaS for small teams with revenue - the best prior for proven-fragmented; tinyseed in deals.csv"]
+    stages: [s0, s5]
+    feeds: ["data/out/universe.csv (source=tinyseed)", "data/out/deals.csv: tinyseed"]
+    freshness: quarterly
+    status: in_pipeline
+    adapter: s0_tinyseed
+    priority: P3
+    access:
+      - method: manual
+        endpoint: "https://tinyseed.com/portfolio"
+        auth: none
+        cost: $0
+        limits: "215 companies (2026-09-15); refresh twice a year; exported by hand to a CSV that the stage reads"
+        probe: {date: 2026-09-15, http: 200, note: "exported by hand"}
+    caveats: []
+    plan: "Add analogues by hand: Calm Company Fund (/portfolio -> 404, the path changed), Indie.vc, Earnest"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # COMMUNITY - buyer and builder voice
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: hacker_news
+    name: Hacker News (Algolia API)
+    group: community
+    geo: global
+    url: https://news.ycombinator.com
+    role: [discovery, voice, trend]
+    signals:
+      - "Show HN by niche keywords over a period -> new products from technical people (rising, earlier than Product Hunt)"
+      - "Ask HN 'is there a tool for / how do you handle X' -> pain without a product (voice)"
+      - "dynamics of niche mentions per month (points, num_comments) -> interest of the technical audience"
+      - "'Who is hiring?' / 'Who wants to be hired?' - monthly threads (see hn_who_is_hiring)"
+    stages: [s0, s8, s10]
+    feeds: ["data/out/universe.csv (source=hn:show, rising)", "data/out/offsearch.csv: hn_show_12m, hn_ask_12m (idea)", "a Reddit-voice-like corpus for s10 (idea)"]
+    freshness: realtime
+    status: planned
+    adapter: null
+    priority: P1
+    access:
+      - method: api
+        endpoint: "https://hn.algolia.com/api/v1/search?query=<phrase>&tags=story|show_hn|ask_hn&numericFilters=created_at_i>...&hitsPerPage=1000"
+        auth: none
+        cost: $0
+        limits: "10,000 requests/h, no key; full text over title / story_text / comment_text; filters by date and type; search_by_date for chronology"
+        probe: {date: 2026-09-20, http: 200, note: "JSON, works; 'Show HN invoicing' for 2026 has hits"}
+      - method: api
+        endpoint: "https://hacker-news.firebaseio.com/v0/item/<id>.json"
+        auth: none
+        cost: $0
+        limits: "official API: comment tree by id; no search"
+        probe: {date: 2026-09-20, http: 200, note: "topstories.json open"}
+    caveats:
+      - "The audience is developers; B2C niches (gardeners, churches, tattoo) are barely represented -> NA, not 0"
+      - "Full text catches homonyms ('church' in a non-religious sense) - the same traps as in query generation; a stop-context list per niche is needed"
+    plan: "For the category queries of each shortlisted niche count Show HN / Ask HN over 12 and 36 months plus a trend; pain-bearing Ask HN threads can join the s10 corpus next to Reddit (same LLM classifier)"
+
+  - id: reddit
+    name: Reddit (Arctic Shift + subredditstats)
+    group: community
+    geo: global
+    url: https://www.reddit.com
+    role: [voice, trend]
+    signals: ["s8: size and growth of native subreddits; s10: pains, products, 'from -> to', willingness to pay across thousands of labelled documents"]
+    stages: [s8, s10]
+    feeds: ["data/out/reddit_niche.csv", "data/out/reddit_voice*.csv|json", "data/out/reddit_brands.csv", "data/out/reddit_monthly.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s10_reddit_fetch
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://arctic-shift.photon-reddit.com/api/posts/search?subreddit=...&after=...&before=...&limit=100"
+        auth: none
+        cost: $0
+        limits: "listing by dates; full text search returns 422; ~15% of connections drop on some home networks - use retries, or a stable server / proxy"
+        probe: {date: 2026-09-17, http: 200, note: "632k posts + 463k comments from 114 subreddits"}
+      - method: api
+        endpoint: "reddit.com/*.json, the official API"
+        auth: "application request - the form is closed"
+        cost: $0
+        limits: "403"
+        probe: {date: 2026-09-17, http: 403, note: "dead end"}
+    caveats: ["Reddit is US / English; for Russian-language voice use otzovik / VK / Telegram / 4PDA by hand for 1-2 niches"]
+    plan: "Add 'buyer' subreddits (r/smallbusiness, r/Entrepreneur, r/SaaS) to the markers of 'which tool do you use for X' - partly present in the reddit term list already"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # CROWDFUNDING - pre-order as demand before the product
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: kickstarter
+    name: Kickstarter (Web Robots dumps)
+    group: crowdfunding
+    geo: global
+    url: https://www.kickstarter.com
+    role: [discovery, evaluation]
+    signals:
+      - "projects in Technology / Design / Games / Publishing: goal, pledged, number of backers, date, state - demand that has already been paid for"
+      - "share of successful projects and median pledged per subcategory -> 'where people pay in advance' (B2C hardware, board games, gadgets, accessories)"
+      - "repeat campaigns of one team - a live segment"
+    stages: [s0, s5]
+    feeds: ["data/out/universe.csv (source=kickstarter:<category>, proven-preorder)", "data/out/deals.csv: ks_projects_12m, ks_success_rate, ks_median_pledged (idea)"]
+    freshness: monthly
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: bulk_dump
+        endpoint: "https://webrobots.io/kickstarter-datasets/  -> https://s3.amazonaws.com/weruns/forfun/Kickstarter/Kickstarter_<date>.json.gz|.zip"
+        auth: none
+        cost: $0
+        limits: "a full snapshot of all projects once a month (latest on 2026-09-10, zip 268 MB); fields: name, blurb, category, goal, pledged, backers_count, state, deadline, launched_at, creator"
+        probe: {date: 2026-09-20, http: 200, note: "HEAD 200, 268 MB; the S3 bucket listing is closed (403), direct links from the page are open"}
+      - method: json
+        endpoint: "https://www.kickstarter.com/discover/advanced?category_id=16&sort=newest&format=json"
+        auth: none
+        cost: $0
+        limits: "Cloudflare from the probing IP"
+        probe: {date: 2026-09-20, http: 403, note: "'Just a moment' - the live site is closed; the dumps are enough"}
+    caveats:
+      - "This is B2C hardware / games / design, not SaaS; empty for software niches - use only for niches with a physical product or to find an 'accessory -> companion app' pattern"
+      - "A dump is a snapshot, not a history: a trend is built from a series of dumps (Web Robots keeps them since 2014, so a retrospective exists)"
+    plan: "Download 2 dumps a year apart, count per Technology / Design subcategory the number of projects, the share of successful ones, median pledged and YoY; the universe takes only successful projects with >= 200 backers"
+
+  - id: indiegogo
+    name: Indiegogo
+    group: crowdfunding
+    geo: global
+    url: https://www.indiegogo.com
+    role: [discovery]
+    signals: ["same as Kickstarter, plus InDemand (post-campaign)"]
+    stages: [s0]
+    feeds: []
+    freshness: daily
+    status: blocked
+    adapter: null
+    priority: none
+    access:
+      - method: html
+        endpoint: "https://www.indiegogo.com/explore/all?..."
+        auth: none
+        cost: $0
+        limits: "Cloudflare"
+        probe: {date: 2026-09-20, http: 403, note: "'Just a moment'; no open dumps"}
+    caveats: ["Duplicates Kickstarter with lower-quality campaigns"]
+    plan: "Not worth implementing"
+
+  - id: ru_crowdfunding
+    name: Planeta.ru / Boomstarter (RU)
+    group: crowdfunding
+    geo: ru
+    url: https://planeta.ru
+    role: [discovery]
+    signals: ["Russian crowdfunding: mostly creative / social projects, technology is a handful"]
+    stages: [s0]
+    feeds: []
+    freshness: daily
+    status: manual
+    adapter: null
+    priority: none
+    access:
+      - method: html
+        endpoint: "https://planeta.ru/search/projects?category=technology ; https://boomstarter.ru/projects/technology"
+        auth: none
+        cost: $0
+        limits: "Planeta - 307 redirect without a body; Boomstarter - 404 on the old path"
+        probe: {date: 2026-09-20, http: 307, note: "structure changed; not worth writing a parser - the volume of technology projects is small"}
+    caveats: ["The signal for software niches is negligible"]
+    plan: "Not worth implementing"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # HIRING - who hires for what
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: hn_who_is_hiring
+    name: HN 'Who is hiring?' (monthly threads)
+    group: hiring
+    geo: global
+    url: https://news.ycombinator.com/submitted?id=whoishiring
+    role: [evaluation, trend]
+    signals:
+      - "~400 postings a month from funded startups: company, what it builds (1 line), roles, stack, remote / salary -> 'who hires for niche X' and how that changes over 36+ months"
+      - "'Who wants to be hired?' (~580/month) - which technical people look for work in which domain (a weak but free proxy of talent supply)"
+      - "'Freelancer? Seeking freelancer?' - demand for contractors by topic"
+    stages: [s8]
+    feeds: ["data/out/offsearch.csv: hn_hiring_12m, hn_hiring_yoy (idea)"]
+    freshness: monthly
+    status: planned
+    adapter: null
+    priority: P1
+    access:
+      - method: api
+        endpoint: "https://hn.algolia.com/api/v1/search_by_date?tags=story,author_whoishiring  -> thread ids; then /search?tags=comment,story_<id>&hitsPerPage=1000 - all postings"
+        auth: none
+        cost: $0
+        limits: "10,000 requests/h; full archive since 2011; a monthly thread takes 1-2 requests"
+        probe: {date: 2026-09-20, http: 200, note: "Sep-2026 hiring 402 comments, wants-to-be-hired 583; Aug 379"}
+    caveats:
+      - "Postings are free text, a company describes itself in one line; matching to a niche needs the deal_keywords.yaml regexes + an LLM for disputed cases"
+      - "Biased toward dev infrastructure and AI; vertical SMB SaaS appears but rarely - with 0 matches the value is NA"
+    plan: "Download 36 monthly threads, split into postings, match to niches -> a counter per year; top companies per niche go into the passport"
+
+  - id: wellfound
+    name: Wellfound (AngelList Talent)
+    group: hiring
+    geo: global
+    url: https://wellfound.com
+    role: [evaluation, discovery]
+    signals:
+      - "startup vacancies: company, size, stage, 'high concept' (1 line about the product), roles, salary ranges -> who actively grows for which task"
+      - "pages /startups/industry/<x> - company lists per industry with size and funding"
+    stages: [s8, s0]
+    feeds: ["data/out/offsearch.csv: wellfound_jobs (idea)"]
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: html_ssr
+        endpoint: "https://wellfound.com/role/l/<role>/<location>  and  /jobs"
+        auth: none
+        cost: $0
+        limits: "Next.js SSR: an Apollo cache in the HTML (688 KB per role page, vacancy titles and companies inside the JSON); Turnstile exists but does not fire on the first page load"
+        probe: {date: 2026-09-20, http: 200, note: "/jobs 224 KB, /role/l/software-engineer/san-francisco 688 KB with data; /startups 324 KB"}
+      - method: html
+        endpoint: "https://wellfound.com/company/<slug>"
+        auth: none
+        cost: $0
+        limits: "403 (noindex, anti-bot) - company cards are closed"
+        probe: {date: 2026-09-20, http: 403, note: "blocked"}
+    caveats:
+      - "Keyword search for a niche in vacancies is unavailable without a login - only by role / location, then filter by the company text locally"
+      - "Funding / size data are self-reported by the companies; AngelList Venture (fund / syndicates) is a separate product, closed"
+    plan: "Walk /role/l/<role>/<location> for 10 roles x 5 locations monthly -> JSON from the HTML -> a company table with high_concept; match to niches. Low priority: HN hiring gives the same more cheaply"
+
+  - id: remoteok
+    name: Remote OK (API)
+    group: hiring
+    geo: global
+    url: https://remoteok.com
+    role: [evaluation]
+    signals: ["the 100 latest remote vacancies as JSON: company, position, tags, description, salary -> a quick 'who hires' slice without parsing"]
+    stages: [s8]
+    feeds: ["data/out/offsearch.csv: remoteok_jobs (idea, together with hn_hiring)"]
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P3
+    access:
+      - method: api
+        endpoint: "https://remoteok.com/api  (condition: link back to the source)"
+        auth: none
+        cost: $0
+        limits: "only the 100 latest - history needs daily accumulation"
+        probe: {date: 2026-09-20, http: 200, note: "622 KB JSON, 100 vacancies, fields present"}
+    caveats: ["A small slice, remote only; the value is as a complement to HN hiring"]
+    plan: "A daily accumulator into a cache folder; match monthly"
+
+  - id: yc_jobs
+    name: YC Work at a Startup
+    group: hiring
+    geo: global
+    url: https://www.workatastartup.com
+    role: [evaluation]
+    signals: ["vacancies of YC companies by batch: what they build and whom they look for"]
+    stages: [s8]
+    feeds: []
+    freshness: daily
+    status: blocked
+    adapter: null
+    priority: none
+    access:
+      - method: html
+        endpoint: "https://www.workatastartup.com/companies | /jobs"
+        auth: none
+        cost: $0
+        limits: "406 without browser Accept headers; ycombinator.com/jobs is Inertia SSR (371 KB) with a list"
+        probe: {date: 2026-09-20, http: 406, note: "ycombinator.com/jobs -> 200 SSR, 20 vacancy links"}
+    caveats: ["Duplicates yc_oss + HN hiring"]
+    plan: "Not worth implementing"
+
+  - id: hh_ru
+    name: hh.ru (API, needs a Russian IP)
+    group: hiring
+    geo: ru
+    url: https://hh.ru
+    role: [evaluation]
+    signals: ["vacancies by niche keywords in Russia: count, employers, salaries -> Russian demand for competencies / tools (s8, Russian B2B module)"]
+    stages: [s8]
+    feeds: ["data/out/hh_niche.csv", "data/out/hh_vacancies.csv", "data/out/ru_b2b_*.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s8_hh
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://api.hh.ru/vacancies?text=..."
+        auth: none
+        cost: $0
+        limits: "forbidden from foreign IPs; works from a Russian IP (use the ru proxy option of the HTTP helper)"
+        probe: {date: 2026-09-17, http: 200, note: "through a Russian-IP route"}
+    caveats: []
+    plan: "-"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # VC PORTFOLIO - fund portfolios
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: vc_portfolios
+    name: Portfolios of top funds (a16z, Sequoia, Accel, Index, NEA, Greylock, ...)
+    group: vc_portfolio
+    geo: global
+    url: https://a16z.com/portfolio/
+    role: [discovery, evaluation]
+    signals:
+      - "a map of 'where big money has already gone' per category - a niche with 3+ portfolio companies of top funds = a future red ocean (veto / downgrade); with 0 - either empty, or too small for VC"
+      - "one-liner descriptions of portfolio companies -> entities for the universe (rising), comparison with YC / Product Hunt"
+      - "dynamics: new logos over 12 months per category (needs snapshots)"
+    stages: [s0, s6]
+    feeds: ["data/out/universe.csv (source=vc:<fund>, rising)", "score: a VC:crowded flag (idea, as a veto flag, not a score component)"]
+    freshness: monthly
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: html_json
+        endpoint: "https://a16z.com/portfolio/"
+        auth: none
+        cost: $0
+        limits: "3.6 MB; an Alpine component wr25Portfolio with JSON inside the HTML - 877 unique titles, categories"
+        probe: {date: 2026-09-20, http: 200, note: "parsed with regex / JSON"}
+      - method: html_ssr
+        endpoint: "https://www.indexventures.com/companies (330 links) · https://www.nea.com/portfolio (918) · https://greylock.com/portfolio/ (161) · https://www.accel.com/companies (152)"
+        auth: none
+        cost: $0
+        limits: "links to company cards in the HTML; the description is on the card (a second request) or in meta"
+        probe: {date: 2026-09-20, http: 200, note: "4 funds with full lists in SSR"}
+      - method: html_js
+        endpoint: "Sequoia (Framer, 21 h2 in the HTML), Lightspeed, Founders Fund, General Catalyst / Khosla / Craft / Antler (Webflow w-dyn-item, the collection is loaded by JS), Techstars, Insight"
+        auth: none
+        cost: $0
+        limits: "needs a headless browser or a search for a JSON endpoint on the site (Webflow CMS serves collections via /.../cms) - 20-40 min per fund"
+        probe: {date: 2026-09-20, http: 200, note: "HTML without the list"}
+      - method: html
+        endpoint: "Bessemer /companies (500), Kleiner /companies/ (404), Point Nine /portfolio (404), Initialized /portfolio (404), Calm Fund /portfolio (404)"
+        auth: none
+        cost: $0
+        limits: "paths changed - find the current ones"
+        probe: {date: 2026-09-20, http: 404, note: "re-check the URLs"}
+    caveats:
+      - "A fund portfolio is its thesis from 2-8 years ago, not a fresh signal; freshness comes only from the delta between snapshots"
+      - "For niches worth '$5-10M' the presence of a top VC is more of a veto (a capitalised competitor) than a plus; evaluate as a flag, not a score"
+      - "Bessemer 'State of the Cloud', a16z market maps, Sequoia Arc - read by hand twice a year, these are maps, not data"
+    plan: "A stage for the 5 SSR funds (a16z JSON, Index, NEA, Greylock, Accel) -> a CSV (fund, name, one_liner, category, url); a snapshot every quarter; a VC:crowded flag at >= 3 portfolio companies in a niche goes into the passport"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # PATENTS
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: google_patents
+    name: Google Patents (XHR)
+    group: patents
+    geo: global
+    url: https://patents.google.com
+    role: [evaluation, trend]
+    signals:
+      - "number of applications / patents for a niche phrase over a period (priority_date) -> R&D activity: growth = someone is investing, zero = either not patentable (most SMB SaaS) or empty"
+      - "assignee -> big corporations in the niche (Google / Microsoft / Salesforce patent 'scheduling') = platform risk"
+      - "families (family_metadata) and countries - where they protect"
+    stages: [s5, s6]
+    feeds: ["data/out/supply_deep.csv: patents_24m, patents_top_assignee (idea); an IP:bigtech flag"]
+    freshness: weekly
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: xhr_json
+        endpoint: "https://patents.google.com/xhr/query?url=q%3D<phrase>%26after%3Dpriority%3A20240101%26num%3D100&exp="
+        auth: none
+        cost: $0
+        limits: "JSON: total_num_results, per result title, snippet, priority / filing / publication_date, assignee, inventor, publication_number, family_metadata; ~1 s/request, pagination page=N"
+        probe: {date: 2026-09-20, http: 200, note: "'appointment scheduling' after 2024 -> 286 results; status=EXPIRED in the XHR -> 500 (a status filter exists only in the UI / BigQuery)"}
+      - method: bigquery
+        endpoint: "bigquery-public-data.patents.publications (+ google_patents_research)"
+        auth: "Google Cloud account; 1 TB/month free"
+        cost: $0
+        limits: "full texts, CPC, statuses, citations; SQL - the only large-scale path for 'abandoned' (expired / withdrawn)"
+        probe: {date: 2026-09-20, http: null, note: "not tried"}
+    caveats:
+      - "For software a patent is not a product: patent activity is a signal for hardware / AI models / devices; for SMB SaaS it is almost always 0 -> NA"
+      - "'Abandoned patents' as a source of ideas is a myth for software: expired patents from 2005 describe things that are obvious today; useful only in hardware (Kickstarter-type niches) and as a check that the core of a product is not patented by big tech"
+    plan: "For shortlisted niches: total over 24 months and over the 24 months before (YoY), top-3 assignees; an IP:bigtech flag if the top 3 include Google / Apple / Microsoft / Amazon / Meta / Salesforce / Intuit. On demand only - not part of a mandatory run"
+
+  - id: patentsview
+    name: USPTO PatentsView API
+    group: patents
+    geo: global
+    url: https://patentsview.org
+    role: [evaluation]
+    signals: ["structured US patents: CPC, assignee, citations; more convenient than Google Patents for aggregates by class"]
+    stages: [s5]
+    feeds: []
+    freshness: quarterly
+    status: blocked
+    adapter: null
+    priority: P3
+    access:
+      - method: api
+        endpoint: "https://search.patentsview.org/api/v1/patent/?q=..."
+        auth: "a free API key (a form on patentsview.org)"
+        cost: $0
+        limits: "45 requests/min"
+        probe: {date: 2026-09-20, http: "000", note: "connection not established from the probing machine (geo / network) - retry from another network, get a key"}
+    caveats: ["US only and granted patents only; applications are separate"]
+    plan: "Not needed if the Google Patents XHR is enough"
+
+  - id: uspto_bulk
+    name: USPTO Open Data / Bulk (PEDS, maintenance fees)
+    group: patents
+    geo: global
+    url: https://data.uspto.gov
+    role: [evaluation]
+    signals:
+      - "application statuses (Abandoned) and fee non-payment events (expired) - the only honest source of 'abandoned' US patents"
+    stages: [s5]
+    feeds: []
+    freshness: weekly
+    status: blocked
+    adapter: null
+    priority: P3
+    access:
+      - method: api
+        endpoint: "https://api.uspto.gov/api/v1/patent/applications/search"
+        auth: "a free key (Open Data Portal)"
+        cost: $0
+        limits: "401 without a key"
+        probe: {date: 2026-09-20, http: 401, note: "Unauthorized - a key is required"}
+      - method: bulk
+        endpoint: "https://data.uspto.gov/apis/bulk-data/products  (Patent Maintenance Fee Events, PEDS)"
+        auth: none
+        cost: $0
+        limits: "gigabyte-sized dumps"
+        probe: {date: 2026-09-20, http: 200, note: "catalogue open (SPA)"}
+    caveats: ["See google_patents: not needed for software"]
+    plan: "Only if a hardware niche appears (Kickstarter-type) - then BigQuery is simpler"
+
+  - id: lens_org
+    name: Lens.org
+    group: patents
+    geo: global
+    url: https://www.lens.org
+    role: [evaluation]
+    signals: ["patents + scientific papers in one search; a free API for non-commercial use"]
+    stages: [s5]
+    feeds: []
+    freshness: weekly
+    status: blocked
+    adapter: null
+    priority: none
+    access:
+      - method: api
+        endpoint: "https://api.lens.org/patent/search"
+        auth: "a token (free for non-commercial use, by request)"
+        cost: $0
+        limits: "401 without a token"
+        probe: {date: 2026-09-20, http: 401, note: "Missing Authorization Header"}
+    caveats: ["Duplicates Google Patents"]
+    plan: "Not worth implementing"
+
+  - id: epo_ops
+    name: EPO OPS (Espacenet)
+    group: patents
+    geo: global
+    url: https://www.epo.org/en/searching-for-patents/data/web-services/ops
+    role: [evaluation]
+    signals: ["European and worldwide patent families; legal status (INPADOC) - including 'lapsed' per country"]
+    stages: [s5]
+    feeds: []
+    freshness: weekly
+    status: blocked
+    adapter: null
+    priority: none
+    access:
+      - method: api
+        endpoint: "https://ops.epo.org/3.2/rest-services/published-data/search?q=..."
+        auth: "registration, an OAuth key; 4 GB/week free"
+        cost: $0
+        limits: "403 fair-use without a key"
+        probe: {date: 2026-09-20, http: 403, note: "violation of Fair Use policy"}
+    caveats: ["Duplicates Google Patents for this purpose"]
+    plan: "Not worth implementing"
+
+  - id: fips_rospatent
+    name: FIPS / Rospatent / Yandex.Patents (RU)
+    group: patents
+    geo: ru
+    url: https://new.fips.ru/registers-web/
+    role: [evaluation]
+    signals:
+      - "Russian patents and computer programs (the software register!) - registration of software at FIPS by title / owner: who registers software in a niche (for the Russian B2B branch; partly duplicates the Ministry of Digital Development software register)"
+      - "status 'ceased to be in force' - abandoned Russian patents"
+    stages: [s5]
+    feeds: ["data/out/ru_b2b_*.csv: fips_progs (idea)"]
+    freshness: weekly
+    status: manual
+    adapter: null
+    priority: P3
+    access:
+      - method: html_form
+        endpoint: "https://www.fips.ru/registers-web/action?acName=clickRegister&regName=RUPAT | EVM"
+        auth: none
+        cost: $0
+        limits: "HTML forms with a session, search by number / date; full text only via the paid PatSearch"
+        probe: {date: 2026-09-20, http: 200, note: "registers open, but they are forms - a parser is 1-2 days of work"}
+      - method: api
+        endpoint: "https://searchplatform.rospatent.gov.ru/patsearch/v0.2/search"
+        auth: "a JWT token by request"
+        cost: $0
+        limits: "401 without a token"
+        probe: {date: 2026-09-20, http: 401, note: "Authorization error"}
+      - method: html
+        endpoint: "https://yandex.ru/patents?text=..."
+        auth: none
+        cost: $0
+        limits: "JS rendering, captcha on frequent requests"
+        probe: {date: 2026-09-20, http: 200, note: "584 KB HTML without results in the markup"}
+    caveats: ["The FIPS software register is an interesting Russian signal of 'who files software', but the Ministry of Digital Development register (see ru_reestr) covers the same for accredited vendors"]
+    plan: "By hand for 3-5 chosen Russian niches: the number of software registrations by keyword over the last 2-3 years"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # M&A - business sales (proven, transactions)
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: flippa
+    name: Flippa (SaaS listings)
+    group: m_and_a
+    geo: global
+    url: https://flippa.com
+    role: [discovery, evaluation]
+    signals: ["SaaS for sale with revenue / profit / price -> flippa_listings, flippa_with_revenue, max / median MRR per niche"]
+    stages: [s0, s5]
+    feeds: ["data/out/universe.csv (source=flippa, transactions)", "data/out/deals.csv: flippa_*"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s0_flippa
+    priority: P2
+    access:
+      - method: html_ssr
+        endpoint: "https://flippa.com/search?filter[property_type]=saas&page[number]=N"
+        auth: none
+        cost: $0
+        limits: "SSR JSON in the HTML, 15 pages (382 listings on 2026-09-15)"
+        probe: {date: 2026-09-15, http: 200, note: "works"}
+    caveats: ["The low segment (MRR $100-5k), many 'built in a month, selling'; revenue is self-reported"]
+    plan: "Add the filters property_type=app|ecommerce for B2C niches; a snapshot every month for the listings trend"
+
+  - id: empire_flippers
+    name: Empire Flippers (API)
+    group: m_and_a
+    geo: global
+    url: https://empireflippers.com/marketplace/
+    role: [discovery, evaluation]
+    signals:
+      - "2,878 listings (including sold) with a verified P&L: average_monthly_net_profit, revenue, listing_price, listing_multiple, monetizations (SaaS / Amazon FBA / eCommerce / Content / Apps), days_on_marketplace, net_profit_trend, risks / opportunities as text"
+      - "multiple and 'days on market' per monetization type -> liquidity and exit price (the revenue ceiling)"
+      - "listing_status For Sale / Sold / Under Offer -> deal speed per niche"
+    stages: [s0, s5, s6]
+    feeds: ["data/out/universe.csv (source=ef, transactions)", "data/out/deals.csv: ef_listings, ef_median_profit, ef_multiple (idea)"]
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P1
+    access:
+      - method: api
+        endpoint: "https://api.empireflippers.com/api/v1/listings/list?limit=100&page=N"
+        auth: none
+        cost: $0
+        limits: "public JSON without a key; 2,878 listings = 29 pages of 100; the monetizations filter did not work via the query (check the syntax in the docs) - filter locally"
+        probe: {date: 2026-09-20, http: 200, note: "JSON, pagination.count=2878, P&L fields present; niche / industry are null (the niche is in public_title: '...in the Kitchenware Niche')"}
+    caveats:
+      - "EF verifies the numbers - the best free source of real profit of small businesses; but SaaS is a minority (most are Amazon FBA / content / e-commerce)"
+      - "The niche is only in the title as text; match with the deal_keywords.yaml regexes over public_title + summary"
+    plan: "29 requests -> a CSV of listings; in the deals stage count ef_listings, ef_sold_12m, ef_median_profit, ef_multiple per niche; in the ceiling stage the median SaaS multiple is an anchor for the exit price"
+
+  - id: quiet_light
+    name: Quiet Light Brokerage
+    group: m_and_a
+    geo: global
+    url: https://quietlight.com/listings/
+    role: [evaluation]
+    signals: ["the upper segment ($500k-$20M): SaaS / e-commerce / content with SDE, price and multiple - where exits >= $1M really happen (ceiling)"]
+    stages: [s5, s6]
+    feeds: ["data/out/deals.csv: ql_listings (idea)"]
+    freshness: weekly
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: html_ssr
+        endpoint: "https://quietlight.com/listings/  (+ /listings/<id>/)"
+        auth: none
+        cost: $0
+        limits: "1.2 MB SSR, 81 listings per page with title, price, SDE, type"
+        probe: {date: 2026-09-20, http: 200, note: "open, parseable"}
+    caveats: ["Small volume (tens a month); the value is calibrating the ceiling: 'what a SaaS with $X profit sells for'"]
+    plan: "The same fetcher as Empire Flippers: page -> CSV; multiples by type feed the ceiling stage"
+
+  - id: acquire_com
+    name: Acquire.com (MicroAcquire)
+    group: m_and_a
+    geo: global
+    url: https://acquire.com
+    role: [discovery, evaluation]
+    signals: ["the largest flow of SaaS startups for sale ($10k-$5M ARR): MRR, ARR, multiple, TTM profit, tech stack, number of customers"]
+    stages: [s0, s5]
+    feeds: []
+    freshness: daily
+    status: manual
+    adapter: null
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://acquire.com/startups/ (no public list) ; app.acquire.com/api - not public"
+        auth: "a buyer account (free, but with verification); listings are visible after login"
+        cost: $0
+        limits: "SPA + login; 404 on direct paths"
+        probe: {date: 2026-09-20, http: 404, note: "same as on 2026-09-15 - only by hand from under an account"}
+    caveats: ["The best source of SaaS deals, but only by hand: export the list by keyword from under a login, ~20 min per niche"]
+    plan: "By hand for the top-5 niches when estimating the ceiling: number of listings by keyword, median ARR and multiple -> into the passport"
+
+  - id: fe_microns_tiny
+    name: FE International / Microns / Tiny Acquisitions / SideProjectors
+    group: m_and_a
+    geo: global
+    url: https://www.microns.io
+    role: [discovery]
+    signals: ["micro-SaaS and side projects for sale ($1k-$100k): the fact that small products exit; FE is the upper segment"]
+    stages: [s0]
+    feeds: []
+    freshness: daily
+    status: manual
+    adapter: null
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://www.microns.io/ (Webflow, 86 w-dyn-item) · https://feinternational.com/buy-a-website/ (Webflow, 12) · https://www.sideprojectors.com (Laravel SPA) · https://www.tinyacquisitions.com"
+        auth: none
+        cost: $0
+        limits: "Microns / FE - Webflow collections in the HTML (parseable); SideProjectors - an API behind CSRF; Tiny Acquisitions - connection not established"
+        probe: {date: 2026-09-20, http: 200, note: "Microns 121 KB and FE 139 KB open; SideProjectors 59 KB shell; TinyAcq - 000"}
+    caveats: ["Small volume and low tickets; the signal is a yes / no on 'are there any exits in the niche at all'"]
+    plan: "Microns could be added to the Empire Flippers fetcher as a third source (Webflow w-dyn-item -> name, price, MRR); the others are not worth doing"
+
+  - id: bizbuysell
+    name: BizBuySell / BusinessesForSale.com
+    group: m_and_a
+    geo: global
+    url: https://www.bizbuysell.com
+    role: [discovery, evaluation]
+    signals:
+      - "60k+ offline US businesses for sale by category (auto repair, salons, cleaning, vet clinics...) with cash flow and price -> size and economics of the buyer segment for vertical SMB SaaS (who the customer is and how much they earn)"
+      - "'a bird in the hand': a ready business with a customer base on which you can put your own software"
+    stages: [s6]
+    feeds: []
+    freshness: daily
+    status: blocked
+    adapter: null
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://www.bizbuysell.com/<category>-businesses-for-sale/"
+        auth: none
+        cost: $0
+        limits: "Akamai 'Access Denied' from the probing IP; businessesforsale.com - Cloudflare"
+        probe: {date: 2026-09-20, http: 403, note: "both closed; retry from another network, otherwise by hand"}
+    caveats: ["This is not a source of software niches but a source of customer economics: the median cash flow of an auto shop / salon is the ceiling of a SaaS ticket. Valuable for the ceiling estimate in vertical niches, 10 min by hand per niche"]
+    plan: "By hand for vertical SMB niches: number of listings, median cash flow and price per category -> into the ceiling assumptions"
+
+  - id: ru_business_sale
+    name: "RU 'ready business': Avito / Biboss / Altera Invest / business-asset"
+    group: m_and_a
+    geo: ru
+    url: https://www.avito.ru/rossiya/gotoviy_biznes
+    role: [discovery, evaluation]
+    signals:
+      - "the Russian analogue of BizBuySell: ready businesses by industry with revenue / profit / price -> economics of the Russian customer for the Russian B2B branch (auto repair, utilities contractors, salons, clinics...)"
+      - "IT businesses for sale (SaaS, apps, Telegram channels) - small Russian exits"
+    stages: [s6]
+    feeds: []
+    freshness: daily
+    status: blocked
+    adapter: null
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://www.avito.ru/rossiya/gotoviy_biznes/prodazha_biznesa/it-..."
+        auth: none
+        cost: $0
+        limits: "429 (anti-bot) on curl; open in a browser; there is an unofficial m.avito.ru/api with an application key"
+        probe: {date: 2026-09-20, http: 429, note: "blocked for curl"}
+      - method: html
+        endpoint: "https://www.biboss.ru (000) · https://alterainvest.ru (404 on the old path) · https://business-asset.com/ru/ (a noRobot page)"
+        auth: none
+        cost: $0
+        limits: "all three - anti-bot or changed paths"
+        probe: {date: 2026-09-20, http: 404, note: "by hand"}
+    caveats: ["Same meaning as BizBuySell - customer economics, not software niches; by hand for 3-5 Russian niches is enough"]
+    plan: "By hand: Avito in a browser - number of listings and median profit per customer category"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # STORE - app and plugin stores
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: appstore
+    name: App Store (iTunes Search / RSS / pages)
+    group: store
+    geo: both
+    url: https://apps.apple.com
+    role: [discovery, evaluation, trend]
+    signals: ["top-grossing by genre (s0); number of apps, ratings, top-1 concentration, IAP prices (s5); rating accumulation speed (s8); snapshots (s9); survival of newcomers"]
+    stages: [s0, s5, s8, s9]
+    feeds: ["data/out/appstore_*.csv", "data/out/pricing_b2c*.csv", "data/out/appstore_velocity.csv", "data/out/entrant_survival.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: [s0_appstore_top, s5_appstore, s5_appstore_metrics, s5_pricing_b2c, s8_appstore_velocity, s9_snapshot, s9_entrants]
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://itunes.apple.com/search?term=...&entity=software&country=us|ru ; /lookup?id=... ; RSS top-grossing"
+        auth: none
+        cost: $0
+        limits: "~20 requests/min; relevance - position <= 15 + config/appstore_relevance.yaml"
+        probe: {date: 2026-09-16, http: 200, note: "5,542 apps in the snapshot"}
+    caveats: []
+    plan: "-"
+
+  - id: google_play
+    name: Google Play (google-play-scraper)
+    group: store
+    geo: both
+    url: https://play.google.com
+    role: [discovery, evaluation, trend]
+    signals: ["US / RU top charts (s0); installs, ratings, leader <= 50% - the 'second platform' rule (s5 / s8); snapshots (s9)"]
+    stages: [s0, s5, s8, s9]
+    feeds: ["data/out/gplay_*.csv", "data/out/offsearch.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: [s0_gplay_top, s8_gplay_search, s8_gplay_filter, s8_gplay_details, s8_gplay_metrics, s9_gplay_refresh]
+    priority: P2
+    access:
+      - method: scraper
+        endpoint: "npm google-play-scraper (search, app, list)"
+        auth: none
+        cost: $0
+        limits: "~30 min for a full refresh of 2,392 apps"
+        probe: {date: 2026-09-16, http: 200, note: "works"}
+    caveats: []
+    plan: "-"
+
+  - id: shopify_app_store
+    name: Shopify App Store
+    group: store
+    geo: global
+    url: https://apps.shopify.com
+    role: [discovery, evaluation]
+    signals: ["subcategories, apps, reviews -> concentration for Shopify niches (rule: >= 20 apps with >= 100 reviews, leader <= 25%)"]
+    stages: [s0, s5]
+    feeds: ["data/out/shopify_metrics.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: [s0_shopify, s5_shopify_metrics]
+    priority: P2
+    access:
+      - method: html_ssr
+        endpoint: "https://apps.shopify.com/categories/<slug>"
+        auth: none
+        cost: $0
+        limits: "?page=N does not paginate - the first ~24 apps of a category + subcategories"
+        probe: {date: 2026-09-16, http: 200, note: "works"}
+    caveats: []
+    plan: "-"
+
+  - id: wordpress_org
+    name: WordPress.org plugins
+    group: store
+    geo: global
+    url: https://wordpress.org/plugins/
+    role: [discovery]
+    signals: ["plugins by tag: active installs, reviews -> entities and concentration"]
+    stages: [s0]
+    feeds: ["data/out/universe.csv (source=wordpress)"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s0_wordpress
+    priority: P3
+    access:
+      - method: api
+        endpoint: "https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[tag]=..."
+        auth: none
+        cost: $0
+        limits: "open JSON"
+        probe: {date: 2026-09-16, http: 200, note: "works"}
+    caveats: []
+    plan: "-"
+
+  - id: capterra_getapp
+    name: Capterra / GetApp (Gartner Digital Markets)
+    group: store
+    geo: global
+    url: https://www.capterra.com
+    role: [evaluation]
+    signals: ["category: number of products (numberOfItems), reviews -> B2B concentration (s5); GetApp cards - prices (s5 B2B pricing)"]
+    stages: [s5]
+    feeds: ["data/out/capterra_*.csv", "data/out/pricing_b2b*.csv"]
+    freshness: weekly
+    status: in_pipeline
+    adapter: [s5_capterra, s5_pricing_b2b]
+    priority: P2
+    access:
+      - method: html_ssr
+        endpoint: "https://www.capterra.com/<category>/?page=N ; https://www.getapp.com/<cat>/<product>/"
+        auth: none
+        cost: $0
+        limits: "categories are open, Capterra cards are closed -> GetApp"
+        probe: {date: 2026-09-15, http: 200, note: "works"}
+    caveats: ["A Capterra category is a weak proxy for new niches (NA:proxy)"]
+    plan: "-"
+
+  - id: g2
+    name: G2
+    group: store
+    geo: global
+    url: https://www.g2.com
+    role: [evaluation]
+    signals: ["category taxonomy (2,245 entries in the universe) - used; products / reviews - unavailable"]
+    stages: [s0]
+    feeds: ["data/out/universe.csv (source=g2:category)"]
+    freshness: weekly
+    status: blocked
+    adapter: null
+    priority: none
+    access:
+      - method: html
+        endpoint: "https://www.g2.com/categories/<slug>"
+        auth: none
+        cost: $0
+        limits: "403 both via curl and via a page-fetch tool; the category list was taken once by hand"
+        probe: {date: 2026-09-15, http: 403, note: "closed; Capterra is the replacement"}
+    caveats: []
+    plan: "Not worth implementing"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # SEARCH - search demand
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: dataforseo
+    name: DataForSEO (Google Ads search_volume)
+    group: search
+    geo: global
+    url: https://dataforseo.com
+    role: [evaluation, trend]
+    signals: ["volume, CPC, competition_index, 48 months of history per keyword - the core of s3"]
+    stages: [s3, s4]
+    feeds: ["data/out/dfs_*.csv", "data/out/metrics_quick.csv"]
+    freshness: monthly
+    status: in_pipeline
+    adapter: s3_dataforseo
+    priority: P1
+    access:
+      - method: api
+        endpoint: "google_ads/search_volume/live"
+        auth: "DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD"
+        cost: "$0.09/call up to 1,000 keywords"
+        limits: "a positive balance is required"
+        probe: {date: 2026-09-16, http: 200, note: "works with a positive balance"}
+    caveats: ["Google Ads does not target Russia; a hump in 'X software' in 2024 and an acceleration of 'X app' in 2025-26 distort year-over-year comparisons (see the base-year setting of the metrics stage)"]
+    plan: "-"
+
+  - id: wordstat
+    name: Yandex Wordstat API v2
+    group: search
+    geo: ru
+    url: https://wordstat.yandex.ru
+    role: [evaluation, trend]
+    signals: ["totalCount, 50 nested phrases, dynamics, regions - Russian demand (s2 / s3 / s4, Russian B2B module)"]
+    stages: [s2, s3, s4]
+    feeds: ["data/out/wordstat_ru.csv", "data/out/wordstat_dynamics.csv"]
+    freshness: monthly
+    status: in_pipeline
+    adapter: [s2_wordstat, s4_wordstat_dynamics, ru_wordstat]
+    priority: P1
+    access:
+      - method: api
+        endpoint: "api.wordstat.yandex.net/v2"
+        auth: "YANDEX_API_KEY"
+        cost: $0
+        limits: "100 requests/h; sometimes 499 'cancelled' - retry in an hour"
+        probe: {date: 2026-09-16, http: 200, note: "679/679 phrases"}
+    caveats: []
+    plan: "-"
+
+  - id: google_trends
+    name: Google Trends (trendspy) + YouTube (gprop=youtube)
+    group: search
+    geo: global
+    url: https://trends.google.com
+    role: [trend]
+    signals: ["direction over several years via anchors and brands (s4); YouTube interest per topic (s8)"]
+    stages: [s4, s8]
+    feeds: ["data/out/trends_deep.csv", "data/out/youtube_trends.csv"]
+    freshness: weekly
+    status: in_pipeline
+    adapter: [s4_trends, s8_youtube_trends]
+    priority: P2
+    access:
+      - method: scraper
+        endpoint: "trendspy (unofficial)"
+        auth: none
+        cost: $0
+        limits: "throttling; narrow B2B anchors -> index < 5 = NA"
+        probe: {date: 2026-09-17, http: 200, note: "works with pauses"}
+    caveats: []
+    plan: "-"
+
+  - id: suggest
+    name: Google / Yandex autocomplete
+    group: search
+    geo: both
+    url: https://suggestqueries.google.com
+    role: [evaluation]
+    signals: ["suggestions -> ambiguity, platform_share, query expansion (s2)"]
+    stages: [s2]
+    feeds: ["data/out/suggest_*.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s2_suggest
+    priority: P3
+    access:
+      - method: api
+        endpoint: "suggestqueries.google.com/complete/search?client=firefox&q=... ; suggest.yandex.ru/suggest-ff.cgi?part=..."
+        auth: none
+        cost: $0
+        limits: "no key"
+        probe: {date: 2026-09-15, http: 200, note: "works"}
+    caveats: []
+    plan: "-"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # RU REGISTRY - Russian B2B branch
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: reestr_mincifry
+    name: Register of Russian software (Ministry of Digital Development)
+    group: ru_registry
+    geo: ru
+    url: https://reestr.digital.gov.ru
+    role: [evaluation]
+    signals: ["number of entries per software class (156 classes) and year -> Russian supply and its growth"]
+    stages: [s0]
+    feeds: ["data/out/ru_b2b_reestr.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: ru_reestr
+    priority: P2
+    access:
+      - method: html_ssr
+        endpoint: "https://reestr.digital.gov.ru/reestr/?..."
+        auth: none
+        cost: $0
+        limits: "open"
+        probe: {date: 2026-09-17, http: 200, note: "works"}
+    caveats: []
+    plan: "-"
+
+  - id: zakupki
+    name: zakupki.gov.ru (Federal Laws 44-FZ / 223-FZ)
+    group: ru_registry
+    geo: ru
+    url: https://zakupki.gov.ru
+    role: [evaluation]
+    signals: ["number and sum of procurements by keyword -> public-sector demand for Russian B2B"]
+    stages: [s0]
+    feeds: ["data/out/ru_b2b_zakupki.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: ru_zakupki
+    priority: P2
+    access:
+      - method: html
+        endpoint: "https://zakupki.gov.ru/epz/order/extendedsearch/results.html?searchString=..."
+        auth: none
+        cost: $0
+        limits: "open, with pauses"
+        probe: {date: 2026-09-17, http: 200, note: "works"}
+    caveats: []
+    plan: "-"
+
+  - id: bitrix24_market
+    name: Bitrix24 Market
+    group: ru_registry
+    geo: ru
+    url: https://www.bitrix24.ru/apps/
+    role: [evaluation]
+    signals: ["apps per category, installs -> Russian supply in the Bitrix24 ecosystem"]
+    stages: [s0]
+    feeds: ["data/out/ru_b2b_bitrix.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: ru_bitrix
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://www.bitrix24.ru/apps/?category=..."
+        auth: none
+        cost: $0
+        limits: "open"
+        probe: {date: 2026-09-17, http: 200, note: "works"}
+    caveats: []
+    plan: "-"
+
+  - id: startpack
+    name: Startpack
+    group: ru_registry
+    geo: ru
+    url: https://startpack.ru
+    role: [evaluation]
+    signals: ["Russian SaaS catalogue by category - the Russian analogue of Capterra"]
+    stages: [s0]
+    feeds: []
+    freshness: weekly
+    status: blocked
+    adapter: null
+    priority: none
+    access:
+      - method: html
+        endpoint: "https://startpack.ru/category/..."
+        auth: none
+        cost: $0
+        limits: "403"
+        probe: {date: 2026-09-17, http: 403, note: "closed"}
+    caveats: []
+    plan: "Not worth implementing"

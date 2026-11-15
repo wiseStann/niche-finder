@@ -1,0 +1,31 @@
+# Niches whose Russian App Store results were cleaned by hand (see appstore_relevance.yaml, `ru:` entries).
+# Only these niches get a Russian App Store line in s8_appstore_velocity and s9_snapshot; the US store is always used.
+# Empty list: the Russian App Store is ignored there.
+- couples-relationship-apps
+- digital-wardrobe-outfit-planner
+- digital-business-cards
+- licence-exam-prep-apps
+- anglers-fishing-apps
+- recipe-manager-meal-planner
+- faith-devotional-apps
+- nature-id-mushroom-bird-insect
+- calorie-counters-ai
+- music-instrument-learning
+- astrology-human-design
+- workout-log-trackers
+- parental-control-family-locator
+- personal-budgeting-apps
+- muslim-apps-ru-cis
+- homework-solvers-ai
+- brain-training-memory
+- book-summaries-microlearning
+- pregnancy-baby-milestones
+- ai-hairstyle-tryon
+- kids-learning-games-preschool
+- travel-journal-map
+- indie-music-distribution-stems
+- travel-esim-apps
+- star-maps-astronomy-apps
+- phone-as-security-baby-camera
+- bedtime-stories-kids-audio
+- family-chore-reward-apps

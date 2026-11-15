@@ -1,0 +1,45 @@
+# Niche -> apps.shopify.com subcategories (data/raw/shopify_apps.csv, written by s0_shopify). Concentration is measured
+# by review count (a review ~ a paying merchant). The first subcategory is the primary one (it feeds supply_deep);
+# the others are context. An empty list means no Shopify measurement for the niche.
+shopify-upsell-bundles:
+  - marketing-and-conversion-upsell-and-bundles-upsell-and-cross-sell
+  - marketing-and-conversion-upsell-and-bundles-product-bundles
+  - marketing-and-conversion-checkout
+shopify-loyalty-rewards:
+  - marketing-and-conversion-customer-loyalty
+shopify-popups-notifications:
+  - store-design-notifications
+shopify-product-options-variants:
+  - selling-products-custom-products
+  - selling-products-custom-products-product-variants
+shopify-back-in-stock-preorder:
+  - marketing-and-conversion-upsell-and-bundles-stock-alerts
+  - marketing-and-conversion-upsell-and-bundles-pre-orders
+shopify-translation-currency:
+  - store-design-internationalization-currency-and-translation
+  - store-design-internationalization
+shopify-seo-image-optimizer:
+  - store-design-images-and-media
+  - store-design-site-optimization-seo
+shopify-dropshipping-pod-sourcing:
+  - finding-products-sourcing-options
+  - finding-products-sourcing-options-dropshipping
+  - finding-products-sourcing-options-print-on-demand-pod
+shopify-order-tracking:
+  - orders-and-shipping-orders
+  - orders-and-shipping-shipping-solutions-shipping
+shopify-labels-badges:
+  - store-design-design-elements
+shopify-marketplace-sync:
+  - orders-and-shipping-inventory
+  - sales-channels-selling-online-marketplaces
+shopify-reports-profit-analytics:
+  - store-management-operations-analytics
+  - store-management-finances
+shopify-bulk-edit-import:
+  - store-design-content
+shopify-b2b-wholesale:
+  - finding-products-sourcing-options-wholesale
+  - selling-products-pricing
+shopify-search-filter-menus:
+  - store-design-search-and-navigation

@@ -1,0 +1,19 @@
+# Russian B2B: Wordstat trap phrases. Brand phrases listed under ws_traps are excluded from a niche's brand sum by `ru_report`
+# (the same idea as `trap_brands` in overrides_ru.yaml for the Russian leaderboard). The reason is kept next to each phrase and
+# printed in the report. Find traps by reading the nested topRequests of a brand phrase: a phrase whose volume comes from
+# another meaning (a muscle, a plant, a government assistant) inflates demand and the top-brand share.
+ws_traps:
+  робот макс: "Robot Max is a government-services assistant, not a voice bot for business"
+  трицепс: "a muscle; the brand is 'Netics Tricepts', which was not measured as a separate phrase"
+  параплан: "paraplan (sport); the brand 'Paraplan CRM' drowns in it"
+  автодилер: "the generic word for car dealerships, not software"
+  arnica: "arnica (plant, cosmetics)"
+  calltouch: "call tracking, not speech analytics - an adjacent category"
+  mango office: "telephony, not speech analytics"
+  sipuni: "telephony, not speech analytics"
+  comagic: "call tracking / telephony"
+
+# Phrases that look ambiguous but are kept in the sums. Documentation only; `ru_report` does not read this key.
+ws_caveats:
+  potok: "ambiguous (word 'stream' / the ATS Potok) - kept"
+  умная логистика: "generic phrase, but the product exists - kept"

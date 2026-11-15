@@ -1,0 +1,25 @@
+# Brand anchors for Google Trends (S4), per niche id.
+# Why: B2B niches often have a narrow anchor with a Trends index below 5 (NA), and a single broad "X software"
+# phrase can be misleading (a one-off hump). s5_merge applies the rule: if the anchor / broad phrase verdict is
+# DOWN or NA, take the majority over brands with a signal (mean_2024 >= 5):
+#   broad DOWN + brands not DOWN -> FLAT (the category decline is not confirmed by brands);
+#   broad NA + brands present -> the brands' verdict.
+# Pick the 3-4 leading products of the category (from Capterra / GetApp). A hand-kept list.
+
+churches-tools: [planning center, propresenter, subsplash, breeze chms]
+gym-martial-arts-studios: [gymdesk, zen planner, mindbody, glofox]
+shift-scheduling-deskless: [when i work, deputy app, homebase app, connecteam]
+auto-repair-shops: [shopmonkey, tekmetric, autoleap, shop-ware]
+str-hosts-tools: [guesty, hospitable, lodgify, pricelabs]
+small-landlords-pm: [turbotenant, rentredi, baselane, innago]
+digital-signage-smb: [yodeck, screencloud, optisigns, novisign]
+course-creator-affiliate-payouts: [rewardful, firstpromoter, tapfiliate, partnerstack]
+pet-care-facilities: [gingr, moego, petexec, pawfinity]
+loyalty-wallet-passes: [passkit, loopy loyalty, stamp me]
+shopify-order-tracking: [parcel panel, aftership, track123]
+shopify-reports-profit-analytics: [triple whale, lifetimely, polar analytics, be profit]
+shopify-b2b-wholesale: [sparklayer, wholesale gorilla, b2b wholesale club]
+small-nonprofits-donor-crm: [bloomerang, donorperfect, little green light, neon crm]
+cold-email-deliverability: [instantly ai, lemlist, smartlead, warmup inbox]
+sms-marketing-smb: [simpletexting, slicktext, textmagic, eztexting]
+coaching-business-platforms: [practice better, paperbell, coachaccountable, simply.coach]

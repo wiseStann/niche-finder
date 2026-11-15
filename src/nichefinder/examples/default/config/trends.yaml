@@ -1,0 +1,7 @@
+# Google Trends depth check (S4) windows.
+# Years after last_year are not used: recent history is contaminated by bot / AI-agent traffic.
+# The verdict compares last_year with last_year - 2 and last_year - 1 (see s4_trends).
+first_year: 2021
+last_year: 2024
+min_weeks_per_year: 40     # a year counts only when the series has at least this many weekly points
+pause_seconds: 12          # pause after each live request

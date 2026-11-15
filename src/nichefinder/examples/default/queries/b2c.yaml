@@ -1,0 +1,873 @@
+# Search queries for B2C niches (section III of niches.yaml).
+
+wine-whiskey-cellar-tracking:
+  en:
+    - {q: "wine cellar app", i: category, anchor: true}
+    - {q: "wine inventory app", i: category}
+    - {q: "wine collection tracker", i: category}
+    - {q: "whiskey collection app", i: category}
+    - {q: "wine cellar management software", i: category}
+    - {q: "wine label scanner app", i: category}
+    - {q: "how to organize a wine cellar", i: problem}
+    - {q: "wine inventory spreadsheet", i: problem}
+    - {q: "cellartracker", i: brand, b: CellarTracker}
+    - {q: "vivino", i: brand, b: Vivino}
+    - {q: "invintory", i: brand, b: InVintory}
+    - {q: "oeni", i: brand, b: Oeni}
+  ru:
+    - {q: "приложение для учета вина", i: category, anchor: true}
+    - {q: "винный погреб приложение", i: category}
+    - {q: "учет коллекции виски", i: category}
+    - {q: "сканер этикеток вина", i: category}
+    - {q: "как вести учет винной коллекции", i: problem}
+    - {q: "vivino", i: brand, b: Vivino}
+    - {q: "cellartracker", i: brand, b: CellarTracker}
+
+tcg-sports-card-scanners:
+  en:
+    - {q: "card scanner app", i: category, anchor: true}
+    - {q: "pokemon card scanner app", i: category}
+    - {q: "sports card scanner app", i: category}
+    - {q: "card collection tracker app", i: category}
+    - {q: "pokemon card price checker", i: category}
+    - {q: "tcg collection app", i: category}
+    - {q: "how much is my pokemon card worth", i: problem}
+    - {q: "how to track sports card collection", i: problem}
+    - {q: "collectr", i: brand, b: Collectr}
+    - {q: "collx", i: brand, b: CollX}
+    - {q: "ludex", i: brand, b: Ludex}
+    - {q: "card ladder", i: brand, b: "Card Ladder"}
+    - {q: "tcgplayer app", i: brand, b: TCGplayer}
+
+coin-antique-identifiers:
+  en:
+    - {q: "coin identifier app", i: category, anchor: true}
+    - {q: "coin value app", i: category}
+    - {q: "antique identifier app", i: category}
+    - {q: "coin scanner app", i: category}
+    - {q: "coin collection app", i: category}
+    - {q: "vinyl record value app", i: category}
+    - {q: "how much is my coin worth", i: problem}
+    - {q: "how to identify old coins", i: problem}
+    - {q: "coinsnap", i: brand, b: CoinSnap}
+    - {q: "coinin app", i: brand, b: CoinIn}
+    - {q: "curio antique app", i: brand, b: Curio}
+    - {q: "numista", i: brand, b: Numista}
+  ru:
+    - {q: "определитель монет по фото", i: category, anchor: true}
+    - {q: "приложение для оценки монет", i: category}
+    - {q: "стоимость монеты по фото", i: category}
+    - {q: "определить антиквариат по фото", i: category}
+    - {q: "как узнать стоимость старой монеты", i: problem}
+    - {q: "мактун", i: brand, b: Мактун}
+    - {q: "coinsnap", i: brand, b: CoinSnap}
+
+recipe-manager-meal-planner:
+  en:
+    - {q: "recipe app", i: category, anchor: true}
+    - {q: "recipe organizer app", i: category}
+    - {q: "meal planning app", i: category}
+    - {q: "recipe saver app", i: category}
+    - {q: "meal planner with grocery list", i: category}
+    - {q: "save recipes from instagram", i: category}
+    - {q: "how to organize recipes digitally", i: problem}
+    - {q: "weekly meal plan template", i: problem}
+    - {q: "paprika recipe manager", i: brand, b: Paprika}
+    - {q: "recime", i: brand, b: ReciMe}
+    - {q: "crouton app", i: brand, b: Crouton}
+    - {q: "samsung food", i: brand, b: "Samsung Food"}
+    - {q: "mealie", i: brand, b: Mealie}
+  ru:
+    - {q: "приложение для рецептов", i: category, anchor: true}
+    - {q: "приложение для сохранения рецептов", i: category}
+    - {q: "планировщик меню на неделю приложение", i: category}
+    - {q: "книга рецептов приложение", i: category}
+    - {q: "как хранить рецепты", i: problem}
+    - {q: "меню на неделю для семьи", i: problem}
+    - {q: "cookmate", i: brand, b: Cookmate}
+    - {q: "paprika рецепты", i: brand, b: Paprika}
+
+baby-first-foods-blw:
+  en:
+    - {q: "baby led weaning app", i: category, anchor: true}
+    - {q: "baby first foods app", i: category}
+    - {q: "starting solids app", i: category}
+    - {q: "baby food schedule app", i: category}
+    - {q: "baby allergen tracker", i: category}
+    - {q: "when to start solids", i: problem}
+    - {q: "baby led weaning first foods", i: problem}
+    - {q: "solid starts", i: brand, b: "Solid Starts"}
+    - {q: "blw meals", i: brand, b: "BLW Meals"}
+    - {q: "feeding littles", i: brand, b: "Feeding Littles"}
+  ru:
+    - {q: "приложение прикорм", i: category, anchor: true}
+    - {q: "таблица прикорма по месяцам", i: category}
+    - {q: "дневник прикорма", i: category}
+    - {q: "рецепты для прикорма приложение", i: category}
+    - {q: "с чего начать прикорм", i: problem}
+    - {q: "когда вводить прикорм", i: problem}
+    - {q: "yumyum прикорм", i: brand, b: YumYum}
+    - {q: "first spoon", i: brand, b: "First Spoon"}
+
+infant-sleep-development-trackers:
+  en:
+    - {q: "baby sleep app", i: category, anchor: true}
+    - {q: "baby tracker app", i: category}
+    - {q: "baby sleep schedule app", i: category}
+    - {q: "baby milestone tracker", i: category}
+    - {q: "newborn feeding tracker", i: category}
+    - {q: "baby wake window calculator", i: category}
+    - {q: "how to get baby to sleep through the night", i: problem}
+    - {q: "wake windows by age", i: problem}
+    - {q: "huckleberry app", i: brand, b: Huckleberry}
+    - {q: "napper app", i: brand, b: Napper}
+    - {q: "wonder weeks", i: brand, b: "Wonder Weeks"}
+  ru:
+    - {q: "приложение трекер сна малыша", i: category, anchor: true}
+    - {q: "приложение для новорожденных кормление сон", i: category}
+    - {q: "калькулятор сна ребенка", i: category}
+    - {q: "скачки роста приложение", i: category}
+    - {q: "как уложить ребенка спать", i: problem}
+    - {q: "нормы сна по месяцам", i: problem}
+    - {q: "midmoon", i: brand, b: Midmoon}
+    - {q: "baby soma", i: brand, b: "Baby Soma"}
+
+nature-id-mushroom-bird-insect:
+  en:
+    - {q: "mushroom identifier app", i: category, anchor: true}
+    - {q: "bird identifier app", i: category}
+    - {q: "insect identifier app", i: category}
+    - {q: "rock identifier app", i: category}
+    - {q: "bird sound identifier", i: category}
+    - {q: "what mushroom is this", i: problem}
+    - {q: "how to identify a bird by sound", i: problem}
+    - {q: "picture mushroom", i: brand, b: "Picture Mushroom"}
+    - {q: "merlin bird id", i: brand, b: "Merlin Bird ID"}
+    - {q: "seek by inaturalist", i: brand, b: Seek}
+    - {q: "picture insect", i: brand, b: "Picture Insect"}
+  ru:
+    - {q: "определитель грибов по фото", i: category, anchor: true}
+    - {q: "приложение для определения грибов", i: category}
+    - {q: "определитель птиц по голосу", i: category}
+    - {q: "определить насекомое по фото", i: category}
+    - {q: "определитель камней по фото", i: category}
+    - {q: "какой это гриб", i: problem}
+    - {q: "iгрибник", i: brand, b: iГрибник}
+    - {q: "экогид грибы", i: brand, b: Экогид}
+
+plant-care-id:
+  en:
+    - {q: "plant identifier app", i: category, anchor: true}
+    - {q: "plant care app", i: category}
+    - {q: "plant watering reminder app", i: category}
+    - {q: "plant disease identifier", i: category}
+    - {q: "houseplant app", i: category}
+    - {q: "what plant is this", i: problem}
+    - {q: "how often to water houseplants", i: problem}
+    - {q: "picturethis", i: brand, b: PictureThis}
+    - {q: "planta app", i: brand, b: Planta}
+    - {q: "plantin", i: brand, b: PlantIn}
+    - {q: "greg plant app", i: brand, b: Greg}
+  ru:
+    - {q: "определитель растений по фото", i: category, anchor: true}
+    - {q: "приложение для ухода за растениями", i: category}
+    - {q: "напоминание о поливе растений приложение", i: category}
+    - {q: "определить болезнь растения по фото", i: category}
+    - {q: "что за растение по фото", i: problem}
+    - {q: "picturethis", i: brand, b: PictureThis}
+    - {q: "plantin", i: brand, b: PlantIn}
+
+fiber-crafts-patterns-counters:
+  en:
+    - {q: "knitting app", i: category, anchor: true}
+    - {q: "crochet pattern app", i: category}
+    - {q: "row counter app", i: category}
+    - {q: "cross stitch pattern app", i: category}
+    - {q: "knitting pattern maker", i: category}
+    - {q: "yarn stash app", i: category}
+    - {q: "how to keep track of knitting rows", i: problem}
+    - {q: "free crochet patterns", i: problem}
+    - {q: "ravelry", i: brand, b: Ravelry}
+    - {q: "knit companion", i: brand, b: "Knit Companion"}
+    - {q: "yarnpal", i: brand, b: YarnPal}
+    - {q: "loopsy app", i: brand, b: Loopsy}
+  ru:
+    - {q: "приложение для вязания", i: category, anchor: true}
+    - {q: "счетчик рядов вязание приложение", i: category}
+    - {q: "схемы вышивки крестом приложение", i: category}
+    - {q: "конструктор схем для вязания", i: category}
+    - {q: "как считать ряды при вязании", i: problem}
+    - {q: "knit logic", i: brand, b: "Knit Logic"}
+    - {q: "cross stitch saga", i: brand, b: "Cross Stitch Saga"}
+
+digital-wardrobe-outfit-planner:
+  en:
+    - {q: "digital wardrobe app", i: category, anchor: true}
+    - {q: "outfit planner app", i: category}
+    - {q: "closet organizer app", i: category}
+    - {q: "ai stylist app", i: category}
+    - {q: "capsule wardrobe app", i: category}
+    - {q: "clothes inventory app", i: category}
+    - {q: "how to build a capsule wardrobe", i: problem}
+    - {q: "what to wear today", i: problem}
+    - {q: "whering", i: brand, b: Whering}
+    - {q: "indyx app", i: brand, b: Indyx}
+    - {q: "acloset", i: brand, b: Acloset}
+  ru:
+    - {q: "приложение гардероб", i: category, anchor: true}
+    - {q: "приложение для составления образов", i: category}
+    - {q: "цифровой гардероб", i: category}
+    - {q: "ии стилист приложение", i: category}
+    - {q: "капсульный гардероб приложение", i: category}
+    - {q: "как составить капсульный гардероб", i: problem}
+    - {q: "getwardrobe", i: brand, b: GetWardrobe}
+    - {q: "fits гардероб", i: brand, b: Fits}
+    - {q: "acloset", i: brand, b: Acloset}
+
+couples-relationship-apps:
+  en:
+    - {q: "couples app", i: category, anchor: true}
+    - {q: "relationship app for couples", i: category}
+    - {q: "couple questions app", i: category}
+    - {q: "long distance relationship app", i: category}
+    - {q: "couples games app", i: category}
+    - {q: "questions to ask your partner", i: problem}
+    - {q: "how to improve communication in a relationship", i: problem}
+    - {q: "paired app", i: brand, b: Paired}
+    - {q: "agape app", i: brand, b: Agapé}
+    - {q: "couple joy app", i: brand, b: "Couple Joy"}
+    - {q: "between app", i: brand, b: Between}
+  ru:
+    - {q: "приложение для пар", i: category, anchor: true}
+    - {q: "приложение для отношений", i: category}
+    - {q: "вопросы для пар приложение", i: category}
+    - {q: "игры для пар приложение", i: category}
+    - {q: "вопросы для сближения с партнером", i: problem}
+    - {q: "couple joy", i: brand, b: "Couple Joy"}
+    - {q: "ближе приложение для пар", i: brand, b: Ближе}
+
+co-parenting-apps:
+  en:
+    - {q: "co parenting app", i: category, anchor: true}
+    - {q: "co parenting communication app", i: category}
+    - {q: "custody calendar app", i: category}
+    - {q: "court approved co parenting app", i: category}
+    - {q: "shared parenting expenses app", i: category}
+    - {q: "how to communicate with a difficult co parent", i: problem}
+    - {q: "custody schedule template", i: problem}
+    - {q: "ourfamilywizard", i: brand, b: OurFamilyWizard}
+    - {q: "talkingparents", i: brand, b: TalkingParents}
+    - {q: "appclose", i: brand, b: AppClose}
+    - {q: "cozi", i: brand, b: Cozi}
+    - {q: "2houses", i: brand, b: "2houses"}
+
+sobriety-quit-trackers:
+  en:
+    - {q: "sobriety app", i: category, anchor: true}
+    - {q: "quit drinking app", i: category}
+    - {q: "porn blocker app", i: category}
+    - {q: "quit smoking app", i: category}
+    - {q: "sober counter app", i: category}
+    - {q: "habit quitting app", i: category}
+    - {q: "how to stop drinking", i: problem}
+    - {q: "how to block porn on iphone", i: problem}
+    - {q: "i am sober app", i: brand, b: "I Am Sober"}
+    - {q: "reframe app", i: brand, b: Reframe}
+    - {q: "sober time app", i: brand, b: "Sober Time"}
+    - {q: "covenant eyes", i: brand, b: "Covenant Eyes"}
+    - {q: "blockerx", i: brand, b: BlockerX}
+  ru:
+    - {q: "приложение для бросающих пить", i: category, anchor: true}
+    - {q: "счетчик дней трезвости", i: category}
+    - {q: "приложение бросить курить", i: category}
+    - {q: "блокировщик порно", i: category}
+    - {q: "как бросить пить самостоятельно", i: problem}
+    - {q: "i am sober", i: brand, b: "I Am Sober"}
+    - {q: "quitzilla", i: brand, b: Quitzilla}
+
+screen-time-focus-apps:
+  en:
+    - {q: "screen time app", i: category, anchor: true}
+    - {q: "app blocker", i: category}
+    - {q: "phone addiction app", i: category}
+    - {q: "focus app iphone", i: category}
+    - {q: "block social media app", i: category}
+    - {q: "how to stop doomscrolling", i: problem}
+    - {q: "how to reduce screen time", i: problem}
+    - {q: "opal app", i: brand, b: Opal}
+    - {q: "one sec app", i: brand, b: "one sec"}
+    - {q: "bepresent app", i: brand, b: BePresent}
+    - {q: "screenzen", i: brand, b: ScreenZen}
+  ru:
+    - {q: "приложение для контроля экранного времени", i: category, anchor: true}
+    - {q: "блокировщик приложений на телефон", i: category}
+    - {q: "приложение против зависимости от телефона", i: category}
+    - {q: "как меньше сидеть в телефоне", i: problem}
+    - {q: "покус приложение", i: brand, b: Покус}
+
+subscription-trackers-cancellers:
+  en:
+    - {q: "subscription tracker app", i: category, anchor: true}
+    - {q: "subscription manager app", i: category}
+    - {q: "cancel subscriptions app", i: category}
+    - {q: "bill tracker app", i: category}
+    - {q: "how to find all my subscriptions", i: problem}
+    - {q: "how to cancel unwanted subscriptions", i: problem}
+    - {q: "rocket money", i: brand, b: "Rocket Money"}
+    - {q: "bobby app", i: brand, b: Bobby}
+    - {q: "subpilot", i: brand, b: SubPilot}
+    - {q: "trim app", i: brand, b: Trim}
+  ru:
+    - {q: "приложение для учета подписок", i: category, anchor: true}
+    - {q: "трекер подписок", i: category}
+    - {q: "как найти все свои подписки", i: problem}
+    - {q: "как отменить все подписки", i: problem}
+    - {q: "bobby подписки", i: brand, b: Bobby}
+
+gig-worker-mileage-tax:
+  en:
+    - {q: "mileage tracker app", i: category, anchor: true}
+    - {q: "mileage log app", i: category}
+    - {q: "expense tracker for self employed", i: category}
+    - {q: "doordash mileage tracker", i: category}
+    - {q: "gig worker tax app", i: category}
+    - {q: "receipt scanner app for taxes", i: category}
+    - {q: "how to track mileage for taxes", i: problem}
+    - {q: "self employed tax deductions", i: problem}
+    - {q: "mileiq", i: brand, b: MileIQ}
+    - {q: "everlance", i: brand, b: Everlance}
+    - {q: "driversnote", i: brand, b: Driversnote}
+    - {q: "hurdlr", i: brand, b: Hurdlr}
+    - {q: "gridwise", i: brand, b: Gridwise}
+
+class-action-claim-finders:
+  en:
+    - {q: "class action settlement finder", i: category, anchor: true}
+    - {q: "class action claim app", i: category}
+    - {q: "open class action settlements", i: category}
+    - {q: "settlement claim tracker", i: category}
+    - {q: "how to file a class action claim", i: problem}
+    - {q: "am i eligible for class action settlement", i: problem}
+    - {q: "settlemate", i: brand, b: Settlemate}
+    - {q: "claimhunt", i: brand, b: ClaimHunt}
+    - {q: "payout app class action", i: brand, b: Payout}
+    - {q: "classaction org", i: brand, b: "ClassAction.org"}
+
+residency-days-visa-trackers:
+  en:
+    - {q: "days in country tracker app", i: category, anchor: true}
+    - {q: "tax residency tracker", i: category}
+    - {q: "schengen calculator app", i: category}
+    - {q: "travel days counter app", i: category}
+    - {q: "183 day rule tracker", i: category}
+    - {q: "visa days tracker", i: category}
+    - {q: "how to track days spent in a country", i: problem}
+    - {q: "schengen 90 180 rule", i: problem}
+    - {q: "taxbird", i: brand, b: TaxBird}
+    - {q: "country days tracker", i: brand, b: "Country Days Tracker"}
+    - {q: "domicile365", i: brand, b: Domicile365}
+  ru:
+    - {q: "приложение учет дней в стране", i: category, anchor: true}
+    - {q: "шенген калькулятор 90 180", i: category}
+    - {q: "калькулятор налогового резидентства", i: category}
+    - {q: "счетчик дней за границей", i: category}
+    - {q: "как считать 183 дня", i: problem}
+    - {q: "правило 90 180 как считать", i: problem}
+    - {q: "дни в странах приложение", i: brand, b: "Дни в странах"}
+    - {q: "шенген калькулятор приложение", i: brand, b: "Шенген калькулятор"}
+
+astrology-human-design:
+  en:
+    - {q: "astrology app", i: category, anchor: true}
+    - {q: "birth chart app", i: category}
+    - {q: "human design app", i: category}
+    - {q: "ai astrologer", i: category}
+    - {q: "daily horoscope app", i: category}
+    - {q: "astrology compatibility app", i: category}
+    - {q: "what is my rising sign", i: problem}
+    - {q: "birth chart calculator", i: problem}
+    - {q: "co star app", i: brand, b: "Co-Star"}
+    - {q: "chani app", i: brand, b: CHANI}
+    - {q: "nebula astrology", i: brand, b: Nebula}
+    - {q: "the pattern app", i: brand, b: "The Pattern"}
+  ru:
+    - {q: "приложение астрология", i: category, anchor: true}
+    - {q: "натальная карта приложение", i: category}
+    - {q: "дизайн человека приложение", i: category}
+    - {q: "лунный календарь приложение", i: category}
+    - {q: "ии астролог", i: category}
+    - {q: "натальная карта с расшифровкой", i: problem}
+    - {q: "moonly", i: brand, b: Moonly}
+    - {q: "humdes", i: brand, b: Humdes}
+    - {q: "навамша", i: brand, b: Навамша}
+
+faith-devotional-apps:
+  en:
+    - {q: "bible app", i: category, anchor: true}
+    - {q: "prayer app", i: category}
+    - {q: "daily devotional app", i: category}
+    - {q: "bible chat ai", i: category}
+    - {q: "catholic prayer app", i: category}
+    - {q: "bible study app", i: category}
+    - {q: "how to start reading the bible", i: problem}
+    - {q: "daily prayer for today", i: problem}
+    - {q: "hallow app", i: brand, b: Hallow}
+    - {q: "youversion", i: brand, b: YouVersion}
+    - {q: "bible chat app", i: brand, b: "Bible Chat"}
+    - {q: "abide app", i: brand, b: Abide}
+    - {q: "muslim pro", i: brand, b: "Muslim Pro"}
+  ru:
+    - {q: "православное приложение", i: category, anchor: true}
+    - {q: "молитвослов приложение", i: category}
+    - {q: "приложение коран", i: category}
+    - {q: "время намаза приложение", i: category}
+    - {q: "библия приложение", i: category}
+    - {q: "молитва на каждый день", i: problem}
+    - {q: "православный календарь приложение", i: brand, b: "Православный календарь"}
+    - {q: "muslim pro", i: brand, b: "Muslim Pro"}
+    - {q: "sajda", i: brand, b: Sajda}
+
+licence-exam-prep-apps:
+  en:
+    - {q: "dmv practice test app", i: category, anchor: true}
+    - {q: "permit test app", i: category}
+    - {q: "epa 608 practice test", i: category}
+    - {q: "cdl practice test app", i: category}
+    - {q: "real estate exam prep app", i: category}
+    - {q: "faa written test prep", i: category}
+    - {q: "how to pass the permit test", i: problem}
+    - {q: "dmv practice test", i: problem}
+    - {q: "zutobi", i: brand, b: Zutobi}
+    - {q: "dmv genie", i: brand, b: "DMV Genie"}
+    - {q: "skillcat", i: brand, b: SkillCat}
+  ru:
+    - {q: "билеты пдд приложение", i: category, anchor: true}
+    - {q: "экзамен гимс приложение", i: category}
+    - {q: "тесты по промышленной безопасности приложение", i: category}
+    - {q: "дельта тест для моряков", i: category}
+    - {q: "тренажер экзамена пдд", i: category}
+    - {q: "тесты для аккредитации приложение", i: category}
+    - {q: "как сдать теорию пдд с первого раза", i: problem}
+    - {q: "рули онлайн", i: brand, b: "Рули онлайн"}
+    - {q: "дельта тест 3.0", i: brand, b: "Дельта тест"}
+    - {q: "олимпокс", i: brand, b: Олимпокс}
+
+ai-language-speaking-tutors:
+  en:
+    - {q: "ai english tutor", i: category, anchor: true}
+    - {q: "english speaking practice app", i: category}
+    - {q: "ai language tutor", i: category}
+    - {q: "conversation practice app", i: category}
+    - {q: "ai pronunciation app", i: category}
+    - {q: "talk to ai in english", i: category}
+    - {q: "how to practice speaking english alone", i: problem}
+    - {q: "how to improve english speaking", i: problem}
+    - {q: "speak app", i: brand, b: Speak}
+    - {q: "praktika ai", i: brand, b: Praktika}
+    - {q: "elsa speak", i: brand, b: ELSA}
+    - {q: "loora ai", i: brand, b: Loora}
+    - {q: "talkpal", i: brand, b: Talkpal}
+  ru:
+    - {q: "ии репетитор английского", i: category, anchor: true}
+    - {q: "приложение для разговорного английского с ии", i: category}
+    - {q: "практика английского с нейросетью", i: category}
+    - {q: "собеседник для практики английского", i: category}
+    - {q: "как практиковать разговорный английский одному", i: problem}
+    - {q: "praktika", i: brand, b: Praktika}
+    - {q: "симплер английский", i: brand, b: Simpler}
+    - {q: "loora", i: brand, b: Loora}
+
+sign-language-learning:
+  en:
+    - {q: "learn sign language app", i: category, anchor: true}
+    - {q: "asl app", i: category}
+    - {q: "sign language course online", i: category}
+    - {q: "asl lessons for beginners", i: category}
+    - {q: "how to learn asl", i: problem}
+    - {q: "lingvano", i: brand, b: Lingvano}
+    - {q: "asl bloom", i: brand, b: "ASL Bloom"}
+    - {q: "pocket sign", i: brand, b: "Pocket Sign"}
+
+music-instrument-learning:
+  en:
+    - {q: "learn piano app", i: category, anchor: true}
+    - {q: "learn guitar app", i: category}
+    - {q: "guitar lessons app", i: category}
+    - {q: "singing app", i: category}
+    - {q: "ai music teacher", i: category}
+    - {q: "chords app", i: category}
+    - {q: "how to learn piano as an adult", i: problem}
+    - {q: "easy guitar songs for beginners", i: problem}
+    - {q: "simply piano", i: brand, b: Simply}
+    - {q: "yousician", i: brand, b: Yousician}
+    - {q: "flowkey", i: brand, b: flowkey}
+    - {q: "justin guitar", i: brand, b: "Justin Guitar"}
+    - {q: "chordify", i: brand, b: Chordify}
+  ru:
+    - {q: "приложение для обучения игре на гитаре", i: category, anchor: true}
+    - {q: "приложение для обучения игре на пианино", i: category}
+    - {q: "приложение для вокала", i: category}
+    - {q: "аккорды приложение", i: category}
+    - {q: "как научиться играть на гитаре самостоятельно", i: problem}
+    - {q: "yousician", i: brand, b: Yousician}
+    - {q: "flowkey", i: brand, b: flowkey}
+    - {q: "vocal image", i: brand, b: "Vocal Image"}
+
+ai-study-flashcards:
+  en:
+    - {q: "ai flashcard maker", i: category, anchor: true}
+    - {q: "ai study app", i: category}
+    - {q: "pdf to flashcards", i: category}
+    - {q: "ai notes from lecture", i: category}
+    - {q: "ai quiz generator from notes", i: category}
+    - {q: "homework helper app", i: category}
+    - {q: "how to study more effectively", i: problem}
+    - {q: "how to make flashcards from notes", i: problem}
+    - {q: "quizlet", i: brand, b: Quizlet}
+    - {q: "knowt", i: brand, b: Knowt}
+    - {q: "gizmo ai", i: brand, b: Gizmo}
+    - {q: "turbo ai", i: brand, b: "Turbo AI"}
+  ru:
+    - {q: "ии конспект лекции", i: category, anchor: true}
+    - {q: "карточки для запоминания приложение", i: category}
+    - {q: "нейросеть для учебы", i: category}
+    - {q: "гдз по фото", i: category}
+    - {q: "тест из конспекта нейросеть", i: category}
+    - {q: "как быстро выучить материал к экзамену", i: problem}
+    - {q: "notix", i: brand, b: Notix}
+    - {q: "quizlet", i: brand, b: Quizlet}
+
+workout-log-trackers:
+  en:
+    - {q: "workout tracker app", i: category, anchor: true}
+    - {q: "gym log app", i: category}
+    - {q: "weightlifting app", i: category}
+    - {q: "workout planner app", i: category}
+    - {q: "strength training app", i: category}
+    - {q: "workout log template", i: problem}
+    - {q: "how to track progress in the gym", i: problem}
+    - {q: "hevy app", i: brand, b: Hevy}
+    - {q: "strong app", i: brand, b: Strong}
+    - {q: "fitbod", i: brand, b: Fitbod}
+    - {q: "jefit", i: brand, b: JEFIT}
+  ru:
+    - {q: "дневник тренировок приложение", i: category, anchor: true}
+    - {q: "приложение для тренировок в зале", i: category}
+    - {q: "трекер тренировок", i: category}
+    - {q: "программа тренировок приложение", i: category}
+    - {q: "как вести дневник тренировок", i: problem}
+    - {q: "hevy", i: brand, b: Hevy}
+    - {q: "fitbod", i: brand, b: Fitbod}
+    - {q: "forma дневник тренировок", i: brand, b: Forma}
+
+stretching-mobility-posture:
+  en:
+    - {q: "stretching app", i: category, anchor: true}
+    - {q: "mobility app", i: category}
+    - {q: "posture app", i: category}
+    - {q: "flexibility app", i: category}
+    - {q: "daily stretching routine app", i: category}
+    - {q: "how to fix posture", i: problem}
+    - {q: "stretches for lower back pain", i: problem}
+    - {q: "bend app", i: brand, b: Bend}
+    - {q: "pliability", i: brand, b: Pliability}
+    - {q: "gowod", i: brand, b: GOWOD}
+    - {q: "stretchit", i: brand, b: StretchIt}
+  ru:
+    - {q: "приложение для растяжки", i: category, anchor: true}
+    - {q: "шпагат за 30 дней приложение", i: category}
+    - {q: "приложение для осанки", i: category}
+    - {q: "мобильность суставов приложение", i: category}
+    - {q: "как сесть на шпагат", i: problem}
+    - {q: "как исправить осанку", i: problem}
+    - {q: "bend растяжка", i: brand, b: Bend}
+    - {q: "gowod", i: brand, b: GOWOD}
+
+dog-training-apps:
+  en:
+    - {q: "dog training app", i: category, anchor: true}
+    - {q: "puppy training app", i: category}
+    - {q: "dog clicker app", i: category}
+    - {q: "puppy schedule app", i: category}
+    - {q: "dog whistle app", i: category}
+    - {q: "how to train a puppy", i: problem}
+    - {q: "puppy potty training schedule", i: problem}
+    - {q: "dogo app", i: brand, b: Dogo}
+    - {q: "woofz", i: brand, b: Woofz}
+    - {q: "puppr", i: brand, b: Puppr}
+    - {q: "goodpup", i: brand, b: GoodPup}
+  ru:
+    - {q: "приложение для дрессировки собак", i: category, anchor: true}
+    - {q: "дрессировка щенка приложение", i: category}
+    - {q: "кликер для собак приложение", i: category}
+    - {q: "как дрессировать щенка в домашних условиях", i: problem}
+    - {q: "как приучить щенка к туалету", i: problem}
+    - {q: "godog", i: brand, b: GoDog}
+    - {q: "dogo", i: brand, b: Dogo}
+
+parental-control-family-locator:
+  en:
+    - {q: "parental control app", i: category, anchor: true}
+    - {q: "family locator app", i: category}
+    - {q: "kids phone monitoring app", i: category}
+    - {q: "screen time app for kids", i: category}
+    - {q: "gps tracker for kids", i: category}
+    - {q: "how to monitor my child's phone", i: problem}
+    - {q: "how to limit screen time for kids", i: problem}
+    - {q: "bark app", i: brand, b: Bark}
+    - {q: "qustodio", i: brand, b: Qustodio}
+    - {q: "life360", i: brand, b: Life360}
+  ru:
+    - {q: "родительский контроль приложение", i: category, anchor: true}
+    - {q: "приложение где мои дети", i: category}
+    - {q: "gps трекер для ребенка приложение", i: category}
+    - {q: "ограничение экранного времени ребенку", i: category}
+    - {q: "как контролировать телефон ребенка", i: problem}
+    - {q: "где мои дети", i: brand, b: "Где мои дети"}
+    - {q: "kroha", i: brand, b: Kroha}
+    - {q: "kaspersky safe kids", i: brand, b: "Kaspersky Safe Kids"}
+
+anglers-fishing-apps:
+  en:
+    - {q: "fishing app", i: category, anchor: true}
+    - {q: "fishing forecast app", i: category}
+    - {q: "fishing spots app", i: category}
+    - {q: "fish identifier app", i: category}
+    - {q: "fishing log app", i: category}
+    - {q: "best time to fish today", i: problem}
+    - {q: "fishing spots near me", i: problem}
+    - {q: "fishbrain", i: brand, b: Fishbrain}
+    - {q: "fishing points app", i: brand, b: "Fishing Points"}
+    - {q: "navionics", i: brand, b: Navionics}
+    - {q: "fish ai", i: brand, b: "Fish AI"}
+  ru:
+    - {q: "приложение для рыбалки", i: category, anchor: true}
+    - {q: "прогноз клева приложение", i: category}
+    - {q: "карта рыбных мест", i: category}
+    - {q: "дневник рыбалки приложение", i: category}
+    - {q: "определитель рыбы по фото", i: category}
+    - {q: "прогноз клева на завтра", i: problem}
+    - {q: "когда ловить рыбу приложение", i: brand, b: "Когда ловить рыбу"}
+    - {q: "fish deeper", i: brand, b: "Fish Deeper"}
+
+padel-racket-sports:
+  en:
+    - {q: "padel app", i: category, anchor: true}
+    - {q: "americano padel app", i: category}
+    - {q: "padel tournament organizer", i: category}
+    - {q: "pickleball rating app", i: category}
+    - {q: "find padel partner", i: category}
+    - {q: "tennis match tracker app", i: category}
+    - {q: "how to organize a padel americano", i: problem}
+    - {q: "padel courts near me", i: problem}
+    - {q: "playtomic", i: brand, b: Playtomic}
+    - {q: "dupr", i: brand, b: DUPR}
+    - {q: "padel mates", i: brand, b: "Padel Mates"}
+    - {q: "swingvision", i: brand, b: SwingVision}
+  ru:
+    - {q: "падел приложение", i: category, anchor: true}
+    - {q: "американо падел приложение", i: category}
+    - {q: "найти партнера для падела", i: category}
+    - {q: "рейтинг игроков падел", i: category}
+    - {q: "как играть американо в паделе", i: problem}
+    - {q: "playtomic", i: brand, b: Playtomic}
+    - {q: "americano padel", i: brand, b: "Americano Padel"}
+
+car-diagnostics-logs:
+  en:
+    - {q: "obd2 app", i: category, anchor: true}
+    - {q: "car diagnostic app", i: category}
+    - {q: "car maintenance tracker app", i: category}
+    - {q: "fuel log app", i: category}
+    - {q: "obd2 scanner bluetooth app", i: category}
+    - {q: "car expense tracker", i: category}
+    - {q: "how to read check engine codes", i: problem}
+    - {q: "car maintenance schedule", i: problem}
+    - {q: "car scanner elm obd2", i: brand, b: "Car Scanner"}
+    - {q: "torque pro", i: brand, b: Torque}
+    - {q: "bimmercode", i: brand, b: BimmerCode}
+    - {q: "obd fusion", i: brand, b: "OBD Fusion"}
+    - {q: "drivvo", i: brand, b: Drivvo}
+  ru:
+    - {q: "приложение для диагностики автомобиля", i: category, anchor: true}
+    - {q: "obd2 приложение", i: category}
+    - {q: "приложение учет расходов на авто", i: category}
+    - {q: "программа для elm327", i: category}
+    - {q: "учет расхода топлива приложение", i: category}
+    - {q: "как считать ошибки elm327", i: problem}
+    - {q: "car scanner elm obd2", i: brand, b: "Car Scanner"}
+    - {q: "мой авто приложение", i: brand, b: "Мой Авто"}
+    - {q: "drivvo", i: brand, b: Drivvo}
+
+package-trackers:
+  en:
+    - {q: "package tracker app", i: category, anchor: true}
+    - {q: "universal package tracking", i: category}
+    - {q: "track all my packages in one place", i: category}
+    - {q: "parcel tracking app", i: category}
+    - {q: "how to track a package without tracking number", i: problem}
+    - {q: "parcel app", i: brand, b: Parcel}
+    - {q: "17track", i: brand, b: "17track"}
+    - {q: "aftership", i: brand, b: AfterShip}
+  ru:
+    - {q: "отслеживание посылок приложение", i: category, anchor: true}
+    - {q: "трекер посылок", i: category}
+    - {q: "отследить посылку по трек номеру", i: category}
+    - {q: "все посылки в одном приложении", i: category}
+    - {q: "где посылка", i: brand, b: ГдеПосылка}
+    - {q: "посылка приложение", i: brand, b: Посылка}
+    - {q: "1track", i: brand, b: 1Track}
+
+restock-drop-alerts:
+  en:
+    - {q: "restock alert app", i: category, anchor: true}
+    - {q: "in stock alert app", i: category}
+    - {q: "sneaker release app", i: category}
+    - {q: "price drop alert app", i: category}
+    - {q: "pokemon restock alerts", i: category}
+    - {q: "how to get notified when item is back in stock", i: problem}
+    - {q: "sneaker release dates", i: problem}
+    - {q: "hotstock", i: brand, b: HotStock}
+    - {q: "sole retriever", i: brand, b: "Sole Retriever"}
+    - {q: "distill web monitor", i: brand, b: Distill}
+    - {q: "visualping", i: brand, b: Visualping}
+
+ebay-auction-snipers:
+  en:
+    - {q: "ebay sniper", i: category, anchor: true}
+    - {q: "ebay bid sniper app", i: category}
+    - {q: "auction sniper", i: category}
+    - {q: "ebay auto bidder", i: category}
+    - {q: "how to win ebay auctions", i: problem}
+    - {q: "gixen", i: brand, b: Gixen}
+    - {q: "myibidder", i: brand, b: Myibidder}
+    - {q: "ezsniper", i: brand, b: EZsniper}
+    - {q: "bidnapper", i: brand, b: Bidnapper}
+  ru:
+    - {q: "снайпер для ebay", i: category, anchor: true}
+    - {q: "снайпер аукционов", i: category}
+    - {q: "автоставка ebay", i: category}
+    - {q: "как выиграть аукцион на ебей", i: problem}
+    - {q: "myibidder", i: brand, b: Myibidder}
+    - {q: "gixen", i: brand, b: Gixen}
+
+audio-tour-guides:
+  en:
+    - {q: "audio tour app", i: category, anchor: true}
+    - {q: "self guided walking tour app", i: category}
+    - {q: "gps audio tour", i: category}
+    - {q: "driving tour app", i: category}
+    - {q: "create your own audio tour", i: category}
+    - {q: "audio guide app for museums", i: category}
+    - {q: "how to make an audio tour", i: problem}
+    - {q: "self guided tour of rome", i: problem}
+    - {q: "guidealong", i: brand, b: GuideAlong}
+    - {q: "voicemap", i: brand, b: VoiceMap}
+    - {q: "izi travel", i: brand, b: "izi.TRAVEL"}
+    - {q: "smartguide app", i: brand, b: SmartGuide}
+  ru:
+    - {q: "аудиогид приложение", i: category, anchor: true}
+    - {q: "аудиогид по городу", i: category}
+    - {q: "аудиоэкскурсия приложение", i: category}
+    - {q: "создать аудиогид", i: category}
+    - {q: "аудиогид по эрмитажу", i: problem}
+    - {q: "экскурсия по стамбулу самостоятельно", i: problem}
+    - {q: "izi travel", i: brand, b: "izi.TRAVEL"}
+    - {q: "azbo аудиогид", i: brand, b: AZBO}
+    - {q: "travelry", i: brand, b: Travelry}
+
+rv-camping-apps:
+  en:
+    - {q: "rv camping app", i: category, anchor: true}
+    - {q: "campground finder app", i: category}
+    - {q: "rv trip planner app", i: category}
+    - {q: "free camping app", i: category}
+    - {q: "rv gps app", i: category}
+    - {q: "boondocking app", i: category}
+    - {q: "how to find free camping", i: problem}
+    - {q: "rv trip planning", i: problem}
+    - {q: "the dyrt", i: brand, b: "The Dyrt"}
+    - {q: "rv life app", i: brand, b: "RV LIFE"}
+    - {q: "campendium", i: brand, b: Campendium}
+    - {q: "harvest hosts", i: brand, b: "Harvest Hosts"}
+    - {q: "park4night", i: brand, b: park4night}
+
+trip-planners:
+  en:
+    - {q: "trip planner app", i: category, anchor: true}
+    - {q: "travel itinerary app", i: category}
+    - {q: "ai trip planner", i: category}
+    - {q: "road trip planner app", i: category}
+    - {q: "travel planning app with friends", i: category}
+    - {q: "how to plan a trip itinerary", i: problem}
+    - {q: "10 day italy itinerary", i: problem}
+    - {q: "wanderlog", i: brand, b: Wanderlog}
+    - {q: "tripit", i: brand, b: TripIt}
+    - {q: "tripsy", i: brand, b: Tripsy}
+    - {q: "roadtrippers", i: brand, b: Roadtrippers}
+  ru:
+    - {q: "планировщик путешествий приложение", i: category, anchor: true}
+    - {q: "составить маршрут путешествия приложение", i: category}
+    - {q: "ии планировщик путешествий", i: category}
+    - {q: "как спланировать путешествие самостоятельно", i: problem}
+    - {q: "wanderlog", i: brand, b: Wanderlog}
+    - {q: "tripsy", i: brand, b: Tripsy}
+
+ai-interior-design-apps:
+  en:
+    - {q: "ai interior design", i: category, anchor: true}
+    - {q: "ai room design app", i: category}
+    - {q: "ai home design", i: category}
+    - {q: "virtual staging ai", i: category}
+    - {q: "ai room planner", i: category}
+    - {q: "how to design a room with ai", i: problem}
+    - {q: "living room design ideas", i: problem}
+    - {q: "roomgpt", i: brand, b: RoomGPT}
+    - {q: "home ai app", i: brand, b: "Home AI"}
+    - {q: "planner 5d", i: brand, b: "Planner 5D"}
+    - {q: "reimagine home ai", i: brand, b: "Reimagine Home"}
+  ru:
+    - {q: "дизайн интерьера нейросеть", i: category, anchor: true}
+    - {q: "ии дизайн комнаты по фото", i: category}
+    - {q: "нейросеть для дизайна интерьера бесплатно", i: category}
+    - {q: "дизайн интерьера онлайн", i: category}
+    - {q: "как сделать дизайн проект квартиры самому", i: problem}
+    - {q: "planner 5d", i: brand, b: "Planner 5D"}
+    - {q: "roomgpt", i: brand, b: RoomGPT}
+
+calorie-counters-ai:
+  en:
+    - {q: "calorie counter app", i: category, anchor: true}
+    - {q: "ai calorie counter", i: category}
+    - {q: "food scanner app", i: category}
+    - {q: "macro tracker app", i: category}
+    - {q: "calorie counting app by photo", i: category}
+    - {q: "how many calories should i eat", i: problem}
+    - {q: "how to count macros", i: problem}
+    - {q: "myfitnesspal", i: brand, b: MyFitnessPal}
+    - {q: "cal ai", i: brand, b: "Cal AI"}
+    - {q: "yazio", i: brand, b: Yazio}
+    - {q: "cronometer", i: brand, b: Cronometer}
+    - {q: "lifesum", i: brand, b: Lifesum}
+  ru:
+    - {q: "счетчик калорий приложение", i: category, anchor: true}
+    - {q: "счетчик калорий по фото", i: category}
+    - {q: "ии счетчик калорий", i: category}
+    - {q: "дневник питания приложение", i: category}
+    - {q: "как считать калории", i: problem}
+    - {q: "yazio", i: brand, b: Yazio}
+    - {q: "fatsecret", i: brand, b: FatSecret}
+    - {q: "lifesum", i: brand, b: Lifesum}
+
+ru-car-fines-checks:
+  ru:
+    - {q: "проверка штрафов гибдд", i: category, anchor: true}
+    - {q: "штрафы гибдд приложение", i: category}
+    - {q: "проверить авто по vin", i: category}
+    - {q: "проверка авто по гос номеру", i: category}
+    - {q: "история автомобиля по vin бесплатно", i: category}
+    - {q: "как оплатить штраф гибдд со скидкой", i: problem}
+    - {q: "как проверить машину перед покупкой", i: problem}
+    - {q: "автокод", i: brand, b: Автокод}
+    - {q: "номерограм", i: brand, b: Номерограм}
+    - {q: "штрафы гибдд тинькофф", i: brand, b: "Штрафы ГИБДД (Т-Банк)"}

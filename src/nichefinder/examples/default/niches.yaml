@@ -1,0 +1,2283 @@
+# Example niche catalog (niches.yaml).
+#
+# One entry per niche. Fields:
+#   id              unique slug; used everywhere as niche_id (file names, reports, queries/*.yaml keys)
+#   name            short human-readable name: "<who> — <what the product does>"
+#   who             target customers
+#   task            the job the product does for them
+#   product         product form and typical price point
+#   geo             global | ru | both   which query languages are required (global = en, ru = ru, both = en + ru)
+#   side            b2b-smb | b2b | b2c | prosumer
+#   tier            A = measure now; B = candidate, include on demand; C = control niche (known outcome, used to calibrate filters)
+#   control         (control niches only) expected outcome: red = should be rejected as too crowded,
+#                   platform = should be rejected for platform risk, green = should pass
+#   sources         where the niche was found: yc | ph | tinyseed | flippa | appstore-us | appstore-ru | smartranking | g2 | report
+#   evidence        facts that justify the niche (products, ranks, revenue, growth)
+#   competitors     known products; names with a market hint look like "Name (RU)"
+#   expertise_flag  0 | 1; 1 = needs domain expertise or licensing to build
+#   notes           optional free-form caveats
+#
+# Search queries live in queries/*.yaml, keyed by niche id.
+# Replace this catalog with your own niches, or extend it.
+
+# ────────────────────────────────────────────────────────────────────────────
+# I. VERTICAL SMB OPERATIONS (B2B-SMB): one product covers a segment's back office
+# ────────────────────────────────────────────────────────────────────────────
+
+- id: tattoo-pmu-studios
+  name: Tattoo and PMU studios — booking, consent forms, deposits
+  who: tattoo studios and permanent make-up artists, 1–10 people
+  task: online booking, digital consent forms and questionnaires, deposits, reminders, portfolio
+  product: web + mobile SaaS, $20–60/month per studio
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, flippa, g2]
+  evidence: INKZUP (TinySeed); PMU Sign — consent forms for aesthetics, $7.5k/month (Flippa); G2 'Tattoo Business Management'
+  competitors: [Inkzup, Tattoo Pro, Mango Tattoo, PMU Sign, Vagaro]
+  expertise_flag: 0
+
+- id: pet-care-facilities
+  name: Pet boarding, grooming and daycare — booking and operations
+  who: pet boarding / daycare / grooming / training businesses, 1–20 people
+  task: booking, pet records (vaccinations), payments, communication with owners
+  product: web SaaS, $50–150/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, flippa, g2]
+  evidence: Kennel Link (TinySeed); all-in-one pet care booking, $1.2k/month (Flippa); G2 'Pet Care'
+  competitors: [Gingr, PetExec, Pawfinity, Kennel Link, MoeGo, Goose]
+  expertise_flag: 0
+
+- id: gym-martial-arts-studios
+  name: Martial arts gyms and small fitness studios — memberships and schedules
+  who: martial arts gyms, CrossFit boxes, yoga/pilates studios
+  task: memberships and passes, class schedule, attendance, payments
+  product: web SaaS, $50–200/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, g2, smartranking]
+  evidence: GymDesk (TinySeed); G2 'Martial Arts', 'Gym Management', 'Studio Management'; Gym Team — 1292% growth (Smart 500)
+  competitors: [Mindbody, Zen Planner, GymDesk, Kicksite, Glofox, "Gym Team (RU)", "1C:Фитнес клуб (RU)"]
+  expertise_flag: 0
+
+- id: personal-trainers-coaching
+  name: Personal trainers — programs, clients, payments
+  who: online and offline personal trainers and micro-studios
+  task: delivering programs, client check-ins, progress tracking, subscriptions
+  product: mobile + web SaaS, $20–100/month per trainer
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, flippa, appstore-ru, g2, yc]
+  evidence: TrainerMetrics, Stridist (TinySeed); B2B SaaS for fitness coaches, EUR 188k ARR (Flippa); 7Coach, FitLinkPro (App Store RU); G2 'Personal Training'; Imperfect (YC S26)
+  competitors: [Trainerize, TrueCoach, Everfit, PT Distinction, "7Coach (RU)", "FitLinkPro (RU)"]
+  expertise_flag: 0
+
+- id: kids-classes-camps
+  name: Kids' classes and camps — registration, payments, rosters
+  who: dance/music/sports studios for children, camps, after-school programs
+  task: online registration, payment collection, schedule, rosters, parent communication
+  product: web SaaS, $50–300/month + % of payments
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, g2]
+  evidence: Popsicle, Classcard, Teach 'n Go, MOOV (TinySeed); G2 'Camp Management', 'Child Care'
+  competitors: [Sawyer, Jackrabbit, Pike13, CampMinder, Classcard, Enrollsy]
+  expertise_flag: 0
+
+- id: tutoring-language-schools
+  name: Tutoring centers and language schools — administration
+  who: private learning centers, language schools, independent tutors with groups
+  task: scheduling, attendance, lesson payments, progress, parent portal
+  product: web SaaS, $30–150/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, g2, smartranking]
+  evidence: Teach 'n Go, EducateMe (TinySeed); G2 'School Management', 'Tutoring'; Russian EdTech rating — 33 companies in the 'course and software development' segment
+  competitors: [Teachworks, TutorBird, Oases, Teach 'n Go, "Hollihop (RU)", "Мой Класс (RU)"]
+  expertise_flag: 0
+
+- id: salon-beauty-booking
+  name: Salons and independent beauty professionals — online booking
+  who: hairdressers, brow artists, nail technicians, aestheticians, small salons
+  task: online booking, reminders, client database, prepayment
+  product: mobile + web SaaS, $10–50/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [appstore-us, appstore-ru, smartranking, g2]
+  evidence: "Booksy Biz #18 Business US; Check In Beauty, Arbuz, Moi Klienty, Uchet Klientov (App Store RU); DIKIDI 253% growth (Smart 500); G2 'Spa and Salon Management'"
+  competitors: [Fresha, Booksy, Vagaro, GlossGenius, "YCLIENTS (RU)", "DIKIDI (RU)", "Арбуз (RU)"]
+  expertise_flag: 0
+  notes: Large players exist, but the market is historically fragmented by country; check top1_brand_share
+
+- id: home-bakers-cake-makers
+  name: Home bakers — orders, costing, cake design
+  who: home bakeries and custom cake makers
+  task: taking orders, cost and price calculation, calendar, cake sketches
+  product: mobile SaaS, $10–30/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [appstore-us, appstore-ru, g2]
+  evidence: "Bakesy — #50 Business US; Cake Wizard, Cakegram (AI cake designer) in App Store RU; G2 'Bakery'"
+  competitors: [Bakesy, CakeBoss, BakeDiary, Cake Wizard, Cakegram]
+  expertise_flag: 0
+
+- id: wedding-event-pros-crm
+  name: Wedding and event vendors — CRM, contracts, payments
+  who: photographers, videographers, wedding planners, florists, DJs
+  task: leads → proposals → contracts → payment → project; client portal
+  product: web SaaS, $30–80/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [appstore-us, flippa, g2, tinyseed]
+  evidence: "HoneyBook #38 Business US; PlanEase wedding planner SaaS (Flippa); Event Cost Sheet (TinySeed); G2 'Event Planning', 'Florist'"
+  competitors: [HoneyBook, Dubsado, "17hats", Táve, Studio Ninja, Sprout Studio]
+  expertise_flag: 0
+
+- id: real-estate-photographers
+  name: Real estate photographers — orders, delivery, editing
+  who: photo/video/3D-tour studios serving real estate agents
+  task: shoot booking, delivering media to agents, automated photo editing, billing
+  product: web SaaS, $50–200/month + pay-as-you-go editing
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, flippa]
+  evidence: Tonomo (TinySeed); BlueSkyMyPhoto — automated editing for UK estate agents, $17.7k/month, PropReel (Flippa)
+  competitors: [Aryeo, Spiro, HDPhotoHub, Tonomo, BoxBrownie]
+  expertise_flag: 0
+
+- id: interior-designers-pm
+  name: Interior designers — specifications, procurement, client approvals
+  who: interior design studios, 1–10 people
+  task: furniture/material specifications, supplier purchasing, client approval, invoices
+  product: web SaaS, $50–150/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, g2]
+  evidence: Gather (TinySeed); G2 'Home Furnishing', 'Architecture'
+  competitors: [Houzz Pro, Mydoma, DesignFiles, Studio Designer, Gather, Programa]
+  expertise_flag: 0
+
+- id: event-equipment-rental
+  name: Event equipment rental — inventory and orders
+  who: rental of event equipment, furniture, gear and costumes
+  task: date-based inventory availability, quotes, delivery, deposits
+  product: web SaaS, $50–300/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, g2]
+  evidence: RentKit (TinySeed); G2 'Equipment Rental'
+  competitors: [Booqable, Goodshuffle Pro, Rentman, Point of Rental, RentKit, "RentProg (RU)"]
+  expertise_flag: 0
+
+- id: sign-print-shops
+  name: Sign shops and small-format print shops — quoting and orders
+  who: sign shops, digital print shops, apparel printing
+  task: price quoting, orders, production, delivery
+  product: web SaaS, $100–300/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, g2]
+  evidence: SignTracker (TinySeed); G2 'Print Fulfillment'
+  competitors: [shopVOX, Printavo, Ordant, Cyrious, SignTracker]
+  expertise_flag: 0
+
+- id: auto-repair-shops
+  name: Independent auto repair shops — work orders, AI intake
+  who: independent repair shops and body shops
+  task: work orders, estimates, customer communication, AI for phone and vehicle intake
+  product: web SaaS, $100–300/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [yc, tinyseed, g2]
+  evidence: Parrot, CarSignal (YC S26), Bernard; EagleMMS (TinySeed, body shops); G2 'Repair Shop', 'Automotive'
+  competitors: [Shopmonkey, Tekmetric, AutoLeap, Mitchell 1, "Автодилер / Трицепс (RU)"]
+  expertise_flag: 0
+
+- id: home-inspectors-reports
+  name: Home inspectors and field reports
+  who: home inspectors, technical surveyors, new-build apartment acceptance inspectors
+  task: mobile capture of photos and defects → client report, templates, payment
+  product: mobile + web SaaS, $50–100/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [yc, g2]
+  evidence: "Opusense AI — AI for Field Inspection Reports (YC S25); G2 'Home Inspection'; Russia: new-build apartment acceptance inspections"
+  competitors: [Spectora, HomeGauge, Inspectify, Opusense, "Домклик приёмка (RU, платформа)"]
+  expertise_flag: 0
+
+- id: str-hosts-tools
+  name: Short-term rental hosts — operations and pricing
+  who: owners/managers of 1–30 short-term rental properties
+  task: multi-channel calendar, automated guest messages, cleanings, dynamic pricing, search ranking
+  product: web SaaS, $20–100/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [yc, ph, tinyseed, g2, smartranking]
+  evidence: Trellis, Atlia (YC S26); ProhostAI (PH); Rankbreeze (TinySeed); G2 'Vacation Rental'; Sutochno 213% growth (Smart 500)
+  competitors: [Hostaway, Hospitable, PriceLabs, Guesty, Rankbreeze, "RealtyCalendar (RU)", "Bnovo (RU)"]
+  expertise_flag: 0
+
+- id: small-landlords-pm
+  name: Small landlords and property managers — leases, tenants, payments
+  who: private landlords with 1–50 units, micro property managers
+  task: leases, payments, repair requests, tenant screening, reporting
+  product: web SaaS, $10–50/month or per unit
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [yc, flippa, appstore-ru, smartranking, g2]
+  evidence: "Wayline (YC), Laddr — tenant referencing UK (Flippa), AI SaaS for property managers $2.7k/month (Flippa); Arenda Pro #4 Finance RU, Planirovshchik Arendy; Doma.ai +252%, Majordom +533% (Smart 500); G2 'Property Management'"
+  competitors: [TenantCloud, RentRedi, Avail, Buildium, "Аренда Про (RU)", "Doma.ai (RU)"]
+  expertise_flag: 0
+
+- id: small-nonprofits-donor-crm
+  name: Small nonprofits — donors, fundraising, volunteers
+  who: nonprofits with up to 10 staff, church and community foundations
+  task: donor database, fundraising campaigns, mailings, reporting, volunteers
+  product: web SaaS, $50–150/month or 0% commission
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, g2]
+  evidence: Mission Lens (YMCA), Popsicle (TinySeed); G2 'Nonprofit' — 10 categories
+  competitors: [Bloomerang, Little Green Light, Givebutter, Zeffy, Kindful]
+  expertise_flag: 0
+
+- id: churches-tools
+  name: Churches and parishes — presentation, translation, management
+  who: small churches and parishes (US/LatAm), religious organizations
+  task: presenting texts during services, live translation, service planning, donations
+  product: desktop/web SaaS, $20–100/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, ph, g2]
+  evidence: OneAccord — live AI translation for churches (TinySeed); Pewbeam (PH); G2 'Church Presentation', 'Church Management'
+  competitors: [Planning Center, ProPresenter, Proclaim, Tithe.ly, Pewbeam, OneAccord]
+  expertise_flag: 0
+
+- id: subcontractor-takeoff-estimating
+  name: Construction subcontractors — AI takeoff and estimates
+  who: electricians, concrete, roofing and HVAC subcontractors, 5–50 people
+  task: quantity takeoff from drawings, estimates, quotes
+  product: web SaaS, $100–500/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [yc, flippa, tinyseed, g2]
+  evidence: Rudus (concrete), Bidflow (electrical), Bild AI (YC); ganarpro quoting for subcontractors (Flippa); Alkali, AutoPSI (TinySeed); G2 'Roofing', 'HVAC', 'Masonry'
+  competitors: [STACK, PlanSwift, Togal.AI, Kreo, Bluebeam]
+  expertise_flag: 0
+  notes: Requires domain expertise (reading drawings); no licensing needed
+
+- id: small-trucking-fleets
+  name: Small trucking fleets — dispatch and compliance
+  who: carriers with 1–20 trucks, owner-operators
+  task: trips, documents, ELD/tachograph compliance, invoices, load search
+  product: web + mobile SaaS, $30–100/month per truck
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [yc, flippa, appstore-us, smartranking]
+  evidence: "Hemut, Dayjob (YC); ELD compliance SaaS, $200k ARR, 300 customers (Flippa); Trucker Path #79 Business US; Truck Radar +512%, ATI.SU (Smart 500)"
+  competitors: [Motive, TruckLogics, Axon, TruckingOffice, "ATI.SU (RU, платформа)", "Трак Радар (RU)"]
+  expertise_flag: 0
+
+- id: home-services-field-ops
+  name: Home services (plumbers, electricians, cleaning, lawn care) — requests and AI call handling
+  who: home service contractors, 1–20 people
+  task: AI call and request intake, scheduling, quotes, invoices, reviews
+  product: web + mobile SaaS, $50–300/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [yc, tinyseed, appstore-us, g2]
+  evidence: "Hey Telo, Maive, Robby, CentralComs, Cactus, Cohesive (YC — 6 companies); Spraye (TinySeed); Jobber #24 Business US; G2 'Cleaning Services', 'Pest Control', 'Landscape'"
+  competitors: [Jobber, Housecall Pro, ServiceTitan, Workiz, FieldPulse, "Planado (RU)"]
+  expertise_flag: 0
+  notes: Large horizontal players exist; the opening is AI call handling and narrow sub-verticals
+
+- id: staffing-agencies-ats
+  name: Staffing agencies — ATS/CRM and AI sourcing
+  who: recruiting and staffing agencies, 2–50 people
+  task: jobs, candidates, clients, video interviews, AI sourcing and screening
+  product: web SaaS, $50–150/month per recruiter
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [yc, tinyseed, smartranking, g2]
+  evidence: Spott, Asendia AI, Dreach, Vela (YC); RecView, Jamyr, TurboSource (TinySeed); Huntflow, E-Staff, Skillaz, Potok (Smart 500); G2 'Staffing', 'Recruiting' — 15 categories
+  competitors: [Bullhorn, Recruit CRM, Manatal, Loxo, Vincere, "Huntflow (RU)", "E-Staff (RU)"]
+  expertise_flag: 0
+
+- id: distributors-order-entry-ai
+  name: Wholesale distributors — AI order entry from emails/PDFs
+  who: food/building-materials/parts distributors, 20–200 people
+  task: orders from email/PDF/messengers → ERP without manual entry, quotes
+  product: web SaaS, $500–3000/month
+  geo: global
+  side: b2b-mid
+  tier: A
+  sources: [yc, ph]
+  evidence: Comena, Mercura, Kanava, Asakana, Stockline, Whitespace, Hexa (YC — 7 companies)
+  competitors: [Comena, Mercura, Pepper, Cut+Dry, Choco]
+  expertise_flag: 0
+  notes: ERP integrations are heavy for a small team; high ticket size
+
+- id: accounting-practices-client-portal
+  name: Accounting and tax practices — client portal and document collection
+  who: accounting firms and tax advisors, 1–20 people
+  task: collecting documents from clients, reminders, tasks, signatures, portal
+  product: web SaaS, $30–100/month per employee
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [yc, tinyseed, flippa, g2]
+  evidence: Cifrato, Combinely, Magnetic, Luca IQ (YC); Client Hub (TinySeed); PDF Finance — document collection for UK accountants, Receiptor AI (Flippa/PH); G2 'Accounting Practice Management'
+  competitors: [Karbon, TaxDome, Canopy, Client Hub, Financial Cents, "Кнопка / Моё дело (RU, сервисы)"]
+  expertise_flag: 0
+
+- id: law-firm-intake
+  name: Small law firms — lead intake and CRM
+  who: law firms with 1–20 lawyers (personal injury, family, immigration)
+  task: 24/7 inquiry intake, qualification, documents, engagement agreement, payment
+  product: web SaaS, $100–300/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [yc, tinyseed, flippa, g2]
+  evidence: Caseflood.ai, OpenIntake, Mimos, Andco (YC); ClientRock, Legal27, Outbound Legal (TinySeed); fromthelawyers.com pay-per-lead, $35k/month (Flippa); G2 'Legal CRM'
+  competitors: [Lawmatics, Clio Grow, Caseflood, ClientRock, Smith.ai]
+  expertise_flag: 1
+  notes: A software product for lawyers, not a legal service; check regulatory constraints before committing
+
+- id: ru-online-schools-experts
+  name: Experts and online schools in Russia — course and sales platform
+  who: experts, micro-schools, online course producers
+  task: landing page, payment, lessons, homework, mailings, automated funnels
+  product: web SaaS, 2–15k RUB/month
+  geo: ru
+  side: b2b-smb
+  tier: A
+  sources: [smartranking]
+  evidence: EdTech rating — 33 companies in 'course, webinar and software development'; GetCourse turnover 158 bn RUB (-6% in 2025)
+  competitors: [GetCourse, Zenclass, Skillspace, АнтиТренинги, "Tilda + Prodamus"]
+  expertise_flag: 0
+  notes: GetCourse dominates — check top1_brand_share; the market shrank for the first time in 2025
+
+- id: airline-maritime-crew-tools
+  name: Airline and maritime crews — rosters, calendars, non-rev flights
+  who: flight attendants, pilots, seafarers
+  task: roster import into calendar, shift swaps, non-rev seat search, flight-hours logging
+  product: mobile subscription, $3–10/month
+  geo: global
+  side: b2c
+  tier: A
+  sources: [flippa, appstore-us, appstore-ru]
+  evidence: Crew roster → calendar app, 15 years, 1,245 subscribers, 159 airlines (Flippa); StaffTraveler, Staff Airlines (Travel US); OceanCrew (Business RU)
+  competitors: [RosterBuster, CrewLounge, StaffTraveler, "Staff Airlines", "OceanCrew (RU)"]
+  expertise_flag: 0
+
+# ────────────────────────────────────────────────────────────────────────────
+# II. HORIZONTAL SMB / PROSUMER TOOLS
+# ────────────────────────────────────────────────────────────────────────────
+
+- id: ai-phone-receptionist-local
+  name: AI phone receptionist for local businesses
+  who: restaurants, beauty clinics, auto shops, home services — any business with missed calls
+  task: 24/7 call answering, booking, answering questions, SMS follow-up
+  product: SaaS, $50–300/month + minutes
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [yc, ph, tinyseed, appstore-us, flippa]
+  evidence: "Certus AI, Elyra, Hey Telo, Wayline, Flowtel (YC); Solvea, Cal.ai Phone Agent (PH); LeadTruffle (TinySeed); Beside AI Receptionist #92 Productivity US; AI Voice Agent SaaS white-label, $10k/month (Flippa)"
+  competitors: [Goodcall, Smith.ai, Slang.ai, Rosie, Beside, "Колл-тулз (RU)"]
+  expertise_flag: 0
+  notes: Real-time audio → LLM pipeline
+
+- id: whatsapp-telegram-business-messaging
+  name: Messenger marketing and sales for SMBs (WhatsApp / Telegram / MAX)
+  who: SMBs in LatAm/India/Russia selling through messengers
+  task: broadcasts, chatbots, shared inbox, CRM integration
+  product: SaaS, $30–200/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, flippa, ph, smartranking, g2]
+  evidence: Wasapi, WANotifier, Sanoflow (TinySeed); Vicky Bot (Flippa); Zernio (PH); Wazzup +288%, BotHelp, Senler, TextBack (Smart 500); G2 'WhatsApp Marketing'
+  competitors: [Wati, Interakt, Respond.io, AiSensy, "Wazzup (RU)", "TextBack (RU)", "BotHelp (RU)"]
+  expertise_flag: 0
+  notes: "Russia: Telegram bot demand has declined, MAX is growing — verify"
+
+- id: invoice-estimate-mobile-apps
+  name: Mobile invoices and estimates for freelancers and tradespeople
+  who: plumbers, repairmen, freelancers, sole proprietors without an accountant
+  task: send an invoice/estimate from a phone, accept payment, send reminders
+  product: mobile subscription, $5–20/month
+  geo: both
+  side: prosumer
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "9 apps in the Business US top 100: Invoice Fly, Invoice Simple, Joist, Invoice2go, Billdu, Tiny Invoice, Invoice Home, Freebie, Easy Invoice"
+  competitors: [Invoice Simple, Invoice Fly, Joist, Billdu, Invoice Home, "Мой Склад (RU)"]
+  expertise_flag: 0
+  notes: Classic example of a market with many small players — useful for calibrating fragmentation
+
+- id: shift-scheduling-deskless
+  name: Shift scheduling and time tracking for deskless teams
+  who: cafes, retail, warehouses, clinics — 5–100 employees
+  task: shift schedule, shift swaps, timesheets, hours calculation
+  product: SaaS, $2–5/employee/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [appstore-us, appstore-ru, yc, g2]
+  evidence: "Homebase #60, HotSchedules #99 Business US; Skolzyashchiy Grafik, atWork, Supershift (RU); Sira (YC); G2 'Employee Scheduling', 'Time & Attendance'"
+  competitors: [Deputy, When I Work, Homebase, "7shifts", Sling, "Verme (RU)"]
+  expertise_flag: 0
+
+- id: sop-process-documentation
+  name: SOPs and process documentation for small businesses — automatic process capture
+  who: SMBs with 10–200 people, franchises, agencies
+  task: record a process from the screen → step-by-step instructions, onboarding, completion tracking
+  product: SaaS, $50–300/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [yc, flippa, ph]
+  evidence: Altrina (YC W25); SOP management SaaS, $108k/year with a template marketplace (Flippa); Leapility, AI Doc Writer by Trupeer (PH)
+  competitors: [Trainual, Scribe, Tango, Whale, Guidde]
+  expertise_flag: 0
+
+- id: esignature-smb
+  name: E-signature for SMBs (without DocuSign prices)
+  who: SMBs, freelancers, agencies
+  task: send for signature, templates, audit trail, API
+  product: SaaS, $10–50/month
+  geo: both
+  side: b2b-smb
+  tier: B
+  sources: [tinyseed, ph, appstore-us, appstore-ru]
+  evidence: SignWell $5M ARR / 7 people (TinySeed); Firma.dev ~3 cents/envelope (PH); e-sign apps in the Business US and RU top charts
+  competitors: [DocuSign, PandaDoc, SignWell, Documenso, Dropbox Sign, "Контур.Сайн (RU)"]
+  expertise_flag: 0
+  notes: DocuSign is a giant and Russia has its own qualified-signature rules, but SignWell is a model small-team example
+
+- id: digital-business-cards
+  name: Digital business cards and contact capture
+  who: salespeople, realtors, agents, trade-show attendees
+  task: NFC/QR business card, contact exchange, event lead capture, CRM sync
+  product: freemium → $5–10/month, team plans
+  geo: both
+  side: prosumer
+  tier: A
+  sources: [appstore-us, appstore-ru, ph, g2]
+  evidence: "Blinq #30, Popl #47, CamCard #89 Business US; MyQRcards #12, Sozdatel Vizitok (RU); BizCard, ConnectMachine (PH); G2 'Digital Business Card'"
+  competitors: [Blinq, Popl, HiHello, Linq, "MyQRcards (RU)"]
+  expertise_flag: 0
+
+- id: loyalty-wallet-passes
+  name: Loyalty cards in Apple/Google Wallet for local businesses
+  who: coffee shops, salons, fitness studios, small retail
+  task: issuing Wallet cards, stamps/points, location-based push
+  product: SaaS, $20–100/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [appstore-us, appstore-ru, tinyseed]
+  evidence: Passbook, Pass2U, Walletsmith, WinStamp Business (US and RU Shopping); RewardUp (TinySeed); CardHolder, Kody, Stocard (RU — consumer side)
+  competitors: [PassKit, Loopy Loyalty, Pass2U, Stamp Me, "UDS (RU)", "Cardbox (RU)"]
+  expertise_flag: 0
+
+- id: reviews-reputation-local
+  name: Reviews and reputation for local businesses
+  who: local businesses and agencies managing listings on Google/Yandex Maps/2GIS
+  task: review collection via QR/SMS, replies (AI), platform monitoring, widgets
+  product: SaaS, $30–150/month per location
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, g2]
+  evidence: Localyser, Reviewflowz (TinySeed); G2 'Online Reputation Management', 'Review Management'
+  competitors: [Birdeye, Podium, NiceJob, Localyser, "Rocketdata (RU)", "Точка Отзывы (RU)"]
+  expertise_flag: 0
+
+- id: local-seo-gbp-agencies
+  name: Local SEO and Google Business Profile for agencies
+  who: local SEO agencies, multi-location businesses
+  task: map rank tracking, GBP optimization, posts, citations, reports
+  product: SaaS, $30–200/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [flippa, tinyseed, ph]
+  evidence: Google Maps rank tracker + AI coach, $261k ARR (Flippa); local SEO/GBP SaaS, $39k MRR in a year (Flippa); Adaptify SEO (TinySeed); Brila (PH)
+  competitors: [BrightLocal, Local Falcon, Whitespark, Localo, Local Viking]
+  expertise_flag: 0
+
+- id: ai-search-visibility-geo
+  name: Brand visibility in AI search (GEO/AEO) — tracking and recommendations
+  who: SMB/mid-market marketers, SEO agencies
+  task: monitoring mentions in ChatGPT/Perplexity/AI Overviews, competitors, what to fix
+  product: SaaS, $50–500/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [yc, ph, flippa]
+  evidence: AthenaHQ, Scope, The Prompting Company, Wildcard, Sitefire (YC); PromptSignal, SEORCE, Lettertrace, AI Search Console, Passionfruit, Scribble, GeoFide (PH); GEO SaaS with 10k leads (Flippa)
+  competitors: [Profound, Peec AI, Otterly, Scrunch, AthenaHQ, PromptSignal]
+  expertise_flag: 0
+  notes: Highest rate of new entrants (12+ in a year) — the window is narrow; trend only upward
+
+- id: cold-email-deliverability
+  name: Cold email — warm-up, verification, deliverability
+  who: lead-gen agencies, B2B startups, SDR teams
+  task: mailbox warm-up, email verification, domain rotation, spam monitoring
+  product: SaaS, $30–100/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [tinyseed, flippa, ph]
+  evidence: HotHawk, Findymail (TinySeed); Kilomails, VerifiedEmail, Inbox Verifyer, Line Verifier, sendly (Flippa); Mailwarm, mailX (PH)
+  competitors: [Instantly, Smartlead, Warmup Inbox, Mailreach, ZeroBounce, NeverBounce]
+  expertise_flag: 0
+  notes: Reputationally gray area, Google is tightening rules; many small players
+
+- id: creator-niche-social-scheduling
+  name: Schedulers and growth tools for single-platform creators (Reddit / X / LinkedIn)
+  who: solo creators and small brands
+  task: scheduling, threads, analytics, auto-posting, follower growth
+  product: subscription, $10–50/month
+  geo: global
+  side: prosumer
+  tier: A
+  sources: [tinyseed, flippa, ph]
+  evidence: Postpone — Reddit scheduler (TinySeed); onlypult $33k/month (Flippa); SuperX, Extrovert, 2pr, Dynal, Fedica, Postiz (PH)
+  competitors: [Hypefury, Typefully, Taplio, Postpone, Buffer, Later]
+  expertise_flag: 0
+  notes: "Platform risk: X/Reddit API policies"
+
+- id: marketplace-seller-analytics
+  name: Analytics and automation for marketplace sellers
+  who: Amazon / Wildberries / Ozon sellers with 1–50 million RUB turnover
+  task: niche and competitor analytics, unit economics, advertising (PPC), stock
+  product: SaaS, $30–300/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, flippa, smartranking, g2]
+  evidence: PPC Assist, PrepBusiness (TinySeed); online arbitrage tool for Amazon (Flippa); MPSTATS +135%, MarketGURU +254%, InStock +422%, GetMark (Smart 500); G2 'Online Marketplace Optimization'
+  competitors: [Helium 10, Jungle Scout, Sellerboard, "MPSTATS (RU)", "Moneyplace (RU)", "MarketGURU (RU)"]
+  expertise_flag: 0
+  notes: Russian demand for marketplace analytics fell from 22k to 3k and MPStats dropped 45% — verify on niche queries
+
+- id: pod-kdp-etsy-seller-tools
+  name: Tools for POD / KDP / Etsy sellers
+  who: print-on-demand sellers, self-publishers (KDP), Etsy/Redbubble sellers
+  task: niche and keyword research, listing/design generation, auto-upload, tracking
+  product: subscription, $10–50/month
+  geo: global
+  side: prosumer
+  tier: A
+  sources: [flippa]
+  evidence: POD research/upload automation $24.5k/month; low-content book creation $19k/month; KDPScore; PuzzlePress; kids worksheets generator; Depop/Vinted/Etsy automation (Flippa — 6 listings)
+  competitors: [Merch Informer, Book Bolt, Everbee, Podly, eRank]
+  expertise_flag: 0
+
+- id: reseller-crosslisting-scanners
+  name: Resellers — price/profit scanner and cross-listing
+  who: clothing/electronics/car resellers, thrift flippers
+  task: barcode/photo scan → price and profit, instant listing on eBay/Poshmark/Avito, bookkeeping
+  product: subscription, $10–30/month
+  geo: both
+  side: prosumer
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "10+ apps in Shopping US: ThriftAI, Scouted, ResalePal, Flipwise, Thrifted, Pocket Pricer, SellRaze, Price Snap, ThriftLens; PerekupPro #26 Business RU"
+  competitors: [Vendoo, List Perfectly, Crosslist, Flipwise, ThriftAI, "ПерекупПро (RU)"]
+  expertise_flag: 0
+
+- id: subscription-cancel-flow-retention
+  name: Cancel flow and retention for subscription products
+  who: SaaS and subscription apps with $10k–1M MRR
+  task: personalized offboarding, cancellation offers, churn analytics
+  product: SaaS, $100–500/month or % of saved revenue
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, ph]
+  evidence: Churnkey (TinySeed); Chargeflow Prevent (PH — chargebacks); Flexibl payment intelligence (TinySeed)
+  competitors: [Churnkey, ProsperStack, Raaft, Chargebee Retention, Churnbuster]
+  expertise_flag: 0
+
+- id: saas-product-feedback-boards
+  name: Feedback boards and roadmaps for SaaS
+  who: SaaS product teams, 5–100 people
+  task: collecting feature requests, voting, changelog, revenue-based prioritization
+  product: SaaS, $50–300/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, ph]
+  evidence: Savio (TinySeed); ProductBridge, TheySaid, Vendo (PH)
+  competitors: [Canny, Featurebase, Frill, Nolt, Savio, Upvoty]
+  expertise_flag: 0
+
+- id: waitlist-referral-launch
+  name: Waitlists and referral widgets for launches
+  who: pre-launch startups and products, indie developers
+  task: waitlist landing page/widget, referrals, analytics, emails
+  product: SaaS, $20–100/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [flippa]
+  evidence: all-in-one waitlist platform, $11.9k/month (Flippa)
+  competitors: [Viral Loops, KickoffLabs, Prefinery, LaunchList, Waitlist]
+  expertise_flag: 0
+  notes: Single source, demand is episodic
+
+- id: course-creator-affiliate-payouts
+  name: Affiliate programs and payouts for course creators and SaaS
+  who: course creators, communities, indie SaaS
+  task: referral tracking, partner payouts, partner landing pages
+  product: SaaS, $50–200/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [tinyseed, g2]
+  evidence: Rootabl — affiliate platform for course creators (TinySeed); G2 'Affiliate Marketing'
+  competitors: [Rewardful, FirstPromoter, PartnerStack, LeadDyno, Tolt, Rootabl]
+  expertise_flag: 0
+
+- id: wordpress-niche-plugins
+  name: WordPress plugins for site owners (affiliate links and more)
+  who: affiliate bloggers, WordPress site owners
+  task: affiliate link management, product displays, cloaking, reports
+  product: annual license, $50–300
+  geo: global
+  side: prosumer
+  tier: B
+  sources: [tinyseed, flippa]
+  evidence: Lasso (TinySeed); GrandPlugins — portfolio of 50+ plugins, Snapelement, WP forms→Sheets micro-SaaS 13 years old (Flippa)
+  competitors: [Lasso, ThirstyAffiliates, Pretty Links, AffiliateWP]
+  expertise_flag: 0
+  notes: The WordPress ecosystem is stagnating, but distribution through wp.org is free
+
+- id: niche-job-board-builders
+  name: Niche job board builders
+  who: communities, media, associations launching their own job board
+  task: no-code job board, paid postings, aggregation, mailings
+  product: SaaS, $50–300/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [tinyseed, flippa]
+  evidence: jBoard (TinySeed); LGBTI Jobs, ecomportal, Devlist, English Jobs — niche boards as a business (Flippa/PH)
+  competitors: [Niceboard, jBoard, SmartJobBoard, JBoard.io]
+  expertise_flag: 0
+
+- id: indie-app-dev-aso-tools
+  name: Tools for indie app developers (ASO, screenshots, reviews)
+  who: indie developers and small mobile app studios
+  task: rank tracking, keywords, store screenshots, review replies (AI), rejection checks
+  product: subscription, $10–100/month
+  geo: global
+  side: prosumer
+  tier: A
+  sources: [ph, report]
+  evidence: "Toplify, AutomatiCX, Launch Shots, Rubber Duck, Diet Claude (PH); RevenueCat: 14.7k new subscription apps per month (7x since 2022)"
+  competitors: [AppFigures, AppTweak, Astro, AppRadar, "Launch Shots"]
+  expertise_flag: 0
+
+- id: n8n-openclaw-managed-hosting
+  name: Managed hosting for self-hosted automations (n8n, OpenClaw, agents)
+  who: solo automators, agencies, tinkerers
+  task: 1-click deploy, backups, updates, templates, chat widgets
+  product: subscription, $5–50/month
+  geo: global
+  side: prosumer
+  tier: A
+  sources: [flippa, ph]
+  evidence: N8Nitro, MyClaw.host, N8N Chat UI, Synta (Flippa); Agent 37 $3.99/month, KiloClaw, Clawi, BetterClaw, ClawApp (PH — 6+ in half a year)
+  competitors: [Sliplane, Elestio, Railway, "n8n Cloud (платформа)", Agent 37]
+  expertise_flag: 0
+  notes: A very recent wave; risk — the platform ships its own cloud
+
+- id: product-demo-screen-recorders
+  name: Demo and tutorial recording for SaaS teams
+  who: SaaS marketing/support, indie makers
+  task: screen recording → polished demo with zooms/cursor, interactive tours, AI documentation
+  product: subscription, $10–50/month or license
+  geo: global
+  side: prosumer
+  tier: A
+  sources: [ph]
+  evidence: FocuSee 2.0, Capptivo, Tight Studio, Guideflow, Trupeer, Velo, Supercut, ScreenREC (PH — 8 in a year)
+  competitors: [Screen Studio, Tella, Loom, Guideflow, Arcade, FocuSee]
+  expertise_flag: 0
+
+- id: ux-research-ops
+  name: UX research operations — participant recruiting, consent, repository
+  who: UX researchers and product teams
+  task: participant panel, incentives, consent/GDPR, storing and tagging insights
+  product: SaaS, $100–500/month
+  geo: global
+  side: b2b-mid
+  tier: B
+  sources: [tinyseed, ph]
+  evidence: Panelfox, Consent Kit, Aurelius, Testable (TinySeed); Userology, Human Behavior (PH)
+  competitors: [Dovetail, Great Question, Rally, Ethnio, Maze]
+  expertise_flag: 0
+  notes: Sales to mid-size companies, long cycle
+
+- id: ai-explainer-whiteboard-videos
+  name: AI-generated explainer/whiteboard videos from text
+  who: marketers, teachers, product managers
+  task: document/prompt → animated explainer video with voiceover
+  product: subscription, $20–100/month
+  geo: global
+  side: prosumer
+  tier: A
+  sources: [yc, ph]
+  evidence: Golpo, Knowlify (YC); Lunair, Hera Launch, Topview Motion Studio, X-Pilot (PH)
+  competitors: [VideoScribe, Doodly, Vyond, Golpo, Lunair]
+  expertise_flag: 0
+
+- id: ai-video-dubbing-captions
+  name: AI dubbing, captions and video translation for creators
+  who: YouTubers, course creators, agencies
+  task: translation and dubbing with voice cloning and lip sync, auto-captions
+  product: subscription, $20–100/month or per minute
+  geo: both
+  side: prosumer
+  tier: A
+  sources: [flippa, ph, yc, appstore-us]
+  evidence: "Speeek $62k ARR, AI dubbing in 30+ languages, AI Captioning $5.5k MRR (Flippa); Cutrix, Algebras, Visual Translate, Krisp Accent (PH); Pinch, Cuckoo Labs (YC); Captions #47 Photo&Video US"
+  competitors: [Rask AI, HeyGen, ElevenLabs Dubbing, Captions, Speeek]
+  expertise_flag: 0
+  notes: Russian "AI voiceover" queries grew 165%
+
+- id: faceless-youtube-automation
+  name: Faceless YouTube/TikTok channels — autopilot video generation
+  who: solo creators, content arbitrageurs
+  task: script → voiceover → visuals → editing → publishing; niche research
+  product: subscription, $20–100/month
+  geo: global
+  side: prosumer
+  tier: A
+  sources: [flippa]
+  evidence: Vydora AI $5.3k/month, Facelessvidz, Brainrot.mov $19k/month, Gorilla AI $13.6k/month, kliptok (Flippa — 5 listings)
+  competitors: [AutoShorts, Crayo, Faceless.video, Vydora, InVideo]
+  expertise_flag: 0
+  notes: Depends on YouTube's policy toward AI content
+
+- id: ai-headshots-photos
+  name: AI photos — professional headshots and dating photos
+  who: job seekers, salespeople, dating app users
+  task: 10 selfies → studio portraits; packs for LinkedIn / dating
+  product: one-time payment, $20–50
+  geo: both
+  side: b2c
+  tier: A
+  sources: [flippa, appstore-us]
+  evidence: "AI photo platform dating+headshots, $0.79M ARR, AI headshot $287k revenue, AceFace (Flippa); ReShoot #5, Pose #8 Graphics US"
+  competitors: [Aragon AI, HeadshotPro, BetterPic, Photo AI, "Bakery Headshots"]
+  expertise_flag: 0
+  notes: Commodity niche, but many small profitable players are proven
+
+# ────────────────────────────────────────────────────────────────────────────
+# III. B2C — PROVEN PAID CATEGORIES (App Store US/RU, Flippa)
+# ────────────────────────────────────────────────────────────────────────────
+
+- id: wine-whiskey-cellar-tracking
+  name: Wine and whiskey collections — cellar tracking
+  who: wine/whiskey collectors, amateur sommeliers
+  task: label scan, bottle inventory, drinking windows, valuation, tasting notes
+  product: subscription, $3–10/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "CellarTracker #13, Oeni #17, InVintory #24, BarrelBook #63, OnlyDrams, Bourboneur (Food US); Wine ID, InVintory, Kniga Vinnogo Pogreba, Vinocell (Food RU)"
+  competitors: [CellarTracker, Vivino, InVintory, Oeni, Vinocell]
+  expertise_flag: 0
+
+- id: tcg-sports-card-scanners
+  name: Collectible cards (TCG, sports) — scan, price, portfolio
+  who: Pokémon/MTG/sports card collectors
+  task: card scan → price, portfolio, alerts, storefront for selling
+  product: subscription, $5–15/month
+  geo: global
+  side: b2c
+  tier: A
+  sources: [appstore-us, tinyseed, yc]
+  evidence: "Collectr #7, HoloDex, FoilSnap, CCN, MyDex, Acorn, PriceCharting (Reference US); CollX, LUDEX, Cardora, StarSnap, Card Ladder (Sports US); GemRate (TinySeed); tash, Misprint (YC)"
+  competitors: [Collectr, CollX, Ludex, Card Ladder, TCGplayer]
+  expertise_flag: 0
+
+- id: coin-antique-identifiers
+  name: Coins, antiques, toys — AI identification and valuation
+  who: coin collectors, amateur antique dealers, thrift hunters
+  task: photo → identification, valuation, collection catalog
+  product: subscription, $5–10/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "CoinSnap #5, CoinIn #6, AntiqSnap #9, Curio, ToyWorth, VinylSnap, ComicSnap, NoteSnap — 15+ in Reference US; Curio, Maktun, Tsarskie Monety, CoinIn (RU)"
+  competitors: [CoinSnap, CoinIn, Curio, Numista, "Мактун (RU)"]
+  expertise_flag: 0
+  notes: One factory (Next Vision) clones apps across verticals — concentration by developer, not by brand
+
+- id: recipe-manager-meal-planner
+  name: Recipe manager and meal planner
+  who: home cooks, families
+  task: save a recipe from any site/video, weekly meal plan, shopping list
+  product: subscription $3–8/month or license
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "ReciMe #1, mise, Pepper, Cooklist, Paprika, Crouton, Pestle, Umami, RecipeSnap — 20+ in Food US; Mary's Recipes, Cookmate, Mealie, Clove (RU)"
+  competitors: [Paprika, ReciMe, Crouton, Samsung Food, Mealie, "Поварёнок (RU, контент)"]
+  expertise_flag: 0
+  notes: Calibration case for "many small players"; risk — ChatGPT/Gemini as a recipe agent
+
+- id: baby-first-foods-blw
+  name: First foods — guides and plans for parents
+  who: parents of children aged 4–18 months
+  task: when and what to introduce, recipes, allergens, reaction tracker
+  product: subscription, $5–10/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "Solid Starts #20 Education US, BLW Meals, Feeding Littles, Little Foodie, Baby Plates (Food US); YumYum #9, First Spoon, Prikorm x3, Annabel Karmel (Food RU); Solid Starts #7 Education RU"
+  competitors: [Solid Starts, BLW Meals, Feeding Littles, "YumYum (RU)", "First Spoon (RU)"]
+  expertise_flag: 0
+  notes: Pediatric topic without a license; content risk
+
+- id: infant-sleep-development-trackers
+  name: Infant sleep and development — trackers and predictions
+  who: parents of children aged 0–24 months
+  task: sleep/feeding tracker, sleep window prediction, growth spurts, milestones
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "Wonder Weeks, Happiest Baby, Kinedu (US); Skachki Rosta #6 Health RU, Midmoon, Baby Soma, Nani baby monitor"
+  competitors: [Huckleberry, Napper, Wonder Weeks, "Скачки роста (RU)", Midmoon]
+  expertise_flag: 0
+
+- id: nature-id-mushroom-bird-insect
+  name: Identifiers for mushrooms, birds, insects and rocks
+  who: mushroom foragers, birdwatchers, hikers
+  task: photo/sound → species identification, edibility, map of finds
+  product: subscription, $5–10/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: Picture Mushroom, Picture Insect, Rock Identifier, Birda, Picture Bird, Bird Sounds (US); iGribnik, Ekogid-Gribi, Skaner Gribov, Opredelit Gribi, Penie Ptits x2, Opredelenie Nasekomykh (RU)
+  competitors: [Picture Mushroom, Merlin Bird ID, Seek/iNaturalist, "iГрибник (RU)"]
+  expertise_flag: 0
+  notes: Merlin/iNaturalist are free nonprofit products (platform risk)
+
+- id: plant-care-id
+  name: Plant care and identification
+  who: houseplant owners and gardeners
+  task: identify a plant, watering schedule, disease diagnosis
+  product: subscription, $5–10/month
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru]
+  evidence: "PictureThis #3 Education US, Planta, Plant Parent, PlantIn, GrowIt, Plantum, Plantiary, Plantaria; AI Plant Doctor, PlantIn (RU)"
+  competitors: [PictureThis, Planta, PlantIn, Greg, Blossom]
+  expertise_flag: 0
+  notes: PictureThis (Glority) dominates; check top1
+
+- id: fiber-crafts-patterns-counters
+  name: Knitting, embroidery, sewing — patterns and row counters
+  who: hobby knitters, embroiderers and sewists
+  task: patterns, row counter, chart conversion, yarn inventory, community
+  product: subscription, $3–8/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "YarnPal #41, Loopsy #100 Lifestyle US, Sewpal (Reference US); Knit Logic, Cross Stitch Saga (RU)"
+  competitors: [Ravelry, Knit Companion, YarnPal, Loopsy, "Knit Logic (RU)"]
+  expertise_flag: 0
+
+- id: digital-wardrobe-outfit-planner
+  name: Digital wardrobe and outfit planner
+  who: women 20–40 interested in style; capsule wardrobes
+  task: digitize clothes, build outfits (AI stylist), weekly plan, "what you never wear"
+  product: subscription, $3–10/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru, ph]
+  evidence: "Fits #6, GetWardrobe #16, Tidy #17, Outfitopia, Acloset, Aesty, The Clothing App, Garderobnaya — 8 in Lifestyle RU; Slay, Smart Closet (Shopping); Ask My Wardrobe (PH)"
+  competitors: [Whering, Indyx, Acloset, "GetWardrobe (RU)", "Fits (RU)"]
+  expertise_flag: 0
+  notes: Unusually strong signal in Russia
+
+- id: couples-relationship-apps
+  name: Apps for couples — questions, rituals, shared goals
+  who: couples in relationships, newlyweds
+  task: daily questions, quizzes, shared calendar/lists, day counter, intimacy ideas
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "Paired #48, Cozy Couples, Candle, Couple Joy, Love8 (US); Couple Joy #10 Lifestyle RU, Togetherly, Blizhe, Spicer"
+  competitors: [Paired, Agapé, "Couple Joy", Between, Lovewick]
+  expertise_flag: 0
+
+- id: co-parenting-apps
+  name: Co-parenting after divorce — communication, calendar, expenses
+  who: divorced parents (often court-ordered)
+  task: immutable message log, custody calendar, expenses, documents for court
+  product: subscription, $10–15/month per parent
+  geo: global
+  side: b2c
+  tier: A
+  sources: [appstore-us]
+  evidence: "TalkingParents #22, AppClose #31, OurFamilyWizard #36 Productivity US"
+  competitors: [OurFamilyWizard, TalkingParents, AppClose, Cozi, "2houses"]
+  expertise_flag: 0
+  notes: US-specific (courts recommend an app); no analogues in Russia — possible greenfield niche
+
+- id: sobriety-quit-trackers
+  name: Sobriety and habit-quitting trackers
+  who: people quitting alcohol/smoking/porn/BFRB
+  task: day counter, triggers, journal, community, blocking
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru, flippa, ph]
+  evidence: "I Am Sober #59, Victory by Covenant Eyes, Victory Shield (US); I Am Sober #19 Lifestyle RU, Quitzilla, Kalendar Trezvosti; Porn Blocker $240k revenue (Flippa); SoloUno (PH)"
+  competitors: [I Am Sober, Reframe, Sober Time, Quitzilla, Covenant Eyes, BlockerX]
+  expertise_flag: 0
+
+- id: screen-time-focus-apps
+  name: Screen time control and focus for adults
+  who: users who struggle with phone overuse
+  task: app blocking with friction, focus sessions, statistics
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru, ph]
+  evidence: "Opal #43, BePresent #62 Productivity US; Pokus (RU); Mochi Focus, Unloop (PH)"
+  competitors: [Opal, one sec, BePresent, ScreenZen, Freedom]
+  expertise_flag: 0
+  notes: Apple's native Screen Time is a platform risk
+
+- id: subscription-trackers-cancellers
+  name: Subscription tracking and cancellation
+  who: users with 10+ subscriptions
+  task: find all subscriptions, remind before charges, cancel
+  product: subscription, $3–10/month (ironic)
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru, ph]
+  evidence: "Rocket Money #3 Finance US, SubPilot, SubSeek, MonoBoost; Bobby, Cape (RU); Subscription Day (PH)"
+  competitors: [Rocket Money, Bobby, SubPilot, Trim, "Кошелёк подписок (RU)"]
+  expertise_flag: 0
+  notes: Platform risk (Apple/Google/banks show subscriptions themselves)
+
+- id: gig-worker-mileage-tax
+  name: Gig drivers and the self-employed — mileage, expenses, taxes
+  who: Uber/DoorDash drivers, self-employed, realtors
+  task: automatic mileage tracking, receipts, tax deduction estimates, annual report
+  product: subscription, $5–15/month
+  geo: global
+  side: b2c
+  tier: A
+  sources: [appstore-us]
+  evidence: "MileIQ #1, Everlance #14, Hurdlr, Driversnote, Solo, Gridwise, ServerLife, SimplyWise, Smart Receipts (Finance US — 10+)"
+  competitors: [MileIQ, Everlance, Driversnote, Hurdlr, Solo, Gridwise]
+  expertise_flag: 0
+  notes: US tax specifics; in Russia, self-employed tax apps are a weak analogue
+
+- id: class-action-claim-finders
+  name: Finding and filing class action claims (US)
+  who: US consumers
+  task: match purchases/accounts to open settlements, file a claim, track the payout
+  product: "% of payout or subscription"
+  geo: global
+  side: b2c
+  tier: B
+  sources: [appstore-us]
+  evidence: "Settlemate #18, Collect #23, ClaimHunt #30, Payout #43, MoneyPilot #55 Finance US — 5 new in a year"
+  competitors: [Settlemate, ClaimHunt, Payout, ClassAction.org]
+  expertise_flag: 1
+  notes: US only, legal gray area
+
+- id: residency-days-visa-trackers
+  name: Days-in-country tracking — tax residency, Schengen 90/180, visas
+  who: digital nomads, relocators, frequent travelers
+  task: automatic GPS day counting, limits (183 days, 90/180), visa windows, report
+  product: subscription, $3–10/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "Country Days Tracker x2, Pin Traveler, been, Polarsteps (Travel US); Domicile365 Residency Tracker (Finance US); Dni v Stranakh avtopodschyot #6 Travel RU, Shengen kalkulyator 90/180, Mark O'Travel, Travu, Mara"
+  competitors: [TaxBird, "Country Days Tracker", Domicile365, "Дни в странах (RU)", "Шенген калькулятор (RU)"]
+  expertise_flag: 0
+  notes: Strong signal in both geos; relocation drives steady demand in Russia
+
+- id: astrology-human-design
+  name: Astrology, Human Design, lunar calendar — personal guides
+  who: women 20–45 interested in esoterica
+  task: natal chart, daily forecasts, compatibility, AI chat
+  product: subscription, $5–20/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru, flippa]
+  evidence: "CHANI #14, Co-Star, The Pattern, Nebula, Astra (Lifestyle US); Moonly, Navamsha, Lumi, Human Design x3, Humdes, AstroVizor, Svetlana Dragan (RU); Astrology SaaS 77% margin (Flippa)"
+  competitors: [Co-Star, CHANI, Nebula, The Pattern, "Moonly (RU)", "Humdes (RU)"]
+  expertise_flag: 0
+  notes: Esoteric-topic reputational risk, but monetization is proven in both geos
+
+- id: faith-devotional-apps
+  name: Religious apps — prayer, Bible/Quran, AI mentor
+  who: practicing Christians (US/LatAm), Muslims, Orthodox Christians (Russia)
+  task: daily readings, prayers, audio, AI chat on scripture, widgets
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru, ph]
+  evidence: "Bible Chat #2, Hallow #3, Haven, Abide, Dwell, Glorify, Truthly — 25+ in Reference US; Muslim Pro, Sajda, 1Muslim, Quran x4 (RU); Pravoslavie, Molitvoslov, Pravoslavny Kalendar (RU); Manna (PH)"
+  competitors: [Hallow, YouVersion, Bible Chat, Muslim Pro, Abide, "Православие (RU)"]
+  expertise_flag: 0
+
+- id: licence-exam-prep-apps
+  name: Professional and licensing exam prep
+  who: test takers for driving rules / boating / industrial safety / DMV / EPA 608 / pilot / seafarer / bar status exams
+  task: question bank, trainer, error review, exam simulation
+  product: one-time payment or subscription, $5–30
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "Zutobi #18, myDMV, DMV Genie, SkillCat EPA 608, Sporty's Pilot, US Civics (US); PDD x3, GIMS x2, Promyshlennaya Bezopasnost x3, Delta Test x3, medical accreditation, lawyer status test, DETPractice (RU — 14 apps in the Education top 100)"
+  competitors: [Zutobi, "DMV Genie", "Рули онлайн (RU)", "Дельта тест (RU)", "Промышленная безопасность (RU)"]
+  expertise_flag: 0
+  notes: The long tail of exams means many small paid apps; content rather than expertise
+
+- id: ai-language-speaking-tutors
+  name: AI conversational language tutor
+  who: learners of English (and others) for work/relocation
+  task: speaking practice with AI, pronunciation correction, scenarios
+  product: subscription, $10–30/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru, yc, ph]
+  evidence: "Learna #4, LangLearn #10, Speak, BetterSpeak, Praktika, ELSA, YayTalk (Education US); Learna #3, Loora, Victor AI, Praktika, Talkpal, Simpler, Englify (RU); Pingo, Doomersion (YC); ChatPal, Canary, Fluently (PH)"
+  competitors: [Speak, Praktika, ELSA, Loora, Talkpal, "Simpler (RU)"]
+  expertise_flag: 0
+  notes: AI tutor/speaking passed an earlier screening; a very crowded field
+
+- id: sign-language-learning
+  name: Sign language learning
+  who: parents of deaf children, students, volunteers
+  task: lessons, camera-based sign recognition, dictionary
+  product: subscription, $10–20/month
+  geo: global
+  side: b2c
+  tier: B
+  sources: [appstore-us]
+  evidence: "Lingvano #28, Ziggy #49, ASL Bloom #71 Education US"
+  competitors: [Lingvano, "ASL Bloom", Ziggy, "Pocket Sign"]
+  expertise_flag: 0
+  notes: Small but clean niche with 3 paying players
+
+- id: music-instrument-learning
+  name: Learning an instrument and singing with feedback
+  who: "adult beginners: guitar, piano, vocals"
+  task: lessons, microphone-based play recognition, tabs/chords, ear training
+  product: subscription, $10–20/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru, ph]
+  evidence: "Simply Piano #8, Simply Guitar, Yousician, flowkey, Justin Guitar, Gibson, Ultimate Guitar, Chordify (US); Yousician #10, flowkey, Simply, TrueFire, Vocal Image (RU); SoundGate Guitar AI tutor (PH)"
+  competitors: [Simply, Yousician, flowkey, "Justin Guitar", Chordify]
+  expertise_flag: 0
+
+- id: ai-study-flashcards
+  name: AI notes and flashcards for students
+  who: school and university students
+  task: PDF/lecture/video → notes, flashcards, quizzes; homework solutions from a photo
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [flippa, appstore-us, appstore-ru]
+  evidence: "AI study platform, 5,500 subscribers, $461k ARR, Flashcards, StudyScout (Flippa); Gauth #9, Coconote, Gizmo, Solvely, Quizard, Turbo AI (Education US); Notix, GDZ #17, EZsheet (RU)"
+  competitors: [Quizlet, Knowt, Gizmo, Turbo AI, "Notix (RU)"]
+  expertise_flag: 0
+  notes: Russian OGE exam queries grew 11%
+
+- id: workout-log-trackers
+  name: Strength training log
+  who: people who train in the gym on their own
+  task: set log, programs, progress, workout plan, Apple Watch
+  product: subscription, $3–10/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "Fitbod #18, Hevy #37, Liftoff, Strong, Gymverse, STNDRD (Health US); JEFIT, Forma, Fit Journal, Fitbod, Strong, MuscleFit (RU)"
+  competitors: [Hevy, Strong, Fitbod, JEFIT, Gymverse]
+  expertise_flag: 0
+
+- id: stretching-mobility-posture
+  name: Stretching, mobility, posture
+  who: office workers, runners, yoga practitioners
+  task: short stretching routines, splits in N days, camera-based posture check
+  product: subscription, $5–10/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru, ph]
+  evidence: "Bend #42 Health US; Bend stretching, splits in 30 days, GOWOD, Stretching and Flexibility (RU); SuperShrimp (PH)"
+  competitors: [Bend, Pliability, GOWOD, StretchIt, "Шпагат за 30 дней (RU)"]
+  expertise_flag: 0
+
+- id: dog-training-apps
+  name: Dog and puppy training
+  who: puppy owners
+  task: step-by-step courses, clicker, progress tracker, AI vet advice (non-medical)
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru, ph]
+  evidence: "Woofz #42 Lifestyle US; GoDog (RU); PawChamp (PH); Petlibro/Call Pet — adjacent"
+  competitors: [Dogo, Woofz, Puppr, GoodPup, "GoDog (RU)"]
+  expertise_flag: 0
+
+- id: parental-control-family-locator
+  name: Parental control and family locator
+  who: parents of children aged 6–14
+  task: geolocation, screen time, content filtering, SOS
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru, smartranking]
+  evidence: Bark, Qustodio, BrightCanary, Findmykids, AT&T Secure Family (US); Kaspersky Safe Kids, Gde Moi Deti, Kroha, Family Nest, Roditelsky Kontrol GPS (RU); Gde Moi Deti +158% (Smart 500)
+  competitors: [Bark, Qustodio, Life360, "Где мои дети (RU)", "Kroha (RU)"]
+  expertise_flag: 0
+  notes: Native Screen Time / Family Link are a platform risk, but Gde Moi Deti proves monetization in Russia
+
+- id: anglers-fishing-apps
+  name: Fishing — bite forecast, spots, logbook
+  who: amateur anglers
+  task: bite forecast, depth/spot maps, catch log, fish identifier
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "Fishbrain #6, Fish AI, Fishbox, Fishing Points, Salt Strong (Sports US); Kogda Lovit Rybu #10, Prognoz Klyova, Karta RU Rybalka, Fish Deeper, Fishing Points (RU)"
+  competitors: [Fishbrain, Fishing Points, Navionics, "Прогноз клёва (RU)", "Карта РУ Рыбалка (RU)"]
+  expertise_flag: 0
+
+- id: padel-racket-sports
+  name: Padel and racket sports — "americano" tournaments, ratings, courts
+  who: padel/tennis/pickleball players, clubs
+  task: organizing americano events, ratings, partner search, court booking
+  product: subscription, $3–10/month; B2B for clubs
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-ru, appstore-us]
+  evidence: "Playtomic #7, Americano Padel x2, PadelMix, Raketo, Padel Chess (Sports RU); DUPR, UTR, SwingVision (US)"
+  competitors: [Playtomic, "Americano Padel", DUPR, Padel Mates]
+  expertise_flag: 0
+  notes: Padel is the fastest-growing sport in the EU/UAE/Russia
+
+- id: car-diagnostics-logs
+  name: OBD diagnostics and car expense log
+  who: enthusiast car owners
+  task: reading fault codes via ELM327, coding, fuel consumption, maintenance, vehicle history
+  product: one-time $5–30 or subscription
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "FIXD, OBD Fusion, myCar (US); Car Scanner ELM #1 Utilities RU, BimmerCode, BimmerLink, OBD JScan, MotorData, FORScan, VAG x3, TechApp x8, Moi Avto #13, Drivvo, CarScope (RU)"
+  competitors: [Car Scanner, Torque, BimmerCode, OBD Fusion, Drivvo, "Мой Авто (RU)"]
+  expertise_flag: 0
+
+- id: package-trackers
+  name: Universal package tracker
+  who: active online shoppers
+  task: all parcels in one place, automatic import from email, push notifications
+  product: subscription, $1–5/month
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru]
+  evidence: "pkge #12 Business US, Packy, TrackPack, Parcels Hub, Parcel (Shopping US); Posylka #1, GdePosylka #4, Packages, 1Track, Route (Shopping RU)"
+  competitors: [Parcel, "17track", "ГдеПосылка (RU)", "Посылка (RU)", AfterShip]
+  expertise_flag: 0
+  notes: Platform risk (Gmail/Apple Wallet show deliveries)
+
+- id: restock-drop-alerts
+  name: Restock and drop alerts (sneakers, collectibles, electronics)
+  who: collectors and resellers
+  task: availability/price monitoring, push when in stock, release calendar
+  product: subscription, $5–20/month
+  geo: global
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru]
+  evidence: "HotStock #4, TrackaLacker, PokeRestock, Restockr, Sole Retriever, DROPS, Sneakers Drops (Shopping US); Sole Retriever, Next Drop, SNKRS (RU)"
+  competitors: [HotStock, "Sole Retriever", Distill, Visualping]
+  expertise_flag: 0
+  notes: Retailers are hostile to bots
+
+- id: ebay-auction-snipers
+  name: eBay auction snipers
+  who: eBay buyers
+  task: automatic last-second bidding
+  product: one-time or subscription, $3–10
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru]
+  evidence: Gixen, EZsniper, Sniper for ebay, Dealerts (US); Myibidder, Snayper Auktsionov na eBay, BayWatch (RU)
+  competitors: [Gixen, Myibidder, EZsniper, Bidnapper]
+  expertise_flag: 0
+  notes: Old, proven niche, but probably declining
+
+- id: audio-tour-guides
+  name: Audio guides and GPS tours — for tourists and tour authors
+  who: independent travelers; local guides as authors
+  task: GPS-triggered audio tours of a city or route, tour purchase, tour builder for guides
+  product: $5–20 per tour; B2B subscription for authors
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: "GuideAlong #8, VoiceMap, Autio, Action Tour Guide, GPSmyCity, Revealed (Travel US); AZBO #7, izi.TRAVEL #9, Travelry, TouringBee, MyWoWo, audio guides for the Hermitage/Pompeii/Vatican/Athens (RU)"
+  competitors: [GuideAlong, VoiceMap, izi.TRAVEL, SmartGuide, "AZBO (RU)"]
+  expertise_flag: 0
+  notes: The two-sided model (tour authors) fragments the content supply
+
+- id: rv-camping-apps
+  name: RV and camping — campsites, routes, community
+  who: RV/motorhome owners, road-trippers
+  task: finding campsites, reviews, route planning by vehicle size, booking
+  product: subscription, $30–70/year
+  geo: global
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru]
+  evidence: "The Dyrt #6, RV LIFE #7, AllStays, Harvest Hosts, iOverlander, RV Parky, RV Camping Planner (Travel US); park4night (RU)"
+  competitors: [The Dyrt, "RV LIFE", Campendium, "park4night", Harvest Hosts]
+  expertise_flag: 0
+  notes: US-specific; caravanning is tiny in Russia
+
+- id: trip-planners
+  name: AI trip planners
+  who: independent travelers
+  task: itinerary, bookings in one place, map, collaborative planning
+  product: subscription, $5–10/month
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru]
+  evidence: "Wanderlog #5, TripIt, Tripsy, Rhyme, Roadtrippers (US); Wanderlog #12, Tripsy, Wandry, Tripomatic, WanderWise, Rhyme (RU)"
+  competitors: [Wanderlog, TripIt, Tripsy, Roadtrippers, "Google Travel / ChatGPT (платформа)"]
+  expertise_flag: 0
+  notes: Platform risk (ChatGPT/Google plan trips themselves)
+
+- id: ai-interior-design-apps
+  name: AI interior design from a room photo
+  who: people renovating, landlords, realtors
+  task: photo → interior options, virtual staging
+  product: subscription, $5–20/month or credits
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru, g2]
+  evidence: "Home AI #2, AI Home Design #4, AI Remodel, Decor AI, RoomGPT, Renovate AI, House AI — 15+ in Graphics US; Dizayn Interera II #5 Lifestyle RU, RoomGPT, iPlanly, Reimagine, Maison AI (RU); G2 'AI Virtual Staging'"
+  competitors: [RoomGPT, "Home AI", Planner 5D, Reimagine Home, "Remodel AI"]
+  expertise_flag: 0
+  notes: Commodity built on a single API; calibration case for "many players but zero switching cost"
+
+- id: calorie-counters-ai
+  name: AI calorie counters from photos
+  who: people losing weight or tracking nutrition
+  task: food photo → calories and macros, diary, goals
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru]
+  evidence: "MyFitnessPal #1, Cal AI #11, MacroFactor, Cronometer, Lose It, Calo, Numify, Foodvisor (US); Yazio #1, fatsecret, Lifesum, Arise, SnapDiet, CalZen, Foodbok, Calz, Caloryx, Welmi, Mist (RU — 12+)"
+  competitors: [MyFitnessPal, "Cal AI", Yazio, Cronometer, Lifesum]
+  expertise_flag: 0
+  notes: Giants plus 30 clones; calibration case
+
+- id: ru-car-fines-checks
+  name: Traffic fines and vehicle history checks by VIN/plate (Russia)
+  who: car owners and resellers in Russia
+  task: checking and paying fines, vehicle history, accidents, restrictions
+  product: payment commission / one-time
+  geo: ru
+  side: b2c
+  tier: B
+  sources: [appstore-ru, smartranking]
+  evidence: "Shtrafy GIBDD #2, #31, #39 Finance RU; Nomerogram #6, Proverka avto po VIN/gosnomeru (Reference RU); Shtrafoff.net +254% (Smart 500)"
+  competitors: ["Штрафы ГИБДД (Тинькофф)", "Автокод", "Номерограм", "Госуслуги (платформа)"]
+  expertise_flag: 0
+  notes: Government portal and banks are a platform risk; "check fines" queries are mostly informational intent
+
+# ────────────────────────────────────────────────────────────────────────────
+# IV. CONTROL NICHES (known outcomes, included to calibrate the filters)
+# ────────────────────────────────────────────────────────────────────────────
+
+- id: ctrl-smb-crm
+  name: "[control red] CRM for small business"
+  who: SMB
+  task: customer and deal tracking
+  product: SaaS
+  geo: both
+  side: b2b-smb
+  tier: C
+  control: red
+  sources: [g2]
+  evidence: G2 'CRM'; HubSpot/amoCRM/Bitrix24 dominate
+  competitors: [HubSpot, Pipedrive, "amoCRM (RU)", "Битрикс24 (RU)"]
+  expertise_flag: 0
+
+- id: ctrl-task-manager
+  name: "[control red] Task manager / projects"
+  who: teams
+  task: tasks and projects
+  product: SaaS
+  geo: both
+  side: b2b-smb
+  tier: C
+  control: red
+  sources: [g2, ph]
+  evidence: ClickUp 4.0, Plane, Dart (PH); Kaiten (Smart 500)
+  competitors: [Asana, ClickUp, Notion, Trello, "Kaiten (RU)"]
+  expertise_flag: 0
+
+- id: ctrl-notes-app
+  name: "[control red] Notes"
+  who: everyone
+  task: notes
+  product: app
+  geo: both
+  side: b2c
+  tier: C
+  control: red
+  sources: [appstore-us]
+  evidence: Evernote, Notion, Goodnotes, Notability in the Productivity top
+  competitors: [Apple Notes, Notion, Evernote, Obsidian]
+  expertise_flag: 0
+
+- id: ctrl-website-builder
+  name: "[control red] Website builder"
+  who: SMB
+  task: no-code website
+  product: SaaS
+  geo: both
+  side: b2b-smb
+  tier: C
+  control: red
+  sources: [g2, flippa]
+  evidence: website-building niche $144k ARR (Flippa); Multisite +822% (Smart 500)
+  competitors: [Wix, Squarespace, "Tilda (RU)", Framer]
+  expertise_flag: 0
+
+- id: ctrl-document-scanner
+  name: "[control platform] Document scanner"
+  who: everyone
+  task: scan to PDF
+  product: app
+  geo: both
+  side: b2c
+  tier: C
+  control: platform
+  sources: [appstore-us, appstore-ru]
+  evidence: 20+ scanners in the Business US and RU top 100 despite the native scanner in iOS Notes/Files
+  competitors: [iScanner, Adobe Scan, CamScanner, "Apple Notes (платформа)"]
+  expertise_flag: 0
+
+- id: ctrl-photo-animate
+  name: "[control platform] Photo animation"
+  who: everyone
+  task: animating old photos
+  product: app
+  geo: both
+  side: b2c
+  tier: C
+  control: platform
+  sources: [appstore-us, appstore-ru]
+  evidence: "A +189% spike was a feature launch in the Alice assistant: peak 459k → 70k"
+  competitors: [MyHeritage, Revive, "Алиса (платформа)"]
+  expertise_flag: 0
+
+- id: ctrl-translator
+  name: "[control platform] Translator"
+  who: everyone
+  task: translation
+  product: app
+  geo: both
+  side: b2c
+  tier: C
+  control: platform
+  sources: [appstore-us, appstore-ru]
+  evidence: 15+ translators in Reference/Productivity despite Google/Yandex Translate; "english online" queries are 70% translator intent
+  competitors: [Google Translate, "Яндекс Переводчик", DeepL, iTranslate]
+  expertise_flag: 0
+
+- id: ctrl-ai-meeting-notes
+  name: "[control platform] AI meeting notes"
+  who: office workers
+  task: meeting transcript and summary
+  product: SaaS
+  geo: both
+  side: b2b-smb
+  tier: C
+  control: platform
+  sources: [appstore-us, ph, report]
+  evidence: "Otter, Plaud, Cue, Wave, Minutes, Notee, Summary (US); Fathom 3.0, Lyra, Spellar, Shadow, Wispr Notetaker, Krisp (PH); a16z: note-takers have \"saturated the enterprise\"; Zoom/Teams/Meet are native"
+  competitors: [Fathom, Otter, Granola, "Zoom AI Companion (платформа)", "Gemini в Meet (платформа)"]
+  expertise_flag: 0
+
+- id: ctrl-transcription
+  name: "[control green] Audio/video transcription"
+  who: journalists, students, lawyers
+  task: audio → text
+  product: SaaS
+  geo: both
+  side: prosumer
+  tier: C
+  control: green
+  sources: [smartranking, appstore-ru]
+  evidence: +21% in Russia; Zvuk v Bukvu +290% (Smart 500); Soniox, Whisper Notes, HyNote in the top charts
+  competitors: [Otter, "Звук в букву (RU)", Whisper-приложения, Soniox]
+  expertise_flag: 0
+
+- id: ctrl-ai-song-generator
+  name: "[control green] AI song generation"
+  who: consumers
+  task: text → song
+  product: app
+  geo: both
+  side: b2c
+  tier: C
+  control: green
+  sources: [appstore-us, flippa]
+  evidence: "Suno #5 + 12 clones in Music US; MusicMate $52k profit (Flippa); 48k queries, +256% in Russia"
+  competitors: [Suno, Udio, Mureka, "Zona", "Muzio"]
+  expertise_flag: 0
+
+- id: ctrl-ai-presentations
+  name: "[control red] AI presentations (Gamma ~55%)"
+  who: office workers, students
+  task: text → presentation
+  product: SaaS
+  geo: both
+  side: prosumer
+  tier: C
+  control: red
+  sources: [ph, flippa, appstore-ru]
+  evidence: Snapdeck, Chronicle 2.0, Alai, Pitch Agent, Claude in PowerPoint (PH); AI presentations $1.9k MRR, PitchBoost, MemoSlide (Flippa); GammAI (RU); Gamma holds ~55% of the cluster
+  competitors: [Gamma, Beautiful.ai, Tome, Pitch, "Copilot (платформа)"]
+  expertise_flag: 0
+  notes: Calibrates the dominant-brand gate — should be eliminated by top1_brand_share
+
+# ────────────────────────────────────────────────────────────────────────────
+# V. COVERAGE CLUSTERS — paid App Store / Google Play apps, G2 verticals and the
+#    WordPress family not covered above. Clone-style utilities, betting and medicine are excluded.
+# ────────────────────────────────────────────────────────────────────────────
+
+- id: golf-gps-handicap
+  name: Golf — GPS rangefinder, handicap, stats
+  who: amateur golfers (US/UK/EU, few in Russia)
+  task: GPS distances to the green, scoring, handicap, shot statistics, tee time booking
+  product: subscription, $30–100/year
+  geo: global
+  side: b2c
+  tier: A
+  sources: [appstore-us, gplay, flippa]
+  evidence: 18Birdies, Golfshot, GolfLogix, SwingU, TheGrint, Hole19, Blue Tees, GHIN (8 in top-grossing US Sports); Hole19, Golfshot (RU); GolfWeGo on Flippa
+  competitors: [18Birdies, Golfshot, Hole19, SwingU, TheGrint, GolfLogix]
+  expertise_flag: 0
+
+- id: flight-tracking-deals-award-travel
+  name: Flight trackers, cheap-flight hunters, award travel
+  who: frequent travelers, mileage runners
+  task: live flight and delay tracking, cheap fare alerts, miles/points optimization
+  product: subscription, $30–100/year
+  geo: global
+  side: b2c
+  tier: A
+  sources: [appstore-us, gplay]
+  evidence: Flighty, Flight Tracker+, Planes Live, FlightDeck, FlightSky, Plane Finder (7 in top-grossing US Travel); Going, RatePunk, JetBack, Airclub (cheap fares); Roame, AwardWallet (award travel)
+  competitors: [Flighty, Going, RatePunk, AwardWallet, Roame]
+  expertise_flag: 0
+
+- id: indie-music-distribution-stems
+  name: Tools for indie musicians — distribution, stems, promo
+  who: independent artists and producers
+  task: releasing a track to streaming, stem separation, vocal removal, promo links
+  product: subscription, $20–80/year or commission
+  geo: both
+  side: prosumer
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: DistroKid, UnitedMasters (distribution), Moises (US+RU), LALAL.AI (RU) — in top-grossing Music
+  competitors: [DistroKid, UnitedMasters, Moises, LALAL.AI, TuneCore]
+  expertise_flag: 0
+
+- id: collection-trackers-lego-watches-vinyl
+  name: Collection trackers — LEGO, watches, vinyl, toys
+  who: collectors outside cards and coins
+  task: collection catalog, valuation, price alerts, storefront
+  product: subscription, $3–10/month
+  geo: global
+  side: b2c
+  tier: A
+  sources: [appstore-us]
+  evidence: Brickify (LEGO), WatchCharts (watches), Waxstat (vinyl), Toyzie (toys), Worth It AI — in top-grossing Reference/Shopping US; adjacent to coin/tcg but different audiences
+  competitors: [Brickify, WatchCharts, Discogs, Waxstat, Toyzie]
+  expertise_flag: 0
+
+- id: ai-hairstyle-tryon
+  name: AI hairstyle and hair color try-on
+  who: users before a haircut or coloring; salons as a channel
+  task: try a haircut/color from a photo, share with the stylist
+  product: weekly/annual subscription
+  geo: both
+  side: b2c
+  tier: B
+  sources: [gplay, appstore-ru]
+  evidence: Hair Color & Hairstyle Try On, Hairstyle Try On AI, HairHunt, HairLook, Modiface Haircut (5 in top-grossing Google Play Beauty US)
+  competitors: [HairHunt, HairLook, Hairstyle Try On, Perfect365, YouCam]
+  expertise_flag: 0
+  notes: Looks like a short-lived trend (weekly subscriptions); included for measurement
+
+- id: creative-learning-draw-origami
+  name: Drawing and origami lessons — step-by-step, AR stencil
+  who: children and adult beginners in drawing
+  task: step-by-step lessons, AR projection onto paper, origami diagrams
+  product: subscription, $5–10/month
+  geo: global
+  side: b2c
+  tier: B
+  sources: [gplay, appstore-us]
+  evidence: Learn how to draw – ArtWorkout, Drawing Desk, AR Drawing, Da Vinci Eye, Origami World, Origami Guide, Origami Tutorial (7 in Google Play Art & Design US)
+  competitors: [ArtWorkout, Drawing Desk, AR Drawing, Da Vinci Eye, Origami World]
+  expertise_flag: 0
+
+- id: travel-journal-map
+  name: Travel journal and map of visited places
+  who: travelers who keep a "countries map"
+  task: map of visited countries/cities, photo timeline per trip, statistics
+  product: subscription/lifetime, $5–30
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, appstore-ru, gplay]
+  evidence: Polarsteps, been, Pin Traveler, Mark O’Travel (RU), tripbff — in top-grossing Travel US/RU
+  competitors: [Polarsteps, been, Pin Traveler, "Mark O’Travel", Wanderlog]
+  expertise_flag: 0
+
+- id: youth-sports-team-management
+  name: Amateur and youth sports team management
+  who: coaches and parent organizers of youth and amateur teams
+  task: game schedule, attendance, parent chat, fee collection, stats/video
+  product: freemium, $10–20/month per team or $/season
+  geo: global
+  side: prosumer
+  tier: A
+  sources: [gplay, appstore-us]
+  evidence: GameChanger, TeamSnap, Spond, TeamReach, sportsYou, Hudl (5 in top-grossing Google Play Sports US, 2 in App Store)
+  competitors: [TeamSnap, GameChanger, Spond, TeamReach, Heja]
+  expertise_flag: 0
+
+- id: family-private-photo-sharing
+  name: Private family photo album
+  who: young parents, grandparents
+  task: private child album for family, printing, timeline
+  product: freemium + subscription/prints
+  geo: global
+  side: b2c
+  tier: B
+  sources: [gplay]
+  evidence: FamilyAlbum (#1 Parenting Google Play US), TinyNest, Tin Can; Skylight (iOS)
+  competitors: [FamilyAlbum, TinyNest, Skylight, "Google Photos (платформа)"]
+  expertise_flag: 0
+
+- id: pregnancy-baby-milestones
+  name: Pregnancy and baby (0–3) development trackers
+  who: expectant parents and parents of infants
+  task: week-by-week tracking, contractions, developmental milestones, activities
+  product: subscription, $5–10/month
+  geo: both
+  side: b2c
+  tier: B
+  sources: [gplay, appstore-ru]
+  evidence: "Pregnancy+, amma, Preggers, Pregnancy Tracker: Baby Growth, Kinedu, Pathways.org, Nara — Google Play Parenting US; Kalendar Beremennosti (Wachanga), Dnevnik Malysha — App Store RU"
+  competitors: [Pregnancy+, amma, Kinedu, Wachanga, Huckleberry]
+  expertise_flag: 0
+  notes: Adjacent to medicine (pregnancy content) — a flag, not a veto; a tracker, not medical advice
+
+- id: immigration-case-trackers
+  name: Immigration case and status trackers
+  who: USCIS / visa center applicants, relocators
+  task: case status, deadlines, notifications, documents
+  product: subscription, $5–10/month
+  geo: global
+  side: b2c
+  tier: B
+  sources: [appstore-us]
+  evidence: Case Tracker for USCIS & NVC — top-grossing Utilities US; UK ETA (Google Play Travel)
+  competitors: [Case Tracker for USCIS, CaseStatus, Lawfully]
+  expertise_flag: 0
+
+- id: personal-budgeting-apps
+  name: Personal budget and expense tracking (post-Mint)
+  who: people managing a household budget
+  task: account aggregation, categories, budgets, subscriptions, goals
+  product: subscription, $50–100/year
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-us, appstore-ru]
+  evidence: Copilot, YNAB, Monarch, EveryDollar, Quicken — top-grossing Finance US; Money Flow, Monefy, Moneon, Finansy OK, Dokhody OK, Money Pro, GUAP, Fleur — 10 in top-grossing Finance RU
+  competitors: [YNAB, Monarch, Copilot, Monefy, "Дзен-мани (RU)"]
+  expertise_flag: 0
+
+- id: credit-card-points-optimizers
+  name: Credit card and cashback optimization
+  who: US holders of multiple credit cards
+  task: which card to pay with, points/miles tracking, sign-up bonuses
+  product: subscription, $30–100/year
+  geo: global
+  side: b2c
+  tier: B
+  sources: [appstore-us]
+  evidence: Kudos, CardPointers, AwardWallet — top-grossing Finance US
+  competitors: [CardPointers, Kudos, MaxRewards, AwardWallet]
+  expertise_flag: 0
+  notes: US-specific; almost no market outside the US
+
+- id: homework-solvers-ai
+  name: AI homework solvers and study help
+  who: school and university students
+  task: photograph a problem, get a step-by-step solution
+  product: subscription, $10–20/month (weekly plans)
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, gplay, appstore-ru]
+  evidence: "Photomath, Gauth, Solvely, Question.AI — Education US; GDZ: Moi Reshebnik — RU"
+  competitors: [Photomath, Gauth, Solvely, Question.AI, "ГДЗ Мой решебник (RU)"]
+  expertise_flag: 0
+  notes: Platform risk — ChatGPT solves for free
+
+- id: brain-training-memory
+  name: Brain and memory training
+  who: adults 30–60 who want to "keep their mind sharp"
+  task: daily memory/attention mini-games, progress
+  product: subscription, $50–100/year
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, gplay]
+  evidence: Impulse, Elevate, memoryOS, IQ Boost, Brainova — top-grossing Education/Health US
+  competitors: [Impulse, Elevate, Lumosity, memoryOS, Peak]
+  expertise_flag: 0
+
+- id: kids-learning-games-preschool
+  name: Educational games for preschoolers 2–6
+  who: parents of children 2–6
+  task: letters, counting, reading, English — through play
+  product: subscription, $5–15/month
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, gplay, appstore-ru]
+  evidence: Lingokids, Keiki, Kiddopia, ABCmouse, Bebi, Pok Pok, Pinkfong — US; Kidby — RU
+  competitors: [Lingokids, ABCmouse, Kiddopia, Keiki, "Кидби (RU)"]
+  expertise_flag: 0
+  notes: Content is expensive; leaders are venture-backed
+
+- id: book-summaries-microlearning
+  name: Book summaries and microlearning
+  who: busy adults who want to "read faster"
+  task: 15-minute summaries, audio, daily lessons
+  product: subscription, $60–100/year
+  geo: both
+  side: b2c
+  tier: B
+  sources: [appstore-us, gplay]
+  evidence: Blinkist, Headway, Deepstash, Imprint, SmartyMe — Education US
+  competitors: [Blinkist, Headway, Deepstash, Imprint, "Smart Reading (RU)"]
+  expertise_flag: 0
+
+- id: muslim-apps-ru-cis
+  name: Apps for Muslims (Russia/CIS and global) — prayer times, Quran, adhkar
+  who: Russian-speaking Muslims in Russia/CIS; globally — 1.9 billion
+  task: prayer times, qibla, Quran with translation, adhkar, prayer lessons, fasting
+  product: subscription, $10–30/year, donations
+  geo: both
+  side: b2c
+  tier: A
+  sources: [appstore-ru, appstore-us]
+  evidence: "App Store RU: Muslim Pro 143k, 1Muslim 129k, Sajda 49k, Koran Madzhid 40k, IslamApp 35k, Vremya Namaza 25k, Namaz Obuchenie 23k — 31 apps with 1k+ reviews, leader 21%; a distinct market in the Russian branch"
+  competitors: [Muslim Pro, 1Muslim, Sajda, IslamApp, Pillars]
+  expertise_flag: 0
+  notes: Needs a separate set of Russian queries (prayer time, quran app); sensitive topic — reputational risk if errors occur
+
+- id: driving-schools-software
+  name: Driving schools — schedule, students, payments, theory
+  who: driving schools with 1–20 instructors
+  task: driving lesson booking, hours tracking, payments, theory tests, documents
+  product: SaaS, $30–150/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [g2, gplay]
+  evidence: G2 Driving School Software (category without a niche); Driving Instructor Theory Test (Google Play UK); RU — Uchet Avtoshkoly, Avtoshkola-Kontrol
+  competitors: [DrivingSchoolSoftware.com, Drive Scout, "Автошкола Контроль (RU)", "Учёт автошколы (RU)"]
+  expertise_flag: 0
+
+- id: dry-cleaning-laundry-software
+  name: Dry cleaners and laundries — intake, orders, courier
+  who: dry cleaners and laundries with 1–10 locations
+  task: order intake, statuses, customer SMS, delivery, payment
+  product: SaaS, $50–150/month per location
+  geo: both
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 Dry Cleaning Software (CleanCloud, SMRT, Enlite); RU — Agbis Khimchistka
+  competitors: [CleanCloud, SMRT, Enlite, "Агбис (RU)"]
+  expertise_flag: 0
+
+- id: florists-software
+  name: Florists and flower shops — orders, delivery, storefront
+  who: flower shops and studios
+  task: online order intake, delivery, perishable stock, holiday peaks
+  product: SaaS, $30–100/month
+  geo: both
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 Florist Software (Floranext, Lovingly, Hana, FloristWare); RU — Posiflora
+  competitors: [Floranext, Lovingly, FloristWare, "Posiflora (RU)"]
+  expertise_flag: 0
+
+- id: funeral-homes-software
+  name: Funeral homes — cases, documents, families
+  who: funeral homes and funeral service agencies
+  task: case management, documents, online memorials, family billing
+  product: SaaS, $100–300/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 Funeral Home Software (Passare, Osiris, SRS, Halcyon)
+  competitors: [Passare, Osiris, SRS Computing, Halcyon]
+  expertise_flag: 0
+  notes: Sensitive vertical; sales are door-to-door
+
+- id: jewelry-store-management
+  name: Jewelry stores and workshops — inventory, repairs, storefront
+  who: jewelry stores with 1–5 locations, workshops
+  task: item/metal inventory, repairs and orders, storefront, POS
+  product: SaaS, $50–200/month
+  geo: both
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 Jewelry Store Management Software (The Edge, Jewel360, JewelMate, Piro)
+  competitors: [The Edge, Jewel360, Piro, "1С Ювелирный (RU)"]
+  expertise_flag: 0
+
+- id: moving-companies-software
+  name: Moving companies — requests, estimates, dispatch
+  who: local moving companies
+  task: request → estimate → crew → payment; calendar, crews
+  product: SaaS, $100–300/month
+  geo: both
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 Moving Company Software (SmartMoving, Supermove, MoveitPro, Elromco)
+  competitors: [SmartMoving, Supermove, MoveitPro, Elromco]
+  expertise_flag: 0
+
+- id: pest-control-software
+  name: Pest control — routes, contracts, repeat visits
+  who: local pest control companies
+  task: technician routes, recurring visits, contracts, chemicals/reports
+  product: SaaS, $50–200/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 Pest Control Software (PestPac, FieldRoutes, GorillaDesk, Briostack)
+  competitors: [GorillaDesk, FieldRoutes, PestPac, Briostack]
+  expertise_flag: 0
+
+- id: daycare-childcare-software
+  name: Daycares and child care groups — attendance, payments, parent chat
+  who: private daycares and day groups
+  task: attendance, photos/reports for parents, payments, waitlist
+  product: SaaS, $50–150/month
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [g2, gplay, appstore-us]
+  evidence: brightwheel (Education Google Play US), Procare, HiMama/Lillio, Daily Connect — top-grossing; G2 Child Care Software; RU — private kindergartens
+  competitors: [brightwheel, Procare, Lillio, Kangarootime, "Kidsoft (RU)"]
+  expertise_flag: 0
+
+- id: coaching-business-platforms
+  name: Platforms for coaches and consultants — clients, sessions, payments
+  who: life/business coaches, solo consultants
+  task: booking, session packages, payments, homework, client portal
+  product: SaaS, $30–100/month
+  geo: both
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 Coaching Software (Paperbell, CoachAccountable, Practice, Satori, Simply.Coach)
+  competitors: [Paperbell, CoachAccountable, Practice, Satori, Simply.Coach]
+  expertise_flag: 0
+
+- id: parent-school-communication
+  name: School–parent communication (announcements, chat, attendance)
+  who: K-12 schools and teachers; in Russia it is platform-led (Dnevnik.ru, Sferum)
+  task: announcements, chat, attendance, grades, translation for families
+  product: freemium + school license
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [gplay, appstore-us]
+  evidence: ClassDojo, ParentSquare, TalkingPoints, Remind — Education Google Play US
+  competitors: [ClassDojo, ParentSquare, TalkingPoints, Remind]
+  expertise_flag: 0
+  notes: ClassDojo probably dominates; in Russia, state platforms are a platform risk
+
+- id: sms-marketing-smb
+  name: SMS marketing for small business
+  who: local business, e-commerce, salons
+  task: broadcasts, auto-replies, coupons, two-way SMS chat
+  product: $20–100/month + per message
+  geo: both
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 SMS Marketing Software (SimpleTexting, EZ Texting, Textedly, SlickText); RU — SMS Aero, SMSC
+  competitors: [SimpleTexting, EZ Texting, Textedly, SlickText, "SMS Aero (RU)"]
+  expertise_flag: 0
+  notes: Regulation (TCPA / Russian personal data law), margin goes to carriers
+
+- id: digital-signage-smb
+  name: Digital signage for small business — screens and menu boards
+  who: cafes, salons, clinics, retail with 1–20 screens
+  task: content for TV screens, menu boards, scheduling, playlists
+  product: $10–30/screen/month
+  geo: both
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 Digital Signage Software (Yodeck, ScreenCloud, OptiSigns, NoviSign)
+  competitors: [Yodeck, ScreenCloud, OptiSigns, NoviSign]
+  expertise_flag: 0
+
+- id: email-signature-management
+  name: Company email signature management
+  who: SMBs with 10–500 employees, agencies
+  task: unified signatures, banner campaigns, centralized updates
+  product: $1–3/user/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [g2]
+  evidence: G2 Email Signature Software (Exclaimer, WiseStamp, Opensense, Mailtastic)
+  competitors: [Exclaimer, WiseStamp, Opensense, Letsignit]
+  expertise_flag: 0
+
+- id: cookie-consent-gdpr-widgets
+  name: Cookie banners and GDPR/CCPA consent for websites
+  who: website owners and agencies
+  task: consent banner, cookie scanning, logs, regional rules
+  product: $10–50/month per site
+  geo: both
+  side: b2b-smb
+  tier: A
+  sources: [wordpress, g2]
+  evidence: Complianz, CookieYes (WordPress, hundreds of thousands of installs), Cookiebot, iubenda, Termly; GDPR tag — 45 plugins in the top 3000; RU — personal data law banners
+  competitors: [CookieYes, Complianz, Cookiebot, iubenda, Termly]
+  expertise_flag: 0
+  notes: Regulatory tailwind; switching is easy
+
+- id: web-accessibility-widgets
+  name: Website accessibility (WCAG/ADA) — widgets and audits
+  who: website owners at risk of lawsuits (US), agencies
+  task: accessibility widget, audit, fixes, compliance report
+  product: $50–500/year per site
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [wordpress, g2]
+  evidence: accessiBe, UserWay, AudioEye, EqualWeb; WordPress accessibility plugins
+  competitors: [accessiBe, UserWay, AudioEye, EqualWeb, "One Click Accessibility"]
+  expertise_flag: 0
+  notes: Reputational controversy around "overlays"; EU EAA 2025 — demand is growing
+
+- id: website-reviews-widgets
+  name: Review and social proof widgets for websites
+  who: local businesses and e-commerce with a website
+  task: pull Google/Yandex/Trustpilot reviews onto a site, slider, badges
+  product: $5–30/month
+  geo: both
+  side: b2b-smb
+  tier: B
+  sources: [wordpress]
+  evidence: WP Google Review Slider (30k installs), Trustindex, Elfsight, Widgets for Google Reviews; RU — Yandex review widgets
+  competitors: [Elfsight, Trustindex, WP Google Review Slider, EmbedSocial]
+  expertise_flag: 0
+
+- id: wp-booking-plugins
+  name: WordPress online appointment and booking plugins
+  who: WP site owners — salons, clinics, tutors, rentals
+  task: booking calendar, payment, reminders inside the site
+  product: $50–150/year per site
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [wordpress]
+  evidence: Amelia, Bookly, Simply Schedule Appointments, BookingPress, Booknetic — popular WP plugins
+  competitors: [Amelia, Bookly, Booknetic, BookingPress, "Simply Schedule Appointments"]
+  expertise_flag: 0
+
+# --- Shopify App Store: subcategories with 25+ apps having 100+ reviews and a leader holding <= 20% of reviews ---
+
+- id: shopify-upsell-bundles
+  name: Shopify upsell and bundle apps
+  who: Shopify merchants (SMB e-commerce)
+  task: bundles, cart/checkout upsell, "frequently bought together", post-purchase offers
+  product: $10–50/month + % of upsell
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [shopify]
+  evidence: "Upsell & Cross-sell: 69 apps, 53 with 100+ reviews, leader Kaching Bundles 10% of reviews (58k total); Product Bundles: 47 with 100+, leader 12%; Checkout: 54 with 100+, leader 12%"
+  competitors: [Kaching Bundles, ReConvert, Selleasy, Frequently Bought Together, Bundler]
+  expertise_flag: 0
+
+- id: shopify-loyalty-rewards
+  name: Shopify loyalty and rewards apps
+  who: Shopify merchants with repeat purchases
+  task: points, referral rewards, VIP tiers, reviews for points
+  product: $20–200/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [shopify]
+  evidence: "Customer Loyalty: 71 apps, 54 with 100+ reviews, leader 16% (55k reviews)"
+  competitors: [Smile.io, Joy Loyalty, BON Loyalty, Rivo, Yotpo Loyalty]
+  expertise_flag: 0
+
+- id: shopify-product-options-variants
+  name: Shopify product options and variants apps
+  who: merchants with customizable products
+  task: extra options, swatches, personalization, variant limits
+  product: $10–30/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [shopify]
+  evidence: "Custom Products: 71 apps, 49 with 100+ reviews, leader Globo Product Options 13% (38k); Product Variants: 41 with 100+, leader 14%"
+  competitors: [Globo Product Options, Hulk Product Options, Bold Product Options, Inkybay, Avis]
+  expertise_flag: 0
+
+- id: shopify-popups-notifications
+  name: Shopify popups, banners, email/SMS capture
+  who: Shopify merchants
+  task: coupon popups, email capture, announcement banners, exit-intent
+  product: $5–30/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [shopify]
+  evidence: "Notifications: 71 apps, 60 with 100+ reviews, leader Pop Convert 17% (52k)"
+  competitors: [Pop Convert, CWILL Popup, EcomSend, Privy, Adoric]
+  expertise_flag: 0
+
+- id: shopify-back-in-stock-preorder
+  name: Shopify back-in-stock notifications and pre-orders
+  who: merchants with scarcity/drops
+  task: restock alerts, pre-orders with partial payment, waitlists
+  product: $10–50/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [shopify]
+  evidence: "Stock Alerts: 64 apps, 27 with 100+, leader 16% (25k); Pre-orders: 12, leader 23%"
+  competitors: [Back In Stock Notify Me, PreOrder Now, Notify Me, Timesact, Appikon]
+  expertise_flag: 0
+
+- id: shopify-translation-currency
+  name: Shopify store translation and multi-currency
+  who: merchants selling in several countries
+  task: AI storefront translation, currency/language switcher, geo-redirects
+  product: $10–50/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [shopify]
+  evidence: "Currency & Translation: 66 apps, 27 with 100+, leader Transcy 14% (18k)"
+  competitors: [Transcy, Weglot, Langify, LangShop, "Shopify Translate & Adapt (платформа)"]
+  expertise_flag: 0
+  notes: Platform risk — the native Translate & Adapt is free
+
+# ────────────────────────────────────────────────────────────────────────────
+# VI. REMAINING COVERAGE — fragmented Shopify App Store subcategories (leader <= 25% of reviews,
+#     20+ apps with 100+ reviews) and top-grossing Google Play clusters without a niche.
+#     Excluded: AI interior design (already covered), Shopify subscriptions (dominant leader),
+#     gifting (BOGO is an upsell, gift cards are native), volume discounts (inside upsell-bundles).
+# ────────────────────────────────────────────────────────────────────────────
+
+- id: shopify-seo-image-optimizer
+  name: Shopify SEO and image optimization
+  who: Shopify merchants looking for free traffic
+  task: alt tags and image compression, speed, schema/JSON-LD, SEO audit, "AEO/GEO"
+  product: $10–40/month, freemium
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [shopify]
+  evidence: "Images & Media: 53 apps with 100+ reviews, leader Booster SEO 14% (39k); SEO: 41 with 100+ (excluding Judge.me/Yotpo), Booster 5.5k, Avada 4.7k, SEOLab 2.6k, Tapita 2.6k, TinyIMG 2.5k, SearchPie 2.5k"
+  competitors: [Booster SEO, Avada SEO, SEOLab, Tapita, TinyIMG, SearchPie]
+  expertise_flag: 0
+  notes: Commodity — 6 "AI SEO" clones with identical feature sets; Shopify has built basic SEO in natively
+
+- id: shopify-dropshipping-pod-sourcing
+  name: Shopify dropshipping and print-on-demand (suppliers and automation)
+  who: new merchants without inventory
+  task: importing supplier products, auto-ordering and tracking, POD catalog, branding
+  product: freemium + % per order / subscription $20–50/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [shopify]
+  evidence: "Sourcing options: 46 apps with 100+ reviews, leader DSers 16% (39k); Printify 4.3k, Printful 3.9k, CJdropshipping 2.8k, Trendsi 1.8k, AutoDS 1.3k, Zendrop 1.3k"
+  competitors: [DSers, Printify, Printful, CJdropshipping, AutoDS, Zendrop, Spocket]
+  expertise_flag: 0
+  notes: Leaders are logistics companies (warehouses, fulfillment), not software; the software layer is AutoDS/Spocket (automation on top of suppliers)
+
+- id: shopify-order-tracking
+  name: Shopify order tracking and documents
+  who: Shopify merchants with physical shipping
+  task: branded tracking page, WISMO notifications, invoices and packing slips
+  product: freemium, $10–100/month by order volume
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [shopify]
+  evidence: "Orders: 44 apps with 100+ reviews, leader 17TRACK 15% (29k); Parcel Panel 3.2k, Order Printer Pro 2.9k, Track123 1.7k, AfterShip 1.5k, Vify 1.2k; Shipping: 33 with 100+, leader 17%"
+  competitors: [17TRACK, Parcel Panel, Track123, AfterShip, Rush, Order Printer Pro]
+  expertise_flag: 0
+  notes: Platform risk — tracking in the Shop app is free; the niche lives on the branded page and upsell
+
+- id: shopify-labels-badges
+  name: Shopify labels, badges and trust icons
+  who: Shopify merchants
+  task: "\"sale/new\" stickers, trust badges, payment icons, seasonal effects"
+  product: freemium, $5–20/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [shopify]
+  evidence: "Design elements: 37 apps with 100+ reviews, leader DECO Labels 9% (18k); Dakaas 1.6k, TA Labels 1.4k, Sami Labels 1.2k, Essential Trust Badges 1.2k, Hoppy 0.9k"
+  competitors: [DECO Product Labels, TA Product Labels, Sami Labels, Essential Trust Badges, Hoppy, Dakaas]
+  expertise_flag: 0
+  notes: Smallest ticket size; entry through a free plan
+
+- id: shopify-marketplace-sync
+  name: Shopify marketplace and inventory sync
+  who: merchants who also sell on Etsy/eBay/Amazon/TikTok Shop
+  task: syncing products, stock and orders between Shopify and marketplaces, feed import/update
+  product: $20–100/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [shopify]
+  evidence: "Inventory: 34 apps with 100+ reviews, leader QuickSync (Etsy) 12% (17k); DPL eBay 1.2k, CedCommerce Amazon 1.2k, LitCommerce 1.0k, DPL Etsy 0.9k, syncX 0.9k; Marketplaces: Shopify Marketplace Connect 2.1k (native)"
+  competitors: [QuickSync, DPL, CedCommerce, LitCommerce, syncX Stock Sync, "Shopify Marketplace Connect (платформа)"]
+  expertise_flag: 0
+  notes: Platform risk — Marketplace Connect (Amazon/Walmart/eBay/Target) is free; the niche is Etsy/TikTok/niche platforms and support
+
+- id: shopify-reports-profit-analytics
+  name: Shopify reports, profit and behavior analytics
+  who: Shopify merchants with $10k+/month
+  task: custom reports and export, net profit/LTV with ad spend, session recordings and heatmaps
+  product: $20–150/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [shopify]
+  evidence: "Operations analytics: 33 apps with 100+ reviews, leader Microsoft Clarity (free) 12% (19k); Report Pundit 2.0k, Data Export 2.0k, Better Reports 1.2k, TrueProfit 0.9k, Lucky Orange 0.9k; Finances: 28 with 100+, QuickBooks 19%"
+  competitors: [Report Pundit, Data Export IO, Better Reports, TrueProfit, BeProfit, Lucky Orange, "Microsoft Clarity (бесплатно)"]
+  expertise_flag: 0
+  notes: The leader is free (Clarity); merchants pay for reports and profit, not heatmaps
+
+- id: shopify-bulk-edit-import
+  name: Shopify bulk editing and import/export
+  who: merchants with large catalogs, agencies
+  task: bulk edits of prices/tags/metafields with rollback, CSV import/export, migrations
+  product: $10–50/month
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [shopify]
+  evidence: "Content: 28 apps with 100+ reviews, leader Ablestar 9% (10k); Hextom Bulk Edit 1.2k (in inventory), Matrixify, EZ Importer"
+  competitors: [Ablestar Bulk Product Editor, Hextom Bulk Product Edit, Matrixify, EZ Importer, syncX]
+  expertise_flag: 0
+  notes: Small (10k reviews per subcategory); the Shopify Bulk Editor is native, merchants pay for rollback/scheduling
+
+- id: shopify-b2b-wholesale
+  name: Shopify B2B and wholesale pricing
+  who: brands with wholesale customers on a regular (non-Plus) plan
+  task: wholesale price lists, B2B customer registration, price hiding, request-a-quote, minimum order quantities
+  product: $20–100/month
+  geo: global
+  side: b2b-smb
+  tier: A
+  sources: [shopify]
+  evidence: "Wholesale: 26 apps with 100+ reviews (excluding Faire), leader BSS B2B 10% (13k); Sami B2B 1.0k, Sami Lock 1.0k, Wholesale Pricing Discount 0.7k, B2B Hub 0.7k, Request a Quote 0.7k; Pricing: 38 with 100+, leader Shopacado 10%"
+  competitors: [BSS B2B Wholesale, Sami B2B, Wholesale Pricing Discount, B2B Wholesale Hub, SparkLayer, Request a Quote]
+  expertise_flag: 0
+  notes: Platform risk — native B2B on Shopify Plus ($2.3k/month); the niche lives on plans below Plus
+
+- id: shopify-search-filter-menus
+  name: Shopify search, filters and mega menus
+  who: merchants with a 500+ SKU catalog
+  task: collection filters, smart search, mega menu
+  product: $10–100/month by product count
+  geo: global
+  side: b2b-smb
+  tier: B
+  sources: [shopify]
+  evidence: "Search & Navigation: 20 apps with 100+ reviews, leader Smart Product Filter 16% (15k); Globo Mega Menu 1.7k, Boost AI Search 1.6k, Searchanise 1.3k, Qikify Menu 1.1k, Doofinder 0.8k"
+  competitors: [Smart Product Filter & Search, Boost AI Search, Searchanise, Doofinder, Globo Mega Menu, Qikify]
+  expertise_flag: 0
+  notes: Platform risk — Shopify Search & Discovery has been free since 2022
+
+- id: phone-as-security-baby-camera
+  name: Old phone as a security camera / baby monitor
+  who: parents, home and pet owners
+  task: second phone → camera with cloud, motion/cry detection, two-way audio
+  product: subscription, $5–10/month or $30–60/year
+  geo: both
+  side: b2c
+  tier: A
+  sources: [gplay, appstore-ru]
+  evidence: AlfredCamera, Visory (House & Home US); Annie Baby Monitor, Saby, BabyCam, Bibino (Parenting US, 4 in top-grossing); Nani, BabyCam, Annie, Alfred, Kamera CCTV (RU)
+  competitors: [AlfredCamera, Bibino, BabyCam, Annie Baby Monitor, Cloud Baby Monitor, "Nani (RU)"]
+  expertise_flag: 0
+  notes: Mature market, AlfredCamera has 70M+ installs; check the leader's share and the pace of new entrants
+
+- id: star-maps-astronomy-apps
+  name: Star maps and planetariums
+  who: amateur astronomers, parents, tourists
+  task: AR sky map, object identification, events, satellites
+  product: subscription, $10–30/year or one-time purchase
+  geo: both
+  side: b2c
+  tier: B
+  sources: [gplay, appstore-us, appstore-ru]
+  evidence: "Sky Guide #18, Night Sky #19 (Reference US); Stellarium, SkyView, Star Walk 2, Spot the Station (Education US Google Play); Star Walk 2, Sky Guide, Night Sky, Satellite Tracker, SkySafari, Sky Tonight, Stellarium (RU)"
+  competitors: [Stellarium, Star Walk 2, Sky Guide, Night Sky, SkyView, SkySafari, Sky Tonight]
+  expertise_flag: 0
+  notes: Vito Technology (Star Walk 2, Sky Tonight, Satellite Tracker) is one publisher with several apps
+
+- id: family-chore-reward-apps
+  name: Family chore checklists and rewards for kids
+  who: parents of children 5–14, families
+  task: chore schedule, points and rewards, family calendar
+  product: subscription, $3–8/month
+  geo: both
+  side: b2c
+  tier: A
+  sources: [gplay]
+  evidence: ChoreReward, Kids Chores Tracker (Neat Kid), Happy Kids Timer, ChoreMan (Parenting US); Chorefriend, Home Tasker, MyChoreBoard (House & Home US); Wanmine (Events) — 8 in top-grossing Google Play US
+  competitors: [ChoreReward, Chorefriend, OurHome, Homey, MyChoreBoard, Neat Kid]
+  expertise_flag: 0
+  notes: Not to be confused with kids' debit cards (Greenlight, BusyKid — regulated finance)
+
+- id: bedtime-stories-kids-audio
+  name: Bedtime stories — audio and AI-personalized stories
+  who: parents of children 2–8
+  task: audio story library, personalization by name/interests, sleep timer
+  product: subscription, $5–10/month; RU — ads + subscription
+  geo: both
+  side: b2c
+  tier: A
+  sources: [gplay, appstore-ru, flippa]
+  evidence: Readmio (Books US), Little Stories (Parenting US); Storiko, Gusgus (App Store RU); Skazki na Noch x5, Malenkie Istorii, Karavan Skazok, Bukvae (Google Play RU — 9 in top-grossing Parenting); Zingy Tales (Flippa)
+  competitors: [Readmio, Little Stories, Moshi, Oscar Stories, "Storiko (RU)", "Гусьгусь (RU)"]
+  expertise_flag: 0
+  notes: Content business + AI generation; in Russia, a factory of free ad-supported clones
+
+- id: travel-esim-apps
+  name: Travel eSIM
+  who: travelers, relocators
+  task: buying an eSIM for a country/region, installation, balance, top-up; virtual number
+  product: transactional, 20–40% margin per package
+  geo: both
+  side: b2c
+  tier: A
+  sources: [gplay, appstore-ru, flippa]
+  evidence: Saily, Airalo, Holafly, Ubigi (Travel US), Numero (Communication US); WiFi Map, Yesim, Kaspersky eSIM Store, eSIM io, Airalo, UNISIM, eSIMo, MobiMatter, eSIM.World (RU — 9 in top-grossing); "alodata" — automated eSIM store on Flippa
+  competitors: [Airalo, Saily, Holafly, Ubigi, Nomad, Yesim, aloSIM, MobiMatter]
+  expertise_flag: 0
+  notes: Reselling through eSIM aggregators (Telna, eSIM Go, 1GLOBAL) — entry without a telecom license; competition is marketing, thin margins

@@ -1,0 +1,104 @@
+# Topic of each niche for YouTube search interest (Google Trends, gprop=youtube), used by s8_youtube_trends.
+# People search YouTube for a subject ("bible study", "meal prep"), not for a product ("bible app" is about 0),
+# so the phrases are subjects, not "X app". B2B subjects are almost always about 0 on YouTube and come out as NA:
+# that is a result, not a gap.
+#
+# Optional settings (the reserved `_settings` key):
+#   ref        reference topic requested together with every niche topic; level = niche / ref. A mid-level topic
+#              works best (level 1.0); default budgeting.
+#   last_year  last full calendar year of the 4-year window (default: the year before the run date). The level is
+#              measured on that year and the trend compares it with two years earlier.
+# _settings:
+#   ref: budgeting
+#   last_year: 2024
+faith-devotional-apps: bible study
+ai-phone-receptionist-local: ai receptionist
+workout-log-trackers: workout log
+recipe-manager-meal-planner: meal prep
+astrology-human-design: birth chart
+reseller-crosslisting-scanners: reselling
+coin-antique-identifiers: coin collecting
+digital-business-cards: digital business card
+screen-time-focus-apps: phone addiction
+nature-id-mushroom-bird-insect: mushroom identification
+licence-exam-prep-apps: permit test
+anglers-fishing-apps: bass fishing
+n8n-openclaw-managed-hosting: n8n
+music-instrument-learning: learn piano
+cold-email-deliverability: cold email
+ai-language-speaking-tutors: learn english speaking
+sign-language-learning: learn sign language
+gym-martial-arts-studios: gym management software
+small-nonprofits-donor-crm: nonprofit fundraising
+pod-kdp-etsy-seller-tools: etsy shop
+restock-drop-alerts: restock
+invoice-estimate-mobile-apps: invoice
+indie-app-dev-aso-tools: app store optimization
+loyalty-wallet-passes: loyalty program
+law-firm-intake: law firm marketing
+local-seo-gbp-agencies: google business profile
+pet-care-facilities: dog boarding
+course-creator-affiliate-payouts: affiliate program
+str-hosts-tools: airbnb hosting
+saas-product-feedback-boards: product feedback
+calorie-counters-ai: calorie counting
+parental-control-family-locator: parental controls
+co-parenting-apps: co parenting
+tcg-sports-card-scanners: pokemon cards
+churches-tools: church management
+shift-scheduling-deskless: employee scheduling
+couples-relationship-apps: couples questions
+trip-planners: trip planning
+sobriety-quit-trackers: quit drinking
+gig-worker-mileage-tax: doordash taxes
+small-landlords-pm: landlord tips
+dog-training-apps: dog training
+marketplace-seller-analytics: amazon fba
+auto-repair-shops: auto repair shop
+ai-video-dubbing-captions: ai dubbing
+ai-search-visibility-geo: ai seo
+digital-wardrobe-outfit-planner: capsule wardrobe
+personal-budgeting-apps: budgeting
+muslim-apps-ru-cis: how to pray salah
+golf-gps-handicap: golf gps
+homework-solvers-ai: math homework
+indie-music-distribution-stems: distrokid
+brain-training-memory: brain training
+book-summaries-microlearning: book summary
+pregnancy-baby-milestones: pregnancy week by week
+ai-hairstyle-tryon: hairstyle try on
+flight-tracking-deals-award-travel: award travel
+youth-sports-team-management: youth sports
+kids-learning-games-preschool: learning videos for toddlers
+credit-card-points-optimizers: credit card points
+collection-trackers-lego-watches-vinyl: vinyl collection
+travel-journal-map: travel journal
+immigration-case-trackers: uscis case status
+cookie-consent-gdpr-widgets: cookie consent
+web-accessibility-widgets: web accessibility
+digital-signage-smb: digital signage
+sms-marketing-smb: sms marketing
+pest-control-software: pest control business
+daycare-childcare-software: daycare
+coaching-business-platforms: life coaching business
+funeral-homes-software: funeral home
+shopify-upsell-bundles: shopify upsell
+shopify-loyalty-rewards: shopify loyalty program
+shopify-popups-notifications: shopify popup
+travel-esim-apps: esim
+star-maps-astronomy-apps: stargazing
+family-chore-reward-apps: chore chart
+bedtime-stories-kids-audio: bedtime stories
+phone-as-security-baby-camera: baby monitor
+shopify-dropshipping-pod-sourcing: dropshipping
+shopify-order-tracking: shopify shipping
+shopify-marketplace-sync: shopify etsy
+shopify-seo-image-optimizer: shopify seo
+shopify-b2b-wholesale: shopify wholesale
+shopify-reports-profit-analytics: shopify analytics
+shopify-labels-badges: shopify badges
+shopify-bulk-edit-import: shopify bulk edit
+shopify-search-filter-menus: shopify filter
+shopify-product-options-variants: shopify product options
+shopify-back-in-stock-preorder: shopify preorder
+shopify-translation-currency: shopify translate

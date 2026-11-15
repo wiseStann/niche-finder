@@ -1,0 +1,98 @@
+# Case-insensitive regexes that match S0 entities (Flippa listings, Product Hunt launches, YC companies, TinySeed
+# portfolio, top-grossing App Store apps) to niches. Signal "deals / launches / monetization" (s5_deals).
+# A value is either a regex string or {re: ..., not: ...}; `not` drops matches that belong to a neighbouring category.
+# Niches without an entry here fall back to the phrases in config/coverage_keywords.yaml.
+faith-devotional-apps: "\\b(bible|devotional|prayer app|quran|catholic|christian app|scripture)\\b"
+ai-phone-receptionist-local: "\\b(ai receptionist|phone answering|answering service|ai phone agent|voice agent for (small )?business|missed calls?)\\b"
+workout-log-trackers: "\\b(workout (log|tracker|planner)|gym (log|tracker)|weightlifting|strength training app|lifting)\\b"
+astrology-human-design: "\\b(astrolog|horoscope|birth chart|human design|natal chart)"
+reseller-crosslisting-scanners: "\\b(crosslist|cross-list|reseller|thrift(ing)? (scanner|app)|poshmark|resale inventory)\\b"
+coin-antique-identifiers: "\\b(coin (identifier|scanner|value|collect)|antique identif|banknote|numismat)"
+digital-business-cards: "\\b(digital business card|nfc business card|business card (app|scanner|maker))\\b"
+screen-time-focus-apps: "\\b(screen time|app blocker|phone addiction|distraction blocker|doomscroll|focus app)\\b"
+nature-id-mushroom-bird-insect: "\\b(mushroom|bird (id|identif|sound)|insect identif|bug identif|rock identif|plant identif|nature id)"
+licence-exam-prep-apps: "\\b(dmv|permit test|cdl|exam prep|practice test|real estate exam|drivers? ed)\\b"
+anglers-fishing-apps: "\\b(fishing|angler|fish (id|identif|finder)|bass forecast)\\b"
+n8n-openclaw-managed-hosting: "\\b(n8n|openclaw|self-?hosted|managed hosting|deploy (ai )?agents?|agent hosting)\\b"
+music-instrument-learning: "\\b(learn (piano|guitar|ukulele|drums|violin)|piano (lessons|app)|guitar (lessons|app)|music (lessons|teacher|tutor)|singing (lessons|app))\\b"
+cold-email-deliverability: "\\b(cold email|email warm-?up|deliverability|email verif|inbox placement|bounce)\\b"
+ai-language-speaking-tutors: "\\b(language tutor|speaking practice|english (tutor|speaking|conversation)|ai tutor for (english|language)|pronunciation|learn (english|spanish|languages?) (with )?ai)\\b"
+sign-language-learning: "\\b(sign language|asl)\\b"
+gym-martial-arts-studios: "\\b(gym (management|software|owners?)|martial arts|bjj|jiu.?jitsu|crossfit (box|gym|software)|fitness studio|yoga studio|studio management)\\b"
+small-nonprofits-donor-crm: "\\b(nonprofit|non-profit|donor|fundrais|donation|charit(y|ies) software)\\b"
+pod-kdp-etsy-seller-tools: "\\b(etsy|print on demand|pod (sellers?|business)|kdp|merch by amazon|redbubble|low.content books?)\\b"
+restock-drop-alerts: "\\b(restock|in.stock alert|price drop|drop alert|sneaker (release|bot)|back in stock)\\b"
+invoice-estimate-mobile-apps: "\\b(invoic(e|ing)|estimates? app|estimating app|receipt maker|billing app)\\b"
+indie-app-dev-aso-tools: "\\b(aso|app store (optimization|screenshots?|keywords?|rank)|indie (app )?dev|app (marketing|analytics) tool|revenuecat|mobile app growth)\\b"
+loyalty-wallet-passes: "\\b(loyalty (card|program|app|pass)|wallet pass|stamp card|punch card|apple wallet|google wallet)\\b"
+law-firm-intake: "\\b(law firm|legal intake|client intake|legal crm|lawyers?|attorneys?)\\b"
+local-seo-gbp-agencies: "\\b(local seo|google business profile|gbp|google maps rank|local rank|citation|reputation management for (local|small))\\b"
+pet-care-facilities: "\\b(dog (daycare|boarding|grooming|walker)|pet (boarding|grooming|sitting|daycare|care business)|kennel|groomers?)\\b"
+course-creator-affiliate-payouts: "\\b(affiliate (program|tracking|software|management|payouts?)|referral program|partner program software)\\b"
+str-hosts-tools: "\\b(airbnb|vacation rental|short.term rental|str hosts?|vrbo|guest (messaging|communication)|dynamic pricing for rentals?)\\b"
+saas-product-feedback-boards: "\\b(feature requests?|product feedback|public roadmap|changelog|feedback board|feature voting|user feedback tool)\\b"
+calorie-counters-ai: "\\b(calorie|macro tracker|food (scanner|log|tracker)|nutrition track)"
+parental-control-family-locator: "\\b(parental control|family locator|kids? (phone|safety|monitoring)|screen time for kids)\\b"
+co-parenting-apps: "\\b(co-?parent|custody|divorced parents?)\\b"
+tcg-sports-card-scanners: "\\b(tcg|pokemon card|sports card|card (scanner|collection|grading|collector)|trading cards?)\\b"
+shift-scheduling-deskless: "\\b(shift (scheduling|planning|swap)|employee scheduling|staff scheduling|rota|time clock|deskless|hourly (workers|teams))\\b"
+sobriety-quit-trackers: "\\b(sober|sobriety|quit (smoking|drinking|vaping|porn)|addiction|recovery app|alcohol.free)\\b"
+gig-worker-mileage-tax: "\\b(mileage|gig (worker|driver|economy)|self.employed tax|1099|rideshare driver|doordash|freelancer tax)\\b"
+small-landlords-pm: "\\b(landlord|rent collection|tenant screening|rental propert|property management for)\\b"
+dog-training-apps: "\\b(dog training|puppy training|puppy|dog trainer|clicker)\\b"
+marketplace-seller-analytics: "\\b(amazon (seller|fba|ppc|product research|repricer)|fba|marketplace sellers?|walmart sellers?|seller analytics)\\b"
+auto-repair-shops: "\\b(auto (repair|shop|body|mechanic)|mechanics?|car repair shop|repair shop software|garage management)\\b"
+ai-video-dubbing-captions: "\\b(dubbing|dub |video translat|ai captions?|subtitle|caption generator|voice clon)"
+ai-search-visibility-geo: "\\b(ai (search )?visibility|generative engine optimization|geo tool|aeo|llm (visibility|monitoring|brand)|chatgpt (visibility|mentions|ranking)|ai search (rank|monitor|optimi))"
+digital-wardrobe-outfit-planner: "\\b(wardrobe|outfit|closet|ai stylist|capsule)\\b"
+# with a negative filter (not): cuts off neighbouring categories
+recipe-manager-meal-planner: {re: "\\b(recipe (app|manager|organizer|saver)|meal plan(ner|ning)|grocery list|save (any )?recipes?)\\b", not: "\\b(calorie|macro|well-being coach|family organizer)\\b"}
+churches-tools: {re: "\\b(church|worship|congregation|ministry|sermon|tithe)", not: "\\b(dating|ai note taker|bible study|catholic bible|holy bible|logos bible)\\b"}
+couples-relationship-apps: {re: "\\b(couples?( app| game| quiz)?|relationship app|long.distance relationship|for couples)\\b", not: "\\b(dating|swinger|singles|marry|ai art|widgets?)\\b"}
+trip-planners: {re: "\\b(trip planner|itinerary|travel plann|road trip|travel app)\\b", not: "\\b(flight ?tracker|flightradar|flightview|hostel|photo spots|audio tours?)\\b"}
+
+# ---------- explicit regexes instead of the coverage_keywords fallback ----------
+personal-budgeting-apps: {re: "\\b(budget(ing)? app|budget planner|spending tracker|expense tracker|personal finance|money manager|учет расходов|учёт расходов|расходы и доходы|доходы и расходы|бюджет|личные финансы|финансы)\\b", not: "\\b(mileage|receipts?|travel budget|stock trading|похудение|поездок|покупок|auto\\.ru|coaching|авто)\\b"}
+muslim-apps-ru-cis: {re: "\\b(muslim|quran|коран|намаз|athan|azan|qibla|мусульман|islam)", not: "\\b(marry|marriage|брак|dating|алфавит|клавиатура)\\b"}
+golf-gps-handicap: {re: "\\b(golf gps|golf handicap|golf scorecard|golf rangefinder|golf tracker|golfshot|18birdies|hole19|swingu|golflogix|thegrint|ghin|handicaddie|golf pad|golf gamebook|shot pattern|blue tees|garmin golf)\\b", not: "\\b(disc golf|swing (coach|fix)|video editor|sportsbox|marketplace|rv camping|card scanner)\\b"}
+homework-solvers-ai: {re: "\\b(homework (help|helper|solver)|math solver|photomath|gauth|решебник|гдз|ai study|study companion|course hero|chegg)\\b", not: "\\b(bible)\\b"}
+indie-music-distribution-stems: {re: "\\b(music distribution|distrokid|tunecore|cd baby|unitedmasters|amuse|landr|stem splitter|vocal remover|stems?|moises|lalal|убрать голос)\\b", not: "\\b(metronome|метроном|tuner|песенник|song generator|chord)\\b"}
+brain-training-memory: {re: "\\b(brain (training|trainer|games)|memory (training|games)|iq (boost|test|masters)|lumosity|elevate|neuronation|тренировка мозга|тренировка памяти)\\b"}
+book-summaries-microlearning: {re: "\\b(book summar|blinkist|headway|micro.?learning|bite.?sized learning|краткое содержание|саммари)"}
+pregnancy-baby-milestones: {re: "\\b(pregnancy|baby (tracker|development|milestone|photo)|newborn|contraction|беременност|схваток|малыша|дневник малыша)", not: "\\b(period tracker|ovulation|cycle|месячных|овуляция|celeb|allergy|диета|рецепты)\\b"}
+ai-hairstyle-tryon: {re: "\\b(hairstyle|hair (style|color|colour) (changer|try|editor)|haircut|прическ|причёск)", not: "\\b(face swap|video generator|wig)\\b"}
+flight-tracking-deals-award-travel: {re: "\\b(flight (tracker|deals|radar|status|update)|plane (finder|radar)|flightradar|flightaware|flighty|award (travel|wallet)|points and miles|cheap (flights|plane tickets)|авиабилеты|самолет|радар самолетов)", not: "\\b(charlotte|houston)\\b"}
+youth-sports-team-management: {re: "\\b(team management app|sports team|youth sports|teamsnap|gamechanger|sportsengine|heja|team app|league management|club management|coach app|mojo sports)\\b", not: "\\b(airline crew|roster|swimming workouts|chat now|ai companion|walkout)\\b"}
+kids-learning-games-preschool: {re: "\\b(learning games? for (kids|toddlers)|kids learning|preschool|toddler|montessori|abc kids|learn to read|phonics|развивающие игры|детские игры|для малышей|учимся читать|игры для детей)", not: "\\b(rosetta|немецкий|прикорм|алфавит буквы корана)\\b"}
+credit-card-points-optimizers: {re: "\\b(credit card (rewards|points|optimizer)|points (tracker|optimizer)|maxrewards|cardpointers|awardwallet|kudos)\\b"}
+collection-trackers-lego-watches-vinyl: {re: "\\b(collection tracker|collectors? app|brick (collector|scanner|search)|brickit|lego (collection|scanner|inventory)|vinyl (collection|scanner|tracker)|discogs|record (collection|scanner)|watch collection|chrono24|funko|toy value)\\b", not: "\\b(watch faces|циферблаты|wallpaper|обои|themes|темы|widgets|coin|монет|antique|антиквариат|wine|recipes|рецепты|music player|books|книги|физика|тройка|card ladder|market movers)\\b"}
+travel-journal-map: {re: "\\b(travel (journal|map|tracker|diary)|visited countries|been app|polarsteps|pin traveler|карта путешествий|посещённых стран|карта посещенных)\\b", not: "\\b(carousel|planner|save places)\\b"}
+immigration-case-trackers: {re: "\\b(uscis|immigration (case|tracker|status)|case tracker|green card|visa bulletin|eoir)\\b", not: "\\b(civics test|legal ?os|law firm)\\b"}
+cookie-consent-gdpr-widgets: {re: "\\b(cookie (consent|banner|bar)|consent management|cmp|gdpr (compliance|widget|banner)|cookiebot|cookieyes|termly|iubenda|osano|complianz)\\b"}
+web-accessibility-widgets: {re: "\\b(web(site)? accessibility|accessibility (widget|overlay|compliance)|ada compliance|wcag|accessibe|userway|audioeye|equalweb)\\b"}
+digital-signage-smb: {re: "\\b(digital signage|signage (software|player)|menu board|yodeck|screencloud|optisigns|xibo|rise vision|цифровые вывески|рекламные экраны)\\b"}
+sms-marketing-smb: {re: "\\b(sms marketing|text (message )?marketing|bulk sms|mass text|business texting|simpletexting|slicktext|textedly|ez texting|смс рассылк|sms рассылк)", not: "\\b(cloud vms)\\b"}
+pest-control-software: {re: "\\b(pest control|exterminator|gorilladesk|pestpac|fieldroutes|briostack)\\b"}
+daycare-childcare-software: {re: "\\b(daycare|child ?care (software|app|management)|preschool management|brightwheel|procare|lillio|himama|kindergarten management|детский сад)\\b", not: "\\b(pet care|caregiver|find jobs|parent$)\\b"}
+coaching-business-platforms: {re: "\\b(coaching (software|platform|business|clients)|life coach(es|ing)? (app|software|platform)|paperbell|coachaccountable|practice\\.do|satori|delenta|simply\\.coach)\\b", not: "\\b(video analysis|sports coaching|fitness coach|ai coach)\\b"}
+funeral-homes-software: {re: "\\b(funeral (home|software|director)|mortuary|passare|osiris|tribute technology|parting pro|obituar)"}
+shopify-upsell-bundles: {re: "\\b(shopify (upsell|bundle|app)|upsell(ing)? app|cross.?sell app|product bundles? app|post.?purchase (upsell|offer)|cart drawer|frequently bought together|volume discount app|quantity breaks)\\b", not: "\\b(core banking|wellness|cost estimator|kids games|in-stock alerts)\\b"}
+shopify-loyalty-rewards: {re: "\\b(shopify loyalty|loyalty (program|app|rewards) (app|software|for shopify)|smile\\.io|loyaltylion|yotpo loyalty|rivo|bon loyalty|joy loyalty|rewards program (app|software)|rewardup)\\b", not: "\\b(pantry|award ?wallet|wallet pass|winstamp)\\b"}
+shopify-popups-notifications: {re: "\\b(shopify popup|popup (app|builder|maker) for shopify|pop.?up (app|builder)|exit.?intent|email popup|announcement bar|pop convert|privy|justuno|wisepops|optimonk)\\b", not: "\\b(social media marketing dashboard|led|светодиод|виджеты|лаунчер|collage)\\b"}
+shopify-seo-image-optimizer: {re: "\\b(shopify seo|image optimi[sz]|alt text|seo app|page speed app|tinyimg|booster seo|avada seo|searchpie)\\b", not: "\\b(wordpress|wp |yoast|rank math|agency)\\b"}
+shopify-dropshipping-pod-sourcing: {re: "\\b(dropship|drop ship|print on demand|print-on-demand|pod store|dsers|zendrop|spocket|autods|printful|printify)\\b", not: "\\b(kdp|etsy seller|amazon kdp|track|parcel|package|посыл|photo|фото|keyword|trademark)\\b"}
+shopify-order-tracking: {re: "\\b(order tracking|tracking page|wismo|parcel panel|track123|17track|aftership|shipment tracking|order status page|invoice (app|generator) for shopify)\\b", not: "\\b(package tracker app|track my packages|grocery|storefront)\\b"}
+shopify-labels-badges: {re: "\\b(product (labels?|badges?)|trust badges?|sale badges?|payment icons)\\b"}
+shopify-marketplace-sync: {re: "\\b(etsy integration|ebay integration|amazon integration|marketplace (sync|integration|connect)|multichannel listing|inventory sync|stock sync|litcommerce|cedcommerce|quicksync|sellbrite|codisto)\\b", not: "\\b(crosslist|reseller|poshmark|thrift)\\b"}
+shopify-reports-profit-analytics: {re: "\\b(shopify (analytics|reports?|profit)|profit (tracker|analytics|dashboard) for (shopify|ecommerce|e-commerce|dtc)|net profit app|ecommerce analytics|lifetimely|trueprofit|beprofit|better reports|report pundit)\\b", not: "\\b(saas metrics|mrr|product analytics|amplitude|mixpanel|helium ?10|jungle scout|amazon)\\b"}
+shopify-bulk-edit-import: {re: "\\b(bulk (edit|editor|product edit)|import export app|matrixify|ablestar|hextom|csv import for shopify|bulk price)\\b"}
+shopify-b2b-wholesale: {re: "\\b(wholesale (app|pricing|portal|store|ordering)|b2b (app|portal|pricing|ordering|ecommerce)|hide price|request a quote|sparklayer|wholesale helper|b2b wholesale)\\b", not: "\\b(distribution software|pepper|faire|marketplace for retailers)\\b"}
+shopify-search-filter-menus: {re: "\\b(product filter|collection filter|site search app|search and filter|mega menu|searchanise|doofinder|boost ai search|fast simon|algolia for shopify|instant search)\\b"}
+phone-as-security-baby-camera: {re: "\\b(baby (monitor|cam)|nanny cam|security camera app|old phone (as|into) (a )?(camera|monitor)|home camera app|alfredcamera|alfred camera|bibino|babycam|видеонян|радионян|камера видеонаблюдения)\\b", not: "\\b(arlo|ring|wyze|nest cam|eufy|reolink|lorex|nanit|vtech|hidden camera|vicohome|screen mirroring|cast to tv|smart home camera)\\b"}
+star-maps-astronomy-apps: {re: "\\b(star (map|chart|walk|gazing|gazer)|stargazing|night sky|planetarium|constellation (map|finder|app|guide)|stellarium|sky guide|skyview|skysafari|sky tonight|звездно(е|го) неб|карта неба|планетарий)\\b", not: "\\b(astrolog|horoscope|zodiac|satellite network|space company|operating system)\\b"}
+family-chore-reward-apps: {re: "\\b(chore(s)? (app|chart|tracker|reward|manager)|chores? for kids|kids? chores?|family chores?|allowance app|reward chart|chorereward|chorefriend|ourhome|homey|busykid|домашние дела|обязанности детей)\\b", not: "\\b(greenlight|debit card|cleaning business|maid service|task manager for teams)\\b"}
+bedtime-stories-kids-audio: {re: "\\b(bedtime stor|kids? (audio )?stories|story app for kids|personali[sz]ed stor(y|ies) for kids|ai stor(y|ies) for kids|story generator for kids|readmio|little stories|moshi|сказк|аудиосказ)\\b", not: "\\b(sleep stories for adults|meditation|novel|fiction platform|webnovel|adult|dreame|goodnovel|collage|photo)\\b"}
+travel-esim-apps: {re: "\\b(esim|e-sim|travel sim|travel data|airalo|holafly|saily|ubigi|nomad esim|yesim|mobimatter|unisim)\\b", not: "\\b(second (phone )?number|virtual number|виртуальный номер|voip|carrier app|prepaid plan|mvno app|caller id|spam)\\b"}
+shopify-product-options-variants: {re: "\\b(product options?|custom(i[sz]ed)? product options|variant options?|product personali[sz]|swatch(es)?|globo product|inkybay|bold options)\\b"}
+shopify-back-in-stock-preorder: {re: "\\b(back in stock|restock (alert|notif)|notify me app|pre-?orders? app|preorder (app|manager)|waitlist app for shopify|timesact|stoq|appikon)\\b", not: "\\b(shoppers|sneaker|drop alert|consumer|in-stock alerts|restockr|hotstock)\\b"}
+shopify-translation-currency: {re: "\\b(store translation|translate (your|my) store|shopify translat|currency switcher|multi-?currency|langify|weglot|transcy|langshop|localization app)\\b", not: "\\b(document translat|translator app|переводчик|file conversion|converter calculator|exchange rate)\\b"}
