@@ -40,6 +40,9 @@ STAGES: list[Stage] = [
     Stage("s0_gplay_top", "s0"),
     Stage("s0_wordpress", "s0"),
     Stage("s0_shopify", "s0"),
+    Stage("s0_betalist", "s0"),
+    Stage("s0_productradar", "s0", market="ru"),
+    Stage("s0_kickstarter", "s0"),
     Stage("s0_merge", "s0"),
     # S1 — niches
     Stage("s1_niches", "s1"),
@@ -75,6 +78,8 @@ STAGES: list[Stage] = [
     Stage("s8_gplay_details", "s8"),
     Stage("s8_gplay_metrics", "s8"),
     Stage("s8_hh", "s8", market="ru"),
+    Stage("s8_hn_mentions", "s8"),
+    Stage("s8_hn_hiring", "s8"),
     Stage("s8_offsearch", "s8"),
     # S9 — supply over time
     Stage("s9_snapshot", "s9", in_all=False),

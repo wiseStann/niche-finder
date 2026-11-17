@@ -118,7 +118,9 @@ The funnel in one table (details in [stages.md](stages.md)):
 
 **Measures:** nothing yet; it enumerates existing products in categories where someone pays. Output is `universe.csv` (entity, source, source type, geo, side, category, one-liner, signal, URL), typically thousands of rows from about ten sources.
 
-**Sources (public or keyless):** accelerator batches (yc-oss JSON), Product Hunt monthly leaderboards, bootstrapped-fund portfolios, Flippa SaaS listings with revenue, App Store top-grossing charts (iTunes RSS, by genre, US and other storefronts), Google Play top charts (Node scraper), WordPress.org plugin API (active installs), Shopify App Store category walk.
+**Sources (public or keyless):** accelerator batches (yc-oss JSON), Product Hunt monthly leaderboards, bootstrapped-fund portfolios, Flippa SaaS listings with revenue, App Store top-grossing charts (iTunes RSS, by genre, US and other storefronts), Google Play top charts (Node scraper), WordPress.org plugin API (active installs), Shopify App Store category walk, BetaList (pre-launch startups, newest first), Product Radar (Russian-language launches by month, `ru` market), Kickstarter (Web Robots monthly dumps: projects, outcomes and money pledged).
+
+BetaList and Product Radar show where founders are heading (rising), not proven demand; Kickstarter shows demand paid in advance, but only for physical products, games, books and design. The three are counted per niche by `s5_deals` and shown in passports, outside the score. The Kickstarter crawl under-samples failed projects, so its success rates are inflated: compare categories with each other, not with Kickstarter's own statistics.
 
 **Why:** to start from "products that already earn" rather than from an imagined list of ideas. Games and medicine are excluded at the door.
 
@@ -222,6 +224,8 @@ Stage S8 adds signals that never change the score (the weights are pre-registere
 | App Store rating velocity | Ratings per month since release; share of velocity coming from apps up to 24 months old ("pull of newcomers") | Computed from one point in time; S9 gives a direct measurement |
 | Google Play search + details | Installs (`maxInstalls`, global, not per country), leader share, players with 100k+ / 1M+ installs, new apps, share paid | Storefront is the market in which the app was found, not where installs happened. Throttled, about 1 card/s |
 | Job-posting counts (Russian module) | Vacancies mentioning a software brand = adoption proxy | Needs Russian egress; HTML search page |
+| Hacker News Show HN / Ask HN (Algolia API) | Launches and "is there a tool for X" questions whose titles match the niche, last 12 months vs the 12 before, with a trend | Developer audience: B2C verticals are barely present, so a low count is NA. Titles only: news stories and post bodies mention a niche's words in passing |
+| HN "Who is hiring?" threads | Startup job postings that match the niche: funded teams working on the task now | Free text matched by the niche regexes; a company may only *use* such a tool, so read the examples |
 
 Why outside search? B2B demand barely exists in search ("meeting summary" can have two impressions a month while the category earns millions), and consumer demand is partly expressed in app stores.
 

@@ -4,7 +4,8 @@ Matches phrases from config/coverage_keywords.yaml plus the competitor names in 
 at word boundaries) against "entity + one_liner + category" of every row in data/out/universe.csv.
 Outputs data/out/coverage.csv (universe rows with the matched niche ids in niche_id, joined by |) and
 reports/S1-coverage.md: coverage by source, the most frequent words among uncovered entities, uncovered top-grossing
-apps per genre, uncovered YC / Product Hunt / Flippa / TinySeed entities, and uncovered category taxonomy entries or
+apps per genre, uncovered YC / Product Hunt / Flippa / TinySeed / BetaList / Product Radar / Kickstarter entities
+(Kickstarter grouped by category, largest pledges first), and uncovered category taxonomy entries or
 regional-ranking companies when those optional sources were imported. These lists point at niches you may have missed.
 
 Optional: config/coverage_notes.md (your own conclusions) is inserted verbatim after the coverage table.
@@ -97,7 +98,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         for wd in re.findall(r"[a-zа-яё]{4,}", f"{r['entity']} {r['one_liner']}".lower()):
             if wd not in STOP:
                 words[wd] += 1
-    L += ["", "## Most frequent words in descriptions of uncovered entities (YC / PH / App Store / Flippa / TinySeed)", "",
+    L += ["", "## Most frequent words in descriptions of uncovered entities (every source with descriptions)", "",
           ", ".join(f"{w} ({c})" for w, c in words.most_common(120)), ""]
     # uncovered top-grossing apps by genre
     L += ["## Uncovered top-grossing App Store apps (people pay, but no niche)", ""]
@@ -109,9 +110,15 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         items = g[src]
         L.append(f"**{src}** ({len(items)}): " + "; ".join(f"{r['entity'][:40]}" for r in items[:40]) + ("…" if len(items) > 40 else ""))
         L.append("")
-    # uncovered YC / PH / Flippa / TinySeed
-    for src_prefix, title in (("yc", "YC"), ("ph", "Product Hunt"), ("flippa", "Flippa (listings with revenue)"), ("tinyseed", "TinySeed")):
-        items = [r for r in unmatched if r["source"].startswith(src_prefix)]
+    # uncovered YC / PH / Flippa / TinySeed, and the optional launch / crowdfunding sources
+    for src_prefix, title in (("yc", "YC"), ("ph", "Product Hunt"), ("flippa", "Flippa (listings with revenue)"), ("tinyseed", "TinySeed"),
+                              ("betalist", "BetaList (pre-launch)"), ("productradar", "Product Radar (Russian-language launches)"),
+                              ("kickstarter", "Kickstarter (successful, >= 200 backers; paid in advance)")):
+        items = [r for r in unmatched if r["source"].split(":")[0] == src_prefix]
+        if src_prefix == "kickstarter":
+            items.sort(key=lambda r: (r["category"], -int(re.sub(r"\D", "", r["signal"].split(";")[0]) or 0)))
+        if not items and src_prefix in ("betalist", "productradar", "kickstarter"):   # optional sources: no empty sections
+            continue
         L.append(f"## Uncovered: {title} ({len(items)})")
         L.append("")
         for r in items[:400]:

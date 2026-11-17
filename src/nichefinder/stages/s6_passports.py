@@ -3,8 +3,9 @@
 Output: reports/passports/<niche_id>.md and reports/S6-passports.md (leaderboard, gates, cut niches).
 Required inputs: niches.yaml, data/out/score_final.csv, supply_deep.csv, metrics_quick.csv.
 Optional inputs (the matching passport block is skipped when a file is missing): trends_deep.csv, appstore_metrics.csv,
-capterra_categories_stats.csv, shopify_metrics.csv, pricing_b2b.csv, pricing_b2c.csv, deals.csv, deals_matches.csv,
-path_to_goal.csv (s6_ceiling), entrant_survival.csv (S9), offsearch.csv (S8), reddit_voice.csv, reddit_brands.csv,
+capterra_categories_stats.csv, shopify_metrics.csv, pricing_b2b.csv, pricing_b2c.csv, deals.csv, deals_matches.csv
+(with BetaList / Product Radar / Kickstarter launches), path_to_goal.csv (s6_ceiling), entrant_survival.csv (S9),
+offsearch.csv (S8, with Hacker News), reddit_voice.csv, reddit_brands.csv,
 reddit_voice_llm.csv, reddit_voice_themes.json (S10); config/overrides.yaml (notes, lens, manual supply estimates).
 """
 from __future__ import annotations
@@ -178,7 +179,12 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                   f"Flippa (recent SaaS listings): {d.get('flippa_listings', 0)} matches, with revenue {d.get('flippa_with_revenue', 0)}"
                   + (f", max MRR ${n(d.get('flippa_max_mrr'))}" if d.get("flippa_max_mrr") else "") + f" · Product Hunt (12-month tops): {d.get('ph_launches_12m', 0)} · Y Combinator: {d.get('yc_companies', 0)} · TinySeed: {d.get('tinyseed', 0)} · "
                   f"App Store top-grossing: US {d.get('topgrossing_us', 0)}, RU {d.get('topgrossing_ru', 0)}.", ""]
+            if any(d.get(k) not in (None, "") for k in ("betalist_12m", "productradar_12m", "kickstarter_12m")):
+                L += [f"Launches of the last 12 months (not in the score): BetaList pre-launch {d.get('betalist_12m') or 0} · Product Radar (RU) {d.get('productradar_12m') or 0} · "
+                      f"Kickstarter {d.get('kickstarter_12m') or 0} launched, {d.get('kickstarter_success_12m') or 0} funded, ${n(d.get('kickstarter_pledged_12m') or 0)} pledged.", ""]
             ex = [f"{r['source']}: {r['name']}" for src in ("flippa", "ph", "yc", "tinyseed") for r in dm.get((nid, src), [])][:8]
+            ex += [f"{r['source']}: {r['name']}" for src in ("betalist", "productradar") for r in dm.get((nid, src), [])][:4]
+            ex += [f"kickstarter: {r['name']} ({r['extra']})" for r in dm.get((nid, "kickstarter"), [])][:3]
             if ex:
                 L += ["Examples: " + "; ".join(ex), ""]
         # demand outside search (S8)
@@ -197,6 +203,14 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                   ]
             if o.get("hh_vacancies"):
                 L.append(f"- **hh.ru** (Russian job postings mentioning the niche's software brands - an adoption proxy): {g('hh_vacancies')}, leader \"{o['hh_top_brand']}\" - {g('hh_top_vacancies')}.")
+            if o.get("hn_posts_12m") not in (None, ""):
+                L.append(f"- **Hacker News** (Show HN + Ask HN posts whose titles match the niche, last 12 months vs the 12 before): {g('hn_posts_12m')} vs {g('hn_posts_prev12m')} → **{o.get('hn_trend') or 'NA'}**"
+                         + (" (a search term hit the 1,000 cap: a lower bound)" if o.get("hn_capped") == "1" else "")
+                         + f"; Show HN launches {g('hn_show_12m')} ({g('hn_show_prev12m')} the year before), Ask HN questions {g('hn_ask_12m')}."
+                         + (f" Top Show HN: {o['hn_top_show']}." if o.get("hn_top_show") else "") + (f" Top Ask HN: {o['hn_top_ask']}." if o.get("hn_top_ask") else ""))
+            if o.get("hn_hiring_12m") not in (None, ""):
+                L.append(f"- **HN \"Who is hiring?\"** (startup job postings that match the niche): {g('hn_hiring_12m')} in the last 12 months, {g('hn_hiring_prev12m')} the year before"
+                         + (f"; recent companies: {o['hn_hiring_companies']}" if o.get("hn_hiring_companies") else "") + ".")
             L += [f"- Flags: {o['offsearch_flags'] or '—'}", ""]
         v = rv.get(nid)
         if v:

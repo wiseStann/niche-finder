@@ -3,9 +3,10 @@
 Reads data/raw/*.csv written by the S0 fetch stages (a missing file is skipped with a note) and maps every entity to
 one schema: entity, source, source_type, geo, side, category, one_liner, signal, url, niche_id.
 
-Sources and their source_type: YC and Product Hunt = rising; TinySeed, App Store top-grossing, Google Play
-top-grossing, WordPress plugins (>= 5000 active installs), Shopify apps = proven; Flippa = transactions;
-Google Play top-free = usage. Google Play lists are cut at rank 150.
+Sources and their source_type: YC, Product Hunt, BetaList and Product Radar (geo ru) = rising; TinySeed, App Store
+top-grossing, Google Play top-grossing, WordPress plugins (>= 5000 active installs), Shopify apps and successful
+Kickstarter projects with >= 200 backers (paid in advance) = proven; Flippa = transactions; Google Play top-free = usage.
+Google Play lists are cut at rank 150.
 
 Optional user-provided imports (no fetcher exists; put the CSV in data/raw/ and it is merged when present):
   smartranking_rows.csv  regional app/company revenue ranking, source_type=ru. Columns: title, vertical, segment,
@@ -121,6 +122,30 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             "entity": r["name"], "source": f"shopify:{r['category']}", "source_type": "proven", "geo": "global", "side": "b2b",
             "category": r["category"], "one_liner": r["tagline"][:160], "signal": f"reviews={r['reviews']}; rating={r['rating']}; pricing={r['pricing']}",
             "url": f"https://apps.shopify.com/{r['handle']}", "niche_id": "",
+        })
+
+    # BetaList: rising (pre-launch)
+    for r in read("betalist.csv"):
+        rows.append({
+            "entity": r["name"], "source": "betalist", "source_type": "rising", "geo": "global", "side": "",
+            "category": "", "one_liner": r["tagline"][:160], "signal": f"date={r['date']}", "url": r["url"], "niche_id": "",
+        })
+    # Product Radar: rising, Russian-language launches
+    for r in read("productradar.csv"):
+        rows.append({
+            "entity": r["name"], "source": "productradar", "source_type": "rising", "geo": "ru", "side": "",
+            "category": r["categories"][:80], "one_liner": r["description"][:160],
+            "signal": f"month={r['month']}; votes={r['votes']}; comments={r['comments']}" + (f"; asks={r['asks']}" if r["asks"] else ""),
+            "url": r["url"], "niche_id": "",
+        })
+    # Kickstarter: proven (paid in advance), successful projects with >= 200 backers
+    for r in read("kickstarter_projects.csv"):
+        if r["state"] != "successful" or int(r["backers"] or 0) < 200:
+            continue
+        rows.append({
+            "entity": r["name"], "source": f"kickstarter:{r['category']}", "source_type": "proven", "geo": "global", "side": "b2c",
+            "category": f"{r['category']} / {r['subcategory']}", "one_liner": r["blurb"][:160],
+            "signal": f"pledged=${int(float(r['pledged_usd'] or 0)):,}; backers={r['backers']}", "url": r["url"], "niche_id": "",
         })
 
     if not rows:

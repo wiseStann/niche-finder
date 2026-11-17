@@ -4,6 +4,7 @@
     data = http.get_json(url, cache=ws.cache("itunes"))          # cached by URL
     html = http.get_text(url, cache=ws.cache("capterra"), cache_key=f"{slug}_p{page}", ext=".html",
                          backend="curl", min_size=10_000)          # some sites only answer browser-like clients
+    http.download(url, ws.cache("kickstarter") / name)            # large files: streamed to disk, kept as the cache
 
 Proxies: HTTPS_PROXY / HTTP_PROXY apply to everything (urllib and curl read them).
 `proxy="ru"` routes one request through NF_PROXY_RU (Russian sources that refuse foreign IPs).
@@ -158,6 +159,47 @@ def get_json(url: str, *, cache: Path | None = None, cache_key: str | None = Non
     if sleep:
         time.sleep(sleep)
     return data
+
+
+def download(url: str, path: Path, *, timeout: float = 120, proxy: str | None = None, user_agent: str = BOT_UA,
+             tries: int = 3, chunk: int = 1 << 20, progress: bool = True) -> Path:
+    """Stream a large file (a data dump) to `path` and return it. An existing non-empty file is the cache: no network call.
+    Bytes go to <path>.part first and are renamed only when complete, so an interrupted download is never mistaken for
+    a finished one."""
+    path = Path(path)
+    if path.is_file() and path.stat().st_size > 0:
+        return path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".part")
+    p = _proxy_url(proxy)
+    opener = (urllib.request.build_opener(urllib.request.ProxyHandler({"http": p, "https": p}))
+              if p else urllib.request.build_opener())
+    last: Exception | None = None
+    for attempt in range(max(1, tries)):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": user_agent})
+            with opener.open(req, timeout=timeout) as r, open(tmp, "wb") as f:
+                total, done, step = int(r.headers.get("Content-Length") or 0), 0, 0.1
+                while True:
+                    block = r.read(chunk)
+                    if not block:
+                        break
+                    f.write(block)
+                    done += len(block)
+                    if progress and total and done / total >= step:
+                        print(f"    {done / total:4.0%} of {total / 1e6:,.0f} MB", flush=True)
+                        step += 0.1
+            if total and done != total:
+                raise OSError(f"incomplete: {done} of {total} bytes")
+            os.replace(tmp, path)
+            return path
+        except (urllib.error.URLError, OSError, TimeoutError, ConnectionError) as e:
+            last = e
+            if attempt < tries - 1:
+                time.sleep((5, 15, 30)[min(attempt, 2)])
+    if tmp.exists():
+        tmp.unlink()
+    raise OSError(f"download failed after {tries} tries: {url[:160]}: {last}")
 
 
 def post_json(url: str, body: Any, *, cache: Path | None = None, cache_key: str | None = None,

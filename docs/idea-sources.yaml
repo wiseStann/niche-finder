@@ -99,15 +99,15 @@ sources:
       - "Russian-language launches: name, description, category, awards (product of the week / month), number of comments"
       - "categories 'looking for a partner / investor / mentor' - who has not found a model yet"
       - "slices ?groupby=week|month|year|base - what won in a category over a period"
-    stages: [s0]
-    feeds: ["data/out/universe.csv (source=productradar, rising, geo=ru)"]
+    stages: [s0, s5]
+    feeds: ["data/out/universe.csv (source=productradar, rising, geo=ru)", "data/out/deals.csv: productradar_12m (passport, not scored)"]
     freshness: daily
-    status: planned
-    adapter: null
+    status: in_pipeline
+    adapter: s0_productradar
     priority: P2
     access:
       - method: html_ssr
-        endpoint: "https://productradar.ru/category/<cat>/<subcat>/?groupby=month|year|base"
+        endpoint: "https://productradar.ru/wp-admin/admin-ajax.php  POST action=more-handler&next_period=<months back>&next_page=<n>&group_by=month (15 cards per page); also https://productradar.ru/category/<cat>/<subcat>/?groupby=month|year|base"
         auth: none
         cost: $0
         limits: "WordPress theme vchunt; cards article.products__item: card__title, card__description, awards, comments; the product post type is hidden from REST"
@@ -121,7 +121,7 @@ sources:
     caveats:
       - "Small volume (tens of launches a month) - weak as a source of niches, useful as an indicator of Russian competitors in a chosen niche"
       - "No revenue metrics; voting is done by platform residents"
-    plan: "Walk all categories with ?groupby=base (the whole base) once -> universe; then ?groupby=month every month"
+    plan: "Done (2026-11-17): s0_productradar reads the monthly feed through admin-ajax (action=more-handler, group_by=month; ~40 launches a month) over curl, because the TLS chain fails Python's check. Next: one walk of ?groupby=base for the full base"
 
   - id: betalist
     name: BetaList
@@ -132,23 +132,23 @@ sources:
     signals:
       - "products BEFORE launch (beta): name, tagline, topics - a window of 3-6 months before Product Hunt"
       - "density of beta submissions per topic - where new founders are heading"
-    stages: [s0]
-    feeds: ["data/out/universe.csv (source=betalist, rising)"]
+    stages: [s0, s5]
+    feeds: ["data/out/universe.csv (source=betalist, rising)", "data/out/deals.csv: betalist_12m (passport, not scored)"]
     freshness: daily
-    status: planned
-    adapter: null
+    status: in_pipeline
+    adapter: s0_betalist
     priority: P1
     access:
       - method: html_ssr
-        endpoint: "https://betalist.com/  and  https://betalist.com/topics/<slug>  (?page=N, cursor pagination)"
+        endpoint: "https://betalist.com/startups?page=N  (chronological, ~50 startups per page under day headings data-duplicate-id=day_<unix>); categories moved to /browse/<cat>/<sub>"
         auth: none
         cost: $0
         limits: "55 startups on the home page, 21 on a topic page; links /startups/<slug>, a card is name + tagline + topics; /feed and /startups -> 404"
-        probe: {date: 2026-09-20, http: 200, note: "227 KB home page, 111 KB topic; pagination exists (page=2, cursor)"}
+        probe: {date: 2026-11-17, http: 200, note: "/startups?page=N works (250-270 KB, 50 rows with name + tagline); /topics/* is gone, replaced by /browse/*"}
     caveats:
       - "Many 'ideas without a product'; ~50% never launch - that is a feature (it shows intentions), but mark them source_type=rising/pre in the universe"
       - "No numbers (votes / subscribers) in a card - only the fact and the date"
-    plan: "Walk topics x pages once a month; dedupe against Product Hunt by domain; in s5 add a betalist_12m column next to ph_launches_12m"
+    plan: "Done (2026-11-17): s0_betalist walks /startups?page=N newest first for 12 months (~110 pages, ~5,300 startups); s5_deals counts betalist_12m per niche. Next: dedupe against Product Hunt by domain"
 
   - id: launching_next
     name: Launching Next
@@ -416,11 +416,11 @@ sources:
       - "Ask HN 'is there a tool for / how do you handle X' -> pain without a product (voice)"
       - "dynamics of niche mentions per month (points, num_comments) -> interest of the technical audience"
       - "'Who is hiring?' / 'Who wants to be hired?' - monthly threads (see hn_who_is_hiring)"
-    stages: [s0, s8, s10]
-    feeds: ["data/out/universe.csv (source=hn:show, rising)", "data/out/offsearch.csv: hn_show_12m, hn_ask_12m (idea)", "a Reddit-voice-like corpus for s10 (idea)"]
+    stages: [s8]
+    feeds: ["data/out/hn_niche.csv, data/out/hn_matches.csv", "data/out/offsearch.csv: hn_posts_12m, hn_show_12m, hn_ask_12m, hn_trend (flags HN:up / HN:down / HN:asks)"]
     freshness: realtime
-    status: planned
-    adapter: null
+    status: in_pipeline
+    adapter: s8_hn_mentions
     priority: P1
     access:
       - method: api
@@ -436,9 +436,10 @@ sources:
         limits: "official API: comment tree by id; no search"
         probe: {date: 2026-09-20, http: 200, note: "topstories.json open"}
     caveats:
+      - "Algolia matches words loosely by default ('dog grooming' -> 341 stories, 3 relevant): use a quoted phrase, typoTolerance=false and restrictSearchableAttributes=title"
       - "The audience is developers; B2C niches (gardeners, churches, tattoo) are barely represented -> NA, not 0"
       - "Full text catches homonyms ('church' in a non-religious sense) - the same traps as in query generation; a stop-context list per niche is needed"
-    plan: "For the category queries of each shortlisted niche count Show HN / Ask HN over 12 and 36 months plus a trend; pain-bearing Ask HN threads can join the s10 corpus next to Reddit (same LLM classifier)"
+    plan: "Done (2026-11-17): s8_hn_mentions searches the Latin coverage phrases of each shortlisted niche as exact phrases in titles of Show HN + Ask HN posts (typoTolerance=false, restrictSearchableAttributes=title) and keeps titles that match the niche regex. Plain stories and post bodies were tried and dropped: about 9 in 10 hits were homonyms. Next: pain-bearing Ask HN threads into the s10 corpus"
 
   - id: reddit
     name: Reddit (Arctic Shift + subredditstats)
@@ -484,10 +485,10 @@ sources:
       - "share of successful projects and median pledged per subcategory -> 'where people pay in advance' (B2C hardware, board games, gadgets, accessories)"
       - "repeat campaigns of one team - a live segment"
     stages: [s0, s5]
-    feeds: ["data/out/universe.csv (source=kickstarter:<category>, proven-preorder)", "data/out/deals.csv: ks_projects_12m, ks_success_rate, ks_median_pledged (idea)"]
+    feeds: ["data/out/universe.csv (source=kickstarter:<category>, proven: successful with >= 200 backers)", "data/out/kickstarter_categories.csv, reports/S0-kickstarter.md", "data/out/deals.csv: kickstarter_12m, kickstarter_success_12m, kickstarter_pledged_12m (passport, not scored)"]
     freshness: monthly
-    status: planned
-    adapter: null
+    status: in_pipeline
+    adapter: s0_kickstarter
     priority: P2
     access:
       - method: bulk_dump
@@ -503,9 +504,10 @@ sources:
         limits: "Cloudflare from the probing IP"
         probe: {date: 2026-09-20, http: 403, note: "'Just a moment' - the live site is closed; the dumps are enough"}
     caveats:
+      - "The crawl under-samples failed projects: in the 2026-11-16 dump 79% of finished projects are successful, against ~40% in Kickstarter's own statistics"
       - "This is B2C hardware / games / design, not SaaS; empty for software niches - use only for niches with a physical product or to find an 'accessory -> companion app' pattern"
       - "A dump is a snapshot, not a history: a trend is built from a series of dumps (Web Robots keeps them since 2014, so a retrospective exists)"
-    plan: "Download 2 dumps a year apart, count per Technology / Design subcategory the number of projects, the share of successful ones, median pledged and YoY; the universe takes only successful projects with >= 200 backers"
+    plan: "Done (2026-11-17): s0_kickstarter takes one dump (2026-11-16: 107k records, 27k projects launched within 24 months) and compares launches by launch date, last 12 months vs the 12 before, instead of two dumps a year apart. The crawl under-samples failed projects (79% of finished ones are successful vs ~40% on Kickstarter): compare success rates between categories only"
 
   - id: indiegogo
     name: Indiegogo
@@ -568,10 +570,10 @@ sources:
       - "'Who wants to be hired?' (~580/month) - which technical people look for work in which domain (a weak but free proxy of talent supply)"
       - "'Freelancer? Seeking freelancer?' - demand for contractors by topic"
     stages: [s8]
-    feeds: ["data/out/offsearch.csv: hn_hiring_12m, hn_hiring_yoy (idea)"]
+    feeds: ["data/raw/hn_hiring.csv", "data/out/hn_hiring_niche.csv, data/out/hn_hiring_matches.csv", "data/out/offsearch.csv: hn_hiring_12m, hn_hiring_prev12m (flag HN:hiring)"]
     freshness: monthly
-    status: planned
-    adapter: null
+    status: in_pipeline
+    adapter: s8_hn_hiring
     priority: P1
     access:
       - method: api
@@ -583,7 +585,7 @@ sources:
     caveats:
       - "Postings are free text, a company describes itself in one line; matching to a niche needs the deal_keywords.yaml regexes + an LLM for disputed cases"
       - "Biased toward dev infrastructure and AI; vertical SMB SaaS appears but rarely - with 0 matches the value is NA"
-    plan: "Download 36 monthly threads, split into postings, match to niches -> a counter per year; top companies per niche go into the passport"
+    plan: "Done (2026-11-17): s8_hn_hiring reads 36 monthly threads through /items/<id> (one request each, ~11,400 postings), matches postings to niches by the s5_deals regexes and counts 12 months vs the 12 before. Next: an LLM pass for disputed matches (a nonprofit that hires is not a donor-CRM vendor)"
 
   - id: wellfound
     name: Wellfound (AngelList Talent)

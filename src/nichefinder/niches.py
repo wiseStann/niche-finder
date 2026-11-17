@@ -22,7 +22,9 @@ queries/*.yaml map niche id → language → list of queries:
 from __future__ import annotations
 
 import glob
+import re
 from collections import Counter, defaultdict
+from typing import Callable
 
 import yaml
 
@@ -157,3 +159,35 @@ def keyword_rows(ws: Workspace, lang: str) -> list[dict]:
             rows.append({"niche_id": n["id"], "lang": lang, "q": it["q"], "intent": it["i"],
                          "brand": it.get("b", ""), "anchor": int(bool(it.get("anchor")))})
     return rows
+
+
+def phrase_regex(terms) -> str:
+    """Coverage phrases as one regex source: any of the phrases (lower case), with a word boundary on the left."""
+    return r"(?<![a-zа-яё0-9])(" + "|".join(re.escape(str(t).lower()) for t in terms) + ")"
+
+
+def text_matchers(ws: Workspace, ids: list[str] | None = None, *, with_coverage: bool = False) -> dict[str, Callable[[str], bool]]:
+    """Predicates that tie free text (launch taglines, project blurbs, job postings, HN titles) to niches.
+
+    config/deal_keywords.yaml gives a case-insensitive regex per niche, or {re, not} where `not` drops a neighbouring
+    category. Niches in `ids` (default: the shortlist) without an entry fall back to their phrases in
+    config/coverage_keywords.yaml. with_coverage=True also accepts the coverage phrases of every niche that has them:
+    the deal regexes are English, so Russian-language text needs the phrases."""
+    kw = dict(ws.load_config("deal_keywords.yaml", {}) or {})
+    cov = ws.load_config("coverage_keywords.yaml", {}) or {}
+    fallback = set()
+    for nid in (shortlist_ids(ws) if ids is None else ids):
+        if nid not in kw and cov.get(nid):
+            kw[nid] = phrase_regex(cov[nid])
+            fallback.add(nid)
+    out: dict[str, Callable[[str], bool]] = {}
+    for nid, p in kw.items():
+        pos, neg = (p["re"], p.get("not")) if isinstance(p, dict) else (p, None)
+        if with_coverage and cov.get(nid) and nid not in fallback:
+            pos = f"(?:{pos})|{phrase_regex(cov[nid])}"
+        out[nid] = _matcher(re.compile(pos, re.I), re.compile(neg, re.I) if neg else None)
+    return out
+
+
+def _matcher(pos: re.Pattern, neg: re.Pattern | None) -> Callable[[str], bool]:
+    return lambda text: bool(pos.search(text)) and not (neg is not None and neg.search(text))

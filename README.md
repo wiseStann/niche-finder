@@ -40,7 +40,7 @@ The pipeline then answers, for every niche:
 | **Do people search for it, and is that growing?** | Google Ads volume, CPC and 4 years of history (DataForSEO), Google Trends with brand anchors, autocomplete |
 | **Is supply fragmented, or does one player own it?** | App Store ratings, Google Play installs, Capterra and Shopify App Store reviews: leader's share, number of real players |
 | **Do customers pay?** | In-app purchase prices, B2B list prices, top-grossing charts, businesses for sale with revenue (Flippa, TinySeed, YC, Product Hunt) |
-| **Is there demand outside search?** | YouTube interest, subreddit activity, how fast new apps gain ratings, whether new entrants survive |
+| **Is there demand outside search?** | YouTube interest, subreddit activity, Hacker News launches and questions, startup job postings, how fast new apps gain ratings, whether new entrants survive |
 | **What do buyers complain about?** | Reddit posts and comments classified by an LLM: who is looking for a tool, who is switching from what to what, price objections, with quotes |
 | **Can it reach my income goal?** | Paying customers needed for your target net income, and what share of the niche that is |
 
@@ -86,7 +86,7 @@ flowchart LR
     subgraph D["Demand"]
         S3["S3 · search volume, CPC,<br/>48-month history"]
         S4["S4 · Google Trends<br/>with brand anchors"]
-        S8["S8 · YouTube, subreddits,<br/>app velocity, Google Play"]
+        S8["S8 · YouTube, subreddits, Hacker News,<br/>app velocity, Google Play"]
     end
 
     subgraph S["Supply"]
@@ -110,20 +110,20 @@ Every stage is a separate command. Every external response is cached in the work
 
 | Group | What it does |
 |---|---|
-| `s0` | Universe of existing products: App Store top-grossing, Google Play, Product Hunt, YC, Flippa, TinySeed, WordPress.org, Shopify App Store |
+| `s0` | Universe of existing products: App Store top-grossing, Google Play, Product Hunt, YC, Flippa, TinySeed, WordPress.org, Shopify App Store, BetaList, Product Radar (Russian launches), Kickstarter |
 | `s1` | Niche catalog report; coverage: how much of the universe your niches explain |
 | `s2` | Query validation with autocomplete (Wordstat for Russia) |
 | `s3` | Search demand quick filter and an automatic shortlist |
 | `s4` | Trend depth: Google Trends with broad and brand anchors |
 | `s5` | Supply depth: App Store, Capterra, Shopify; pricing; businesses for sale |
-| `s8` | Demand outside search: YouTube, subreddits, app velocity, Google Play, hh.ru |
+| `s8` | Demand outside search: YouTube, subreddits, app velocity, Google Play, hh.ru, Hacker News (Show HN, Ask HN, "Who is hiring?") |
 | `s9` | Supply over time: snapshots and diffs, new-entrant survival |
 | `s10` | Buyer voice from Reddit |
 | `s6` | Score, gates, verdicts, path to goal, passports |
 | `s7` | HTML leaderboard |
 | `ru` | Optional Russian B2B module: software registry, public procurement, Bitrix24 Market, hh.ru, Wordstat |
 
-Inputs, outputs, keys and cost of each of the 55 stages: [docs/stages.md](docs/stages.md).
+Inputs, outputs, keys and cost of each of the 60 stages: [docs/stages.md](docs/stages.md).
 
 ## What you get
 
@@ -133,6 +133,7 @@ Inputs, outputs, keys and cost of each of the 55 stages: [docs/stages.md](docs/s
 | `reports/passports/<niche>.md` | A one-page brief per niche, in the sections shown below |
 | `reports/S3-quick-filter.md` | Search demand for all niches, gates, data-quality flags, the shortlist |
 | `reports/S10-reddit-voice.md` | Pain themes with quotes, switching map ("from X to Y"), brand share of voice |
+| `reports/S0-kickstarter.md` | Kickstarter subcategories by money pledged in the last 12 months, success rates, top projects |
 | `reports/S6-path-to-goal.md` | Price, paying customers needed, share of the niche, required position, grade |
 | `data/out/*.csv` | Every measurement as a table, for your own analysis |
 
@@ -176,7 +177,7 @@ Every key is optional. A stage whose key is missing is skipped with a message sa
 | `LLM_API_KEY` (+ `LLM_BASE_URL`, `LLM_MODEL`) | Reddit classification (S10); any OpenAI-compatible endpoint | With DeepSeek, about $0.5 for 8,000 posts and comments |
 | `YANDEX_API_KEY` | Wordstat (Russian module) | Free quota of 100 requests per hour |
 
-Everything else is free: iTunes Search and RSS, Google Play (through Node), Google Trends (through `trendspy`), autocomplete, WordPress.org, Shopify App Store, Capterra and GetApp pages, the Arctic Shift Reddit archive, YC, Product Hunt, Flippa, TinySeed.
+Everything else is free: iTunes Search and RSS, Google Play (through Node), Google Trends (through `trendspy`), autocomplete, WordPress.org, Shopify App Store, Capterra and GetApp pages, the Arctic Shift Reddit archive, YC, Product Hunt, Flippa, TinySeed, BetaList, Product Radar, Kickstarter (Web Robots dumps), Hacker News (Algolia API).
 
 Optional tools: Node.js 18+ for Google Play stages (`nf setup node`), and `curl` for sites that refuse Python clients.
 
@@ -217,7 +218,7 @@ Set `as_of: YYYY-MM-DD` in `nf.yaml` to reproduce an earlier run from cache.
 
 ## Responsible use and known limits
 
-Some stages read public web pages: Capterra, GetApp, Flippa, Product Hunt, the Shopify App Store and Google Play. Requests are cached, spaced out and identified. Check each site's terms before you run those stages, and keep your request volume modest. You are responsible for how you use the data. This repository does not redistribute scraped data.
+Some stages read public web pages: Capterra, GetApp, Flippa, Product Hunt, the Shopify App Store, Google Play, BetaList and Product Radar. Requests are cached, spaced out and identified. Check each site's terms before you run those stages, and keep your request volume modest. You are responsible for how you use the data. This repository does not redistribute scraped data.
 
 Sites change. Here is what is reachable today:
 

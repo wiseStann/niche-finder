@@ -25,7 +25,10 @@ Run-order logic: S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S8 -> S9 -> S10 -> S6 -> S7
 | `s0_gplay_top` | Google Play top charts, every non-game category x {US grossing, second-market grossing, second-market free} | `raw/gplay_top.csv` | node (`google-play-scraper`) | free; ~1 request/s, minutes |
 | `s0_wordpress` | WordPress.org plugin API (`plugins/info/1.2`), 250 plugins per page, ordered by popularity | `raw/wordpress_plugins.csv` (active installs, ratings, tags) | none | free |
 | `s0_shopify` | Shopify App Store: `/browse` -> subcategories -> app cards | `raw/shopify_apps.csv` (name, rating, reviews, price text) | none (curl) | free; page walk takes tens of minutes |
-| `s0_merge` | all `raw/*.csv` above (+ optional directory category index and ranking-site rows if present) | `out/universe.csv` (entity, source, source_type, geo, side, category, one_liner, signal, url, niche_id) + per-source summary | none | free |
+| `s0_betalist` | BetaList chronological list `betalist.com/startups?page=N`, newest first, until `--months` (12) back | `raw/betalist.csv` (name, slug, tagline, date, url); pre-launch, `source_type=rising` | none | free; ~110 pages a year, 1.5 s apart (~4 min the first time); cache per month of the run |
+| `s0_productradar` (`ru`) | Product Radar feed via WordPress `admin-ajax` (`action=more-handler`, `group_by=month`), `--months` (12) | `raw/productradar.csv` (name, description, month, votes, comments, categories, founder asks: partners / investors / mentor / roast...) | curl (the site's TLS chain fails Python's check) | free; ~3 requests a month of history |
+| `s0_kickstarter` | Web Robots monthly Kickstarter dump (line-delimited JSON, gzip), the latest on or before the run date or `--dump` | `raw/kickstarter_projects.csv` (projects launched within 24 months), `out/kickstarter_categories.csv` (per subcategory: launches 12m vs prior 12m, success rate, money pledged), `reports/S0-kickstarter.md` | none | free; one ~120 MB download per dump, kept in `cache/kickstarter/` |
+| `s0_merge` | all `raw/*.csv` above (Kickstarter: successful projects with >= 200 backers) (+ optional directory category index and ranking-site rows if present) | `out/universe.csv` (entity, source, source_type, geo, side, category, one_liner, signal, url, niche_id) + per-source summary | none | free |
 
 ## S1 - Niches
 
@@ -66,7 +69,7 @@ Run-order logic: S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S8 -> S9 -> S10 -> S6 -> S7
 | `s5_shopify_metrics` | `raw/shopify_apps.csv`, `config/shopify_map.yaml`, `config/shopify_generic.yaml` | `out/shopify_metrics.csv` (share = app reviews / subcategory reviews, players >= 100 reviews, free-plan share) | none | free |
 | `s5_pricing_b2b` | top products per B2B niche from the Capterra stage, `config/capterra_generic.yaml` | `out/pricing_b2b.csv` (start price, billing period, model, free trial / free version from GetApp cards) | none | free |
 | `s5_pricing_b2c` | relevant apps per niche | `out/pricing_b2c.csv` (per app), `out/pricing_b2c_niche.csv` (in-app purchases from apps.apple.com pages; min monthly / annual / lifetime) | none | free |
-| `s5_deals` | S0 corpora (`raw/`), `config/deal_keywords.yaml` (regexes with `not` exclusions) | `out/deals.csv` (per-niche counts), `out/deals_matches.csv` (what matched, for verification) | none | free |
+| `s5_deals` | S0 corpora (`raw/`, incl. BetaList, Product Radar and Kickstarter of the last 12 months, which are shown in passports but not scored), `config/deal_keywords.yaml` (regexes with `not` exclusions; Product Radar also by the Russian coverage phrases) | `out/deals.csv` (per-niche counts), `out/deals_matches.csv` (what matched, for verification) | none | free |
 | `s5_merge` | `metrics_quick.csv`, `trends_deep.csv` (+ brand merge rule), app-store / Capterra / Shopify metrics, pricing, deals, `config/shortlist.yaml` | `out/supply_deep.csv`: one row per shortlisted niche, `supply_src`, top-1 / top-3 shares, players, gate `gate_s5` (`PASS`, `FAIL:top1`, `FAIL:players`, `NA`, `NA:proxy`), final trend verdicts | none | free |
 
 ## S8 - Demand outside search
@@ -81,7 +84,9 @@ Run-order logic: S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S8 -> S9 -> S10 -> S6 -> S7
 | `s8_gplay_details` | `out/gplay_match.csv` | `out/gplay_apps.csv` (installs, ratings, release date, price/IAP); cache `cache/gplay_app/` | node | free; ~1 card/s; supports sharding `k/N` |
 | `s8_gplay_metrics` | `out/gplay_apps.csv`, `config/gplay_exclude.yaml` | `out/gplay_metrics.csv` (installs sum, players 100k / 1M, top-1 share, new in 24 months, paid share) | none | free |
 | `s8_hh` (`ru`) | Russian brand queries of B2B niches | `out/hh_vacancies.csv`, `out/hh_niche.csv` (vacancies mentioning the brand) | none; needs Russian egress (`proxy="ru"`) | free |
-| `s8_offsearch` | `youtube_trends.csv`, `reddit_niche.csv`, `appstore_velocity.csv`, `gplay_metrics.csv`, `hh_niche.csv` | `out/offsearch.csv` (per niche, with `offsearch_flags` confirming / contradicting the search signals; used by the second-platform rule) | none | free |
+| `s8_hn_mentions` | Latin coverage phrases of the shortlist; Algolia HN Search API, exact phrase in titles of Show HN + Ask HN posts, 36 months | `out/hn_niche.csv` (Show HN / Ask HN in 12m vs prior 12m, `hn_trend`, top posts), `out/hn_matches.csv` | none | free; one request per search term, 0.3 s apart |
+| `s8_hn_hiring` | monthly "Ask HN: Who is hiring?" threads, `--months` (36) | `raw/hn_hiring.csv` (all postings: month, company, headline, text), `out/hn_hiring_niche.csv` (postings 12m vs prior 12m per niche, recent companies), `out/hn_hiring_matches.csv` | none | free; one request per month (~0.5 MB) |
+| `s8_offsearch` | `youtube_trends.csv`, `reddit_niche.csv`, `appstore_velocity.csv`, `gplay_metrics.csv`, `hh_niche.csv`, `hn_niche.csv`, `hn_hiring_niche.csv` | `out/offsearch.csv` (per niche, with `offsearch_flags` confirming / contradicting the search signals; used by the second-platform rule) | none | free |
 
 ## S9 - Supply over time
 

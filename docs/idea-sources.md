@@ -90,7 +90,7 @@ The generated registry follows.
 
 Generated from [`idea-sources.yaml`](idea-sources.yaml) by `scripts/render_idea_sources.py`. Edit only the YAML.
 
-**49 sources, 72 access methods:** ✅ in_pipeline - 18, 🛠 planned - 12, ✋ manual - 5, ⛔ blocked - 11, 💰 paid - 3.  
+**49 sources, 72 access methods:** ✅ in_pipeline - 23, 🛠 planned - 7, ✋ manual - 5, ⛔ blocked - 11, 💰 paid - 3.  
 Priorities: P1 - 6, P2 - 19, P3 - 15, none - 9.
 
 Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implemented) · ✋ by hand / browser only · ⛔ closed from the probing network · 💰 paid only. **Probe:** the HTTP code of a keyless curl probe (date). **Role:** discovery = entities for the universe, evaluation = a metric for a niche, voice = buyer voice, trend = dynamics over time.
@@ -99,13 +99,8 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 
 | P | Source | Group | Stage | Stage groups | What it would give |
 |---|---|---|---|---|---|
-| P1 | Hacker News (Algolia API) | community | not implemented | s0, s8, s10 | For the category queries of each shortlisted niche count Show HN / Ask HN over 12 and 36 months plus a trend; pain-bearing Ask HN threads can join the s10 corpus next to Reddit (same LLM classifier) |
-| P1 | HN 'Who is hiring?' (monthly threads) | hiring | not implemented | s8 | Download 36 monthly threads, split into postings, match to niches -> a counter per year; top companies per niche go into the passport |
-| P1 | BetaList | launch | not implemented | s0 | Walk topics x pages once a month; dedupe against Product Hunt by domain; in s5 add a betalist_12m column next to ph_launches_12m |
 | P1 | Empire Flippers (API) | m_and_a | not implemented | s0, s5, s6 | 29 requests -> a CSV of listings; in the deals stage count ef_listings, ef_sold_12m, ef_median_profit, ef_multiple per niche; in the ceiling stage the median SaaS multiple is an anchor for the exit price |
-| P2 | Kickstarter (Web Robots dumps) | crowdfunding | not implemented | s0, s5 | Download 2 dumps a year apart, count per Technology / Design subcategory the number of projects, the share of successful ones, median pledged and YoY; the universe takes only successful projects with >= 200 backers |
 | P2 | Wellfound (AngelList Talent) | hiring | not implemented | s8, s0 | Walk /role/l/<role>/<location> for 10 roles x 5 locations monthly -> JSON from the HTML -> a company table with high_concept; match to niches. Low priority: HN hiring gives the same more cheaply |
-| P2 | Product Radar (RU) | launch | not implemented | s0 | Walk all categories with ?groupby=base (the whole base) once -> universe; then ?groupby=month every month |
 | P2 | Launching Next | launch | not implemented | s0 | Collect the RSS daily into a cache (accumulate), merge into the universe once a month; use as a third 'launch density' counter (PH + BetaList + LN) |
 | P2 | Quiet Light Brokerage | m_and_a | not implemented | s5, s6 | The same fetcher as Empire Flippers: page -> CSV; multiples by type feed the ceiling stage |
 | P2 | Google Patents (XHR) | patents | not implemented | s5, s6 | For shortlisted niches: total over 24 months and over the 24 months before (YoY), top-3 assignees; an IP:bigtech flag if the top 3 include Google / Apple / Microsoft / Amazon / Meta / Salesforce / Intuit. On demand only - not part of a mandatory run |
@@ -117,8 +112,8 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | Source | Group | Geo | Role | Freshness | Best access | Probe | Status | P | Stage groups |
 |---|---|---|---|---|---|---|---|---|---|
 | **Product Hunt** (`product_hunt`) | launch | global | discovery, evaluation | daily | html_ssr · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
-| **Product Radar (RU)** (`product_radar`) | launch | ru | discovery | daily | html_ssr · none · $0 | 200 (2026-09-20) | 🛠 planned | P2 | s0 |
-| **BetaList** (`betalist`) | launch | global | discovery | daily | html_ssr · none · $0 | 200 (2026-09-20) | 🛠 planned | P1 | s0 |
+| **Product Radar (RU)** (`product_radar`) | launch | ru | discovery | daily | html_ssr · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
+| **BetaList** (`betalist`) | launch | global | discovery | daily | html_ssr · none · $0 | 200 (2026-11-17) | ✅ in_pipeline | P1 | s0, s5 |
 | **Launching Next** (`launching_next`) | launch | global | discovery | daily | rss · none · $0 | 200 (2026-09-20) | 🛠 planned | P2 | s0 |
 | **Crunchbase** (`crunchbase`) | funding | global | evaluation | daily | rss · none · $0 | 200 (2026-09-20) | 💰 paid | P3 | s5, s6 |
 | **Dealroom** (`dealroom`) | funding | global | evaluation | daily | manual · email · $0 | 200 (2026-09-20) | 💰 paid | none | s5 |
@@ -127,12 +122,12 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **Y Combinator (yc-oss JSON)** (`yc_oss`) | funding | global | discovery, evaluation | quarterly | json · none · $0 | 200 (2026-09-15) | ✅ in_pipeline | P2 | s0, s5 |
 | **TinySeed (portfolio)** (`tinyseed`) | funding | global | discovery, evaluation | quarterly | manual · none · $0 | 200 (2026-09-15) | ✅ in_pipeline | P3 | s0, s5 |
 | **Indie Hackers** (`indie_hackers`) | community | global | discovery, voice | daily | html_spa · none · $0 | 200 (2026-09-20) | ✋ manual | P3 | s0, s5 |
-| **Hacker News (Algolia API)** (`hacker_news`) | community | global | discovery, voice, trend | realtime | api · none · $0 | 200 (2026-09-20) | 🛠 planned | P1 | s0, s8, s10 |
+| **Hacker News (Algolia API)** (`hacker_news`) | community | global | discovery, voice, trend | realtime | api · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P1 | s8 |
 | **Reddit (Arctic Shift + subredditstats)** (`reddit`) | community | global | voice, trend | daily | api · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s8, s10 |
-| **Kickstarter (Web Robots dumps)** (`kickstarter`) | crowdfunding | global | discovery, evaluation | monthly | bulk_dump · none · $0 | 200 (2026-09-20) | 🛠 planned | P2 | s0, s5 |
+| **Kickstarter (Web Robots dumps)** (`kickstarter`) | crowdfunding | global | discovery, evaluation | monthly | bulk_dump · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
 | **Indiegogo** (`indiegogo`) | crowdfunding | global | discovery | daily | html · none · $0 | 403 (2026-09-20) | ⛔ blocked | none | s0 |
 | **Planeta.ru / Boomstarter (RU)** (`ru_crowdfunding`) | crowdfunding | ru | discovery | daily | html · none · $0 | 307 (2026-09-20) | ✋ manual | none | s0 |
-| **HN 'Who is hiring?' (monthly threads)** (`hn_who_is_hiring`) | hiring | global | evaluation, trend | monthly | api · none · $0 | 200 (2026-09-20) | 🛠 planned | P1 | s8 |
+| **HN 'Who is hiring?' (monthly threads)** (`hn_who_is_hiring`) | hiring | global | evaluation, trend | monthly | api · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P1 | s8 |
 | **Wellfound (AngelList Talent)** (`wellfound`) | hiring | global | evaluation, discovery | daily | html_ssr · none · $0 | 200 (2026-09-20) | 🛠 planned | P2 | s8, s0 |
 | **Remote OK (API)** (`remoteok`) | hiring | global | evaluation | daily | api · none · $0 | 200 (2026-09-20) | 🛠 planned | P3 | s8 |
 | **YC Work at a Startup** (`yc_jobs`) | hiring | global | evaluation | daily | html · none · $0 | 406 (2026-09-20) | ⛔ blocked | none | s8 |
@@ -195,47 +190,47 @@ Traps:
 
 Plan: Add the Atom feed as a daily pulse (a weekly delta of what launched per topic) and GraphQL for an exact per-topic slice once a token is available
 
-#### 🛠 Product Radar (RU) (`product_radar`) - P2
+#### ✅ Product Radar (RU) (`product_radar`) - P2
 
-https://productradar.ru · geo ru · role discovery · freshness daily · stage groups s0 · stage not implemented
+https://productradar.ru · geo ru · role discovery · freshness daily · stage groups s0, s5 · stage `s0_productradar`
 
 Signals:
 - Russian-language launches: name, description, category, awards (product of the week / month), number of comments
 - categories 'looking for a partner / investor / mentor' - who has not found a model yet
 - slices ?groupby=week|month|year|base - what won in a category over a period
 
-Feeds: `data/out/universe.csv (source=productradar, rising, geo=ru)`
+Feeds: `data/out/universe.csv (source=productradar, rising, geo=ru)`; `data/out/deals.csv: productradar_12m (passport, not scored)`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| html_ssr | https://productradar.ru/category/<cat>/<subcat>/?groupby=month\|year\|base | none | $0 | WordPress theme vchunt; cards article.products__item: card__title, card__description, awards, comments; the product post type is hidden from REST | 200 2026-09-20 - 78 KB, 8 products on a category page; REST /wp-json/wp/v2/product -> 404 (rest_no_route), only posts/blog |
+| html_ssr | https://productradar.ru/wp-admin/admin-ajax.php  POST action=more-handler&next_period=<months back>&next_page=<n>&group_by=month (15 cards per page); also https://productradar.ru/category/<cat>/<subcat>/?groupby=month\|year\|base | none | $0 | WordPress theme vchunt; cards article.products__item: card__title, card__description, awards, comments; the product post type is hidden from REST | 200 2026-09-20 - 78 KB, 8 products on a category page; REST /wp-json/wp/v2/product -> 404 (rest_no_route), only posts/blog |
 | rss | https://productradar.ru/feed | none | $0 | blog only (10 entries), not launches | 200 2026-09-20 - 187 KB RSS, blog / streams - useless for the universe |
 
 Traps:
 - Small volume (tens of launches a month) - weak as a source of niches, useful as an indicator of Russian competitors in a chosen niche
 - No revenue metrics; voting is done by platform residents
 
-Plan: Walk all categories with ?groupby=base (the whole base) once -> universe; then ?groupby=month every month
+Plan: Done (2026-11-17): s0_productradar reads the monthly feed through admin-ajax (action=more-handler, group_by=month; ~40 launches a month) over curl, because the TLS chain fails Python's check. Next: one walk of ?groupby=base for the full base
 
-#### 🛠 BetaList (`betalist`) - P1
+#### ✅ BetaList (`betalist`) - P1
 
-https://betalist.com · geo global · role discovery · freshness daily · stage groups s0 · stage not implemented
+https://betalist.com · geo global · role discovery · freshness daily · stage groups s0, s5 · stage `s0_betalist`
 
 Signals:
 - products BEFORE launch (beta): name, tagline, topics - a window of 3-6 months before Product Hunt
 - density of beta submissions per topic - where new founders are heading
 
-Feeds: `data/out/universe.csv (source=betalist, rising)`
+Feeds: `data/out/universe.csv (source=betalist, rising)`; `data/out/deals.csv: betalist_12m (passport, not scored)`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| html_ssr | https://betalist.com/  and  https://betalist.com/topics/<slug>  (?page=N, cursor pagination) | none | $0 | 55 startups on the home page, 21 on a topic page; links /startups/<slug>, a card is name + tagline + topics; /feed and /startups -> 404 | 200 2026-09-20 - 227 KB home page, 111 KB topic; pagination exists (page=2, cursor) |
+| html_ssr | https://betalist.com/startups?page=N  (chronological, ~50 startups per page under day headings data-duplicate-id=day_<unix>); categories moved to /browse/<cat>/<sub> | none | $0 | 55 startups on the home page, 21 on a topic page; links /startups/<slug>, a card is name + tagline + topics; /feed and /startups -> 404 | 200 2026-11-17 - /startups?page=N works (250-270 KB, 50 rows with name + tagline); /topics/* is gone, replaced by /browse/* |
 
 Traps:
 - Many 'ideas without a product'; ~50% never launch - that is a feature (it shows intentions), but mark them source_type=rising/pre in the universe
 - No numbers (votes / subscribers) in a card - only the fact and the date
 
-Plan: Walk topics x pages once a month; dedupe against Product Hunt by domain; in s5 add a betalist_12m column next to ph_launches_12m
+Plan: Done (2026-11-17): s0_betalist walks /startups?page=N newest first for 12 months (~110 pages, ~5,300 startups); s5_deals counts betalist_12m per niche. Next: dedupe against Product Hunt by domain
 
 #### 🛠 Launching Next (`launching_next`) - P2
 
@@ -394,9 +389,9 @@ Traps:
 
 Plan: One manual / headless slice of Stripe-verified products -> universe (proven); repeat quarterly
 
-#### 🛠 Hacker News (Algolia API) (`hacker_news`) - P1
+#### ✅ Hacker News (Algolia API) (`hacker_news`) - P1
 
-https://news.ycombinator.com · geo global · role discovery, voice, trend · freshness realtime · stage groups s0, s8, s10 · stage not implemented
+https://news.ycombinator.com · geo global · role discovery, voice, trend · freshness realtime · stage groups s8 · stage `s8_hn_mentions`
 
 Signals:
 - Show HN by niche keywords over a period -> new products from technical people (rising, earlier than Product Hunt)
@@ -404,7 +399,7 @@ Signals:
 - dynamics of niche mentions per month (points, num_comments) -> interest of the technical audience
 - 'Who is hiring?' / 'Who wants to be hired?' - monthly threads (see hn_who_is_hiring)
 
-Feeds: `data/out/universe.csv (source=hn:show, rising)`; `data/out/offsearch.csv: hn_show_12m, hn_ask_12m (idea)`; `a Reddit-voice-like corpus for s10 (idea)`
+Feeds: `data/out/hn_niche.csv, data/out/hn_matches.csv`; `data/out/offsearch.csv: hn_posts_12m, hn_show_12m, hn_ask_12m, hn_trend (flags HN:up / HN:down / HN:asks)`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
@@ -412,10 +407,11 @@ Feeds: `data/out/universe.csv (source=hn:show, rising)`; `data/out/offsearch.csv
 | api | https://hacker-news.firebaseio.com/v0/item/<id>.json | none | $0 | official API: comment tree by id; no search | 200 2026-09-20 - topstories.json open |
 
 Traps:
+- Algolia matches words loosely by default ('dog grooming' -> 341 stories, 3 relevant): use a quoted phrase, typoTolerance=false and restrictSearchableAttributes=title
 - The audience is developers; B2C niches (gardeners, churches, tattoo) are barely represented -> NA, not 0
 - Full text catches homonyms ('church' in a non-religious sense) - the same traps as in query generation; a stop-context list per niche is needed
 
-Plan: For the category queries of each shortlisted niche count Show HN / Ask HN over 12 and 36 months plus a trend; pain-bearing Ask HN threads can join the s10 corpus next to Reddit (same LLM classifier)
+Plan: Done (2026-11-17): s8_hn_mentions searches the Latin coverage phrases of each shortlisted niche as exact phrases in titles of Show HN + Ask HN posts (typoTolerance=false, restrictSearchableAttributes=title) and keeps titles that match the niche regex. Plain stories and post bodies were tried and dropped: about 9 in 10 hits were homonyms. Next: pain-bearing Ask HN threads into the s10 corpus
 
 #### ✅ Reddit (Arctic Shift + subredditstats) (`reddit`) - P2
 
@@ -438,16 +434,16 @@ Plan: Add 'buyer' subreddits (r/smallbusiness, r/Entrepreneur, r/SaaS) to the ma
 
 ### crowdfunding - Crowdfunding - a pre-order as demand before the product (B2C hardware / consumer)
 
-#### 🛠 Kickstarter (Web Robots dumps) (`kickstarter`) - P2
+#### ✅ Kickstarter (Web Robots dumps) (`kickstarter`) - P2
 
-https://www.kickstarter.com · geo global · role discovery, evaluation · freshness monthly · stage groups s0, s5 · stage not implemented
+https://www.kickstarter.com · geo global · role discovery, evaluation · freshness monthly · stage groups s0, s5 · stage `s0_kickstarter`
 
 Signals:
 - projects in Technology / Design / Games / Publishing: goal, pledged, number of backers, date, state - demand that has already been paid for
 - share of successful projects and median pledged per subcategory -> 'where people pay in advance' (B2C hardware, board games, gadgets, accessories)
 - repeat campaigns of one team - a live segment
 
-Feeds: `data/out/universe.csv (source=kickstarter:<category>, proven-preorder)`; `data/out/deals.csv: ks_projects_12m, ks_success_rate, ks_median_pledged (idea)`
+Feeds: `data/out/universe.csv (source=kickstarter:<category>, proven: successful with >= 200 backers)`; `data/out/kickstarter_categories.csv, reports/S0-kickstarter.md`; `data/out/deals.csv: kickstarter_12m, kickstarter_success_12m, kickstarter_pledged_12m (passport, not scored)`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
@@ -455,10 +451,11 @@ Feeds: `data/out/universe.csv (source=kickstarter:<category>, proven-preorder)`;
 | json | https://www.kickstarter.com/discover/advanced?category_id=16&sort=newest&format=json | none | $0 | Cloudflare from the probing IP | 403 2026-09-20 - 'Just a moment' - the live site is closed; the dumps are enough |
 
 Traps:
+- The crawl under-samples failed projects: in the 2026-11-16 dump 79% of finished projects are successful, against ~40% in Kickstarter's own statistics
 - This is B2C hardware / games / design, not SaaS; empty for software niches - use only for niches with a physical product or to find an 'accessory -> companion app' pattern
 - A dump is a snapshot, not a history: a trend is built from a series of dumps (Web Robots keeps them since 2014, so a retrospective exists)
 
-Plan: Download 2 dumps a year apart, count per Technology / Design subcategory the number of projects, the share of successful ones, median pledged and YoY; the universe takes only successful projects with >= 200 backers
+Plan: Done (2026-11-17): s0_kickstarter takes one dump (2026-11-16: 107k records, 27k projects launched within 24 months) and compares launches by launch date, last 12 months vs the 12 before, instead of two dumps a year apart. The crawl under-samples failed projects (79% of finished ones are successful vs ~40% on Kickstarter): compare success rates between categories only
 
 #### ⛔ Indiegogo (`indiegogo`) - none
 
@@ -494,16 +491,16 @@ Plan: Not worth implementing
 
 ### hiring - Hiring - who hires for which tasks (a proxy for budget and growth)
 
-#### 🛠 HN 'Who is hiring?' (monthly threads) (`hn_who_is_hiring`) - P1
+#### ✅ HN 'Who is hiring?' (monthly threads) (`hn_who_is_hiring`) - P1
 
-https://news.ycombinator.com/submitted?id=whoishiring · geo global · role evaluation, trend · freshness monthly · stage groups s8 · stage not implemented
+https://news.ycombinator.com/submitted?id=whoishiring · geo global · role evaluation, trend · freshness monthly · stage groups s8 · stage `s8_hn_hiring`
 
 Signals:
 - ~400 postings a month from funded startups: company, what it builds (1 line), roles, stack, remote / salary -> 'who hires for niche X' and how that changes over 36+ months
 - 'Who wants to be hired?' (~580/month) - which technical people look for work in which domain (a weak but free proxy of talent supply)
 - 'Freelancer? Seeking freelancer?' - demand for contractors by topic
 
-Feeds: `data/out/offsearch.csv: hn_hiring_12m, hn_hiring_yoy (idea)`
+Feeds: `data/raw/hn_hiring.csv`; `data/out/hn_hiring_niche.csv, data/out/hn_hiring_matches.csv`; `data/out/offsearch.csv: hn_hiring_12m, hn_hiring_prev12m (flag HN:hiring)`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
@@ -513,7 +510,7 @@ Traps:
 - Postings are free text, a company describes itself in one line; matching to a niche needs the deal_keywords.yaml regexes + an LLM for disputed cases
 - Biased toward dev infrastructure and AI; vertical SMB SaaS appears but rarely - with 0 matches the value is NA
 
-Plan: Download 36 monthly threads, split into postings, match to niches -> a counter per year; top companies per niche go into the passport
+Plan: Done (2026-11-17): s8_hn_hiring reads 36 monthly threads through /items/<id> (one request each, ~11,400 postings), matches postings to niches by the s5_deals regexes and counts 12 months vs the 12 before. Next: an LLM pass for disputed matches (a nonprofit that hires is not a donor-CRM vendor)
 
 #### 🛠 Wellfound (AngelList Talent) (`wellfound`) - P2
 
