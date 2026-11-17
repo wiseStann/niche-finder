@@ -31,14 +31,14 @@ def _request(method: str, path: str, body=None) -> dict:
     req = urllib.request.Request(f"{API}{path}", data=data, method=method,
                                  headers={"Authorization": f"Basic {auth}", "Content-Type": "application/json", "User-Agent": UA})
     try:
-        with urllib.request.urlopen(req, timeout=180) as r:
+        with http.urlopen(req, timeout=180) as r:
             return json.loads(r.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
-        if e.code == 403:  # firewall: retry through curl
-            cmd = ["curl", "-s", "-m", "180", "-u", f"{login}:{pw}", "-H", "Content-Type: application/json", "-X", method, f"{API}{path}"]
+        if e.code == 403:  # firewall: retry through curl; the credentials go in through stdin (-K -), never the command line
+            cmd = ["curl", "-s", "-m", "180", "-K", "-", "-H", "Content-Type: application/json", "-X", method, f"{API}{path}"]
             if data is not None:
                 cmd += ["-d", data.decode("utf-8")]
-            out = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8").stdout
+            out = subprocess.run(cmd, input=f'header = "Authorization: Basic {auth}"\n', capture_output=True, text=True, encoding="utf-8").stdout
             return json.loads(out)
         raise
 

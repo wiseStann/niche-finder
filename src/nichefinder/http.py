@@ -11,9 +11,11 @@ Proxies: HTTPS_PROXY / HTTP_PROXY apply to everything (urllib and curl read them
 """
 from __future__ import annotations
 
+import functools
 import hashlib
 import json
 import os
+import ssl
 import subprocess
 import time
 import urllib.error
@@ -61,12 +63,36 @@ def _encode(data: Any) -> bytes | None:
     return json.dumps(data, ensure_ascii=False).encode("utf-8")
 
 
+@functools.lru_cache(maxsize=1)
+def _certifi_context() -> ssl.SSLContext | None:
+    """A context that trusts only the certifi bundle, when that package is installed (it comes with the [trends] extra)."""
+    try:
+        import certifi
+    except ImportError:
+        return None
+    return ssl.create_default_context(cafile=certifi.where())
+
+
+def urlopen(req: urllib.request.Request, *, timeout: float, proxy: str | None = None):
+    """urllib open with the system trust store; on a certificate verification error, once more with the certifi bundle.
+
+    Windows fills its root store on demand through its own TLS stack, which OpenSSL never triggers, so the store Python
+    sees can miss a root or keep an expired cross-signed one (seen with api.dataforseo.com and productradar.ru). Only the
+    certifi bundle alone fixes both: mixed with the Windows store, OpenSSL still picks the stale chain."""
+    handlers: list = [urllib.request.ProxyHandler({"http": proxy, "https": proxy})] if proxy else []
+    try:
+        return urllib.request.build_opener(*handlers).open(req, timeout=timeout)
+    except urllib.error.URLError as e:
+        ctx = _certifi_context()
+        if ctx is None or not isinstance(e.reason, ssl.SSLCertVerificationError):
+            raise
+        return urllib.request.build_opener(*handlers, urllib.request.HTTPSHandler(context=ctx)).open(req, timeout=timeout)
+
+
 def _via_urllib(url, method, headers, body, timeout, proxy) -> Response:
     req = urllib.request.Request(url, data=body, method=method, headers=headers)
-    opener = (urllib.request.build_opener(urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
-              if proxy else urllib.request.build_opener())
     try:
-        with opener.open(req, timeout=timeout) as r:
+        with urlopen(req, timeout=timeout, proxy=proxy) as r:
             return Response(r.status, r.read().decode("utf-8", errors="replace"))
     except urllib.error.HTTPError as e:
         return Response(e.code, e.read().decode("utf-8", errors="replace"))
@@ -172,13 +198,11 @@ def download(url: str, path: Path, *, timeout: float = 120, proxy: str | None = 
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".part")
     p = _proxy_url(proxy)
-    opener = (urllib.request.build_opener(urllib.request.ProxyHandler({"http": p, "https": p}))
-              if p else urllib.request.build_opener())
     last: Exception | None = None
     for attempt in range(max(1, tries)):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": user_agent})
-            with opener.open(req, timeout=timeout) as r, open(tmp, "wb") as f:
+            with urlopen(req, timeout=timeout, proxy=p) as r, open(tmp, "wb") as f:
                 total, done, step = int(r.headers.get("Content-Length") or 0), 0, 0.1
                 while True:
                     block = r.read(chunk)

@@ -121,3 +121,37 @@ def test_bundled_example_validates(tmp_path):
         pytest.skip("example niche catalog not bundled yet")
     errors, _, _ = niches.validate(Workspace(target))
     assert errors == []
+
+
+def test_urlopen_retries_with_certifi_only_on_certificate_errors(monkeypatch):
+    import ssl
+    import urllib.error
+    import urllib.request
+    calls = []
+
+    class Opener:
+        def __init__(self, handlers):
+            self.handlers = handlers
+
+        def open(self, req, timeout):
+            calls.append([type(h).__name__ for h in self.handlers])
+            if len(calls) == 1:
+                raise urllib.error.URLError(ssl.SSLCertVerificationError("unable to get issuer certificate"))
+            return "response"
+
+    monkeypatch.setattr(urllib.request, "build_opener", lambda *h: Opener(h))
+    monkeypatch.setattr(http, "_certifi_context", lambda: ssl.create_default_context())
+    assert http.urlopen(urllib.request.Request("https://example.com"), timeout=5) == "response"
+    assert calls == [[], ["HTTPSHandler"]]
+
+    calls.clear()
+
+    class Refusing(Opener):
+        def open(self, req, timeout):
+            calls.append(1)
+            raise urllib.error.URLError(ConnectionRefusedError())
+
+    monkeypatch.setattr(urllib.request, "build_opener", lambda *h: Refusing(h))
+    with pytest.raises(urllib.error.URLError):
+        http.urlopen(urllib.request.Request("https://example.com"), timeout=5)
+    assert calls == [1]                                   # not a certificate problem: no second attempt
