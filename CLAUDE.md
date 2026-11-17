@@ -1,0 +1,97 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this is
+
+`niche-finder` (package `nichefinder`, CLI `nf`) is a market-research pipeline. Each niche is described as **who × task × product**; the pipeline measures search demand, supply fragmentation, pricing, off-search demand and buyer voice (Reddit + LLM), then scores each niche and gives it a red/yellow/green verdict. The owner uses it to pick a niche for their own product, which can be anything from a paid PDF guide to B2B SaaS, so the bundled software-heavy catalog is a starting point, not a limit. Screening is not validation (see `docs/methodology.md` §10–11).
+
+## Commands
+
+Requires Python ≥3.10. The only runtime dependency is pyyaml; `trendspy` is the optional `[trends]` extra and pytest is `[dev]`. Node 18+ is needed only for the Google Play stages.
+
+```bash
+python -m venv .venv && source .venv/Scripts/activate   # Linux/macOS: .venv/bin/activate
+pip install -e ".[trends,dev]"
+
+python -m pytest -q                                       # all tests, offline, ~2 s
+python -m pytest tests/test_core.py::test_http_cache_hit_needs_no_network
+python -m pytest -k s6_score                              # stage tests are parametrized by stage name
+
+nf init <folder>                  # new workspace from src/nichefinder/examples/default (165 niches)
+nf -w <folder> doctor             # keys, tools, niche count
+nf validate                       # schema check of niches.yaml + queries/*.yaml
+nf list                           # stages in run order, with readiness
+nf run all                        # stages with a missing key/tool are skipped, not failed
+nf run s3                         # one group
+nf run s3_report -- --help        # one stage; args after `--` go to that stage only
+nf setup node                     # npm-installs google-play-scraper into the workspace
+python scripts/render_idea_sources.py   # regenerate docs/idea-sources.md from docs/idea-sources.yaml (never edit the .md)
+```
+
+CI (`.github/workflows/ci.yml`) runs pytest on Linux/Windows/macOS × Python 3.10/3.12, then runs `nf init` + `nf validate` on the example workspace. The repo has no linter config.
+
+## Local setup in this checkout
+
+- `.venv/` at the repo root: Python 3.12, package installed in editable mode with `[trends,dev]`.
+- `workspace/` at the repo root was created with `nf init workspace`. It is gitignored, including its `.env`. `google-play-scraper` is installed in `workspace/node_modules`. Run `nf` from inside `workspace/` or pass `-w workspace`.
+- No API keys are set yet, so the DataForSEO (S3 volumes), LLM (S10 classification) and Yandex (`ru`) stages are skipped until `workspace/.env` has the keys. `workspace/nf.yaml` has `markets: [us, ww, ru]`, so the Russian module (`ru_*`, `s6_ru`, `s8_hh`, Wordstat) is on.
+
+## Architecture
+
+### Code vs workspace
+
+Code lives in this repo. All research state lives in a **workspace**: a folder with `nf.yaml`, found through `-w`, `$NF_WORKSPACE`, or the nearest parent folder that has `nf.yaml`. `Workspace` (`src/nichefinder/workspace.py`) is the only way stages get paths, settings and dates: `ws.out()`, `ws.raw()`, `ws.report()`, `ws.cache(namespace)`, `ws.load_config()`, `ws.setting("a.b")` and `ws.today`. `ws.today` honours `as_of` in `nf.yaml`, so a past run can be reproduced from cache. Don't hardcode paths or use `date.today()` in data logic.
+
+`src/nichefinder/examples/default/` is package data that `nf init` copies. Editing it changes only workspaces created later. To change the actual research, edit the workspace's `niches.yaml`, `queries/` and `config/`.
+
+### Stages
+
+Each pipeline step is a module in `src/nichefinder/stages/`, registered in `STAGES` in `stages/__init__.py`. The registry order is the `nf run all` order. `tests/test_stages.py` enforces this contract:
+- `SUMMARY: str` and `run(ws, args)`. Optional: `KEYS` (env vars; if one is missing the stage is skipped), `NEEDS` (a subset of `node`, `trendspy`, `curl`) and `add_arguments(parser)`.
+- `Stage(..., market="ru")` runs only when `nf.yaml` markets include `ru`. `in_all=False` marks a manual stage (snapshots) that `nf run all` skips.
+- Cyrillic may appear only in data literals, never in comments or docstrings.
+
+Raising `keys.MissingKey` or `tools.ToolMissing` inside `run` makes the CLI skip the stage instead of failing it.
+
+Stages talk to each other only through workspace files: `data/raw/*.csv` (S0 dumps) → `data/out/*.csv|json` → `reports/*.md` and `reports/leaderboard.html`. The main hand-offs:
+- `metrics_quick.csv` (S3) → `config/shortlist.yaml`. `s3_report` writes the shortlist only when the file is missing, or with `--rewrite-shortlist`. It is a human checkpoint.
+- The deep stages S4, S5, S8 and S9 measure only shortlisted niches.
+- `supply_deep.csv` (S5) → `score_final.csv` (S6) → passports and the leaderboard.
+
+In `s6_score`, required inputs fail with a hint ("run the S5 stages first") and optional inputs (S8 `offsearch.csv`, S9 `entrant_survival.csv`) are read as empty when missing.
+
+The run order has one non-obvious part. `s9_entrants` and a first `s6_score` pass run right after S5, because the S8 and S10 reports display score and verdict. `s6_rescore` re-exports `s6_score.run` and scores again after S8–S10.
+
+To add a data source, write a new stage module and add it to the registry. Vendor adapters shared by several stages go in `src/nichefinder/sources/` (DataForSEO, autocomplete, Wordstat). Node helpers for Google Play are the `.mjs` files in `src/nichefinder/node/`, run through `tools.run_node`.
+
+### Shared infrastructure
+
+- `http.py`: stdlib-only HTTP with retries and a disk cache keyed by the SHA-1 of the URL (or URL + body). `backend="curl"` or `"auto"` handles sites that block Python clients, and `proxy="ru"` routes a request through `NF_PROXY_RU`. `get_text(min_size=...)` does not cache short responses, which are usually block pages. Route every external call through it with `cache=ws.cache("<namespace>")`, so re-runs are free and work offline.
+- `llm.py`: any OpenAI-compatible chat endpoint (DeepSeek by default), JSON mode, cached in `data/cache/llm/`. Configured with `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` and `LLM_EXTRA_BODY`.
+- `keys.py`: keys come from the environment or `<workspace>/.env`, and the environment wins. `keys.GROUPS` drives the `nf doctor` hints.
+- `niches.py`: loads and validates niches and queries, and gives access to the shortlist and overrides. `niches.text_matchers(ws)` is the one place that ties free text to niches: the `deal_keywords.yaml` regexes, with a fallback to coverage phrases for shortlisted niches. `with_coverage=True` adds the Russian coverage phrases for Russian text. `s5_deals`, `s8_hn_mentions` and `s8_hn_hiring` all use it.
+- `http.download(url, path)`: streams large dumps (Kickstarter, ~120 MB) through a `.part` file; an existing file counts as the cache.
+- Sources whose list pages shift over time (BetaList, Product Radar, HN search) put the run month (`ws.today:%Y-%m`) into the cache key, so a re-run in the same month is free and the next month fetches fresh data.
+
+### Data model (workspace inputs)
+
+- `niches.yaml`: `id` (a slug, used everywhere as `niche_id`), `who`, `task`, `product`, plus:
+  - `geo`: `global`, `ru` or `both`; sets which query languages are required.
+  - `side`: `b2b-smb`, `b2b`, `b2c` or `prosumer`; score percentiles are computed within the B2C or B2B cohort.
+  - `tier`: `A` measure, `B` candidate, `C` control.
+- `queries/*.yaml`: niche id → language → a list of `{q, i, b, anchor}`.
+  - `i` is the intent: `category`, `problem`, `brand` or `info`. Brand queries need `b`, the brand name.
+  - Each required language has exactly one `anchor: true` query.
+  - Minimums per language are 3 category, 1 problem and 2 brand queries; a shortfall is only a warning.
+- `config/score.yaml`: weights and CPC bands.
+- `config/overrides.yaml`: human judgments per niche (platform risk, lock-in, feasibility, supply estimates, founder `fit`, a manual `verdict`).
+- Other `config/*.yaml` files: per-source maps and exclusions.
+
+### Methodology rules that constrain changes (`docs/methodology.md`)
+
+- Gates, weights and thresholds are fixed in config before the run. Any change gets a written reason and is never made to rescue a favourite niche.
+- Metrics are never edited by hand. Results change only through the niches, the configs and `overrides.yaml`.
+- Triangulation: demand, supply and trend each need two independent sources. Control niches (tier C) must behave as expected; if one doesn't, suspect the scoring, not the control.
+- Verdict: if any gate fails (G0–G5, S5 supply) the niche is red. Otherwise it is green when the score reaches `verdict.green_min_score` (70 by default) and yellow below that.
+- Score = demand 30 + growth 20 + fragmentation 25 + deals 15 + switching 10, using percentiles within the cohort and a ±5% trend adjustment. Exact formulas are in the `s6_score` docstring and methodology §7. The path-to-goal grade (`s6_ceiling`) is in methodology §8.
