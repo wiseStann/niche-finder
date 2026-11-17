@@ -7,10 +7,12 @@
 import { createRequire } from 'module';
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
 
 const nm = process.argv[2];
 const require = createRequire(path.join(nm, '/'));
-const gplay = require('google-play-scraper').default || require('google-play-scraper');
+// google-play-scraper 10 is ESM-only and require() of an ES module needs Node 20.19+: resolve it in node_modules, load with import()
+const gplay = (await import(pathToFileURL(require.resolve('google-play-scraper')).href)).default;
 const ROOT = process.cwd();
 const cache = path.join(process.env.NF_CACHE_DIR || path.join(ROOT, 'data', 'cache'), 'gplay_app');
 fs.mkdirSync(cache, { recursive: true });
