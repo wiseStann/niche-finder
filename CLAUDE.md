@@ -86,7 +86,8 @@ To add a data source, write a new stage module and add it to the registry. Vendo
   - `i` is the intent: `category`, `problem`, `brand` or `info`. Brand queries need `b`, the brand name.
   - Each required language has exactly one `anchor: true` query.
   - Minimums per language are 3 category, 1 problem and 2 brand queries; a shortfall is only a warning. When no second brand has real demand, a YAML comment above the language block says so.
-  - A category or problem query listed in two niches is warned about, because its volume counts in both; keep it in the most specific niche. A shared brand query is fine: brand volume feeds only the concentration metrics.
+  - A category or problem query listed in two niches is warned about, because its volume counts in both; keep it in the most specific niche. Word order is ignored, as in Wordstat broad match. A shared brand query is fine: brand volume feeds only the concentration metrics.
+  - Russian queries are broad match in Wordstat, so check the nested phrases (`nested_json` in `wordstat_ru.csv`) before trusting a number. Replace a query whose volume belongs to another topic and leave a trailing comment with the reason; `trap_anchor` / `trap_brands` in `config/overrides_ru.yaml` only patch `s6_ru`.
 - `config/score.yaml`: weights and CPC bands.
 - `config/overrides.yaml`: human judgments per niche (platform risk, lock-in, feasibility, supply estimates, founder `fit`, a manual `verdict`).
 - Other `config/*.yaml` files: per-source maps and exclusions.

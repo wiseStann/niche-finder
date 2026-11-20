@@ -113,14 +113,14 @@ def test_validate_warns_only_on_shared_demand_queries(tmp_path):
     q = yaml.safe_load((tmp_path / "queries" / "q.yaml").read_text(encoding="utf-8"))
     q["pet-grooming"] = {"en": [
         {"q": "grooming software", "i": "category", "anchor": True},
-        {"q": "kennel software", "i": "category"},       # also a category query of dog-daycare
+        {"q": "software kennel", "i": "category"},       # dog-daycare has "kennel software": same demand, other order
         {"q": "gingr", "i": "brand", "b": "Gingr"},      # also a brand query of dog-daycare
     ]}
     (tmp_path / "queries" / "q.yaml").write_text(yaml.safe_dump(q), encoding="utf-8")
     errors, warns, _ = niches.validate(ws)
     assert errors == []
     dups = [w for w in warns if w.startswith("duplicate query")]
-    assert len(dups) == 1 and "'kennel software'" in dups[0]
+    assert len(dups) == 1 and "kennel software" in dups[0] and "software kennel" in dups[0]
 
 
 def test_auto_shortlist_carries_unsettled_controls():

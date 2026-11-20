@@ -47,7 +47,7 @@ whatsapp-telegram-business-messaging:
     - {q: "интеграция whatsapp с crm", i: category}
     - {q: "рассылка в max мессенджере", i: category}
     - {q: "как сделать рассылку клиентам в мессенджере", i: problem}
-    - {q: "wazzup", i: brand, b: Wazzup}
+    - {q: "wazzup24", i: brand, b: "Wazzup"}   # replaces 'wazzup': memes ('wazzup annoying orange'); wazzup24 is the domain
     - {q: "textback", i: brand, b: TextBack}
     - {q: "bothelp", i: brand, b: BotHelp}
     - {q: "senler", i: brand, b: Senler}
@@ -73,7 +73,7 @@ invoice-estimate-mobile-apps:
     - {q: "составить смету онлайн", i: category}
     - {q: "программа для составления смет для мастеров", i: category}
     - {q: "как выставить счет на оплату ип", i: problem}
-    - {q: "мой склад", i: brand, b: "МойСклад"}
+    - {q: "смета ру", i: brand, b: "Смета.ру"}   # replaces 'мой склад': 145k/month of retail inventory logins, not invoicing
     - {q: "контур эльба", i: brand, b: "Контур.Эльба"}
 
 shift-scheduling-deskless:
@@ -135,7 +135,7 @@ esignature-smb:
     - {q: "подписать договор онлайн", i: category}
     - {q: "как подписать документ электронной подписью", i: problem}
     - {q: "контур сайн", i: brand, b: "Контур.Сайн"}
-    - {q: "sign me", i: brand, b: "Sign.Me"}
+    - {q: "signme", i: brand, b: "Sign.Me"}   # replaces 'sign me': song titles ('sign me up', 'give me a sign')
 
 digital-business-cards:
   en:
@@ -200,7 +200,7 @@ reviews-reputation-local:
     - {q: "как получить больше отзывов на яндекс картах", i: problem}
     - {q: "как отвечать на негативные отзывы", i: problem}
     - {q: "rocketdata", i: brand, b: Rocketdata}
-    - {q: "точка отзывы", i: brand, b: "Точка Отзывы"}
+    - {q: "repometr", i: brand, b: "Repometr"}   # replaces 'точка отзывы': reviews of 'Вкусно и точка' and other 'точка' businesses
 
 local-seo-gbp-agencies:
   en:
@@ -323,7 +323,7 @@ reseller-crosslisting-scanners:
     - {q: "flipwise", i: brand, b: Flipwise}
   # no second Russian brand: 'перекуп' in Yandex is mostly car flipping; vendoo 13/month (Wordstat 2026-11)
   ru:
-    - {q: "приложение для перекупов", i: category, anchor: true}
+    - {q: "приложение для перекупов", i: category, anchor: true}   # about half of this anchor is car flipping ('приложение для перекупов авто'); no clean phrase has volume (checked 2026-11)
     - {q: "программа для перепродажи товаров", i: category}
     - {q: "учет товара для перекупа", i: category}
     - {q: "как вести учет перепродаж", i: problem}
@@ -509,9 +509,9 @@ ai-video-dubbing-captions:
     - {q: "elevenlabs dubbing", i: brand, b: "ElevenLabs Dubbing"}
     - {q: "captions app", i: brand, b: Captions}
   ru:
-    - {q: "ии дубляж видео", i: category, anchor: true}
+    - {q: "озвучка видео нейросетью", i: category, anchor: true}   # replaces 'ии дубляж видео': mostly viewers looking for AI-dubbed dramas, not tools
     - {q: "перевод видео нейросеть", i: category}
-    - {q: "ии озвучка видео", i: category}
+    # dropped 'ии озвучка видео': a third of it is AI-dubbed drama viewing (Wordstat 2026-11)
     - {q: "субтитры к видео автоматически", i: category}
     - {q: "перевод видео с английского на русский с озвучкой", i: category}
     - {q: "как перевести видео на русский язык", i: problem}
@@ -549,7 +549,8 @@ ai-headshots-photos:
     - {q: "betterpic", i: brand, b: BetterPic}
     - {q: "photo ai", i: brand, b: "Photo AI"}
   ru:
-    - {q: "ии фото на аватарку", i: category, anchor: true}
+    - {q: "нейрофото", i: category, anchor: true}   # the Russian name of the category (3.1k/month); was not in the set
+    - {q: "ии фото на аватарку", i: category}
     - {q: "нейросеть деловое фото", i: category}
     - {q: "фото для резюме нейросеть", i: category}
     - {q: "нейросеть фото для знакомств", i: category}

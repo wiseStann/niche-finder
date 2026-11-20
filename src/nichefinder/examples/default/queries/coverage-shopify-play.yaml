@@ -148,7 +148,7 @@ star-maps-astronomy-apps:
     - {q: как узнать какая звезда на небе, i: problem}
     - {q: stellarium, i: brand, b: Stellarium}
     - {q: star walk 2, i: brand, b: Star Walk 2}
-    - {q: sky tonight, i: brand, b: Sky Tonight}
+    - {q: sky tonight приложение, i: brand, b: "Sky Tonight"}   # replaces 'sky tonight': the song 'Look at the Sky Tonight'
 
 family-chore-reward-apps:
   en:

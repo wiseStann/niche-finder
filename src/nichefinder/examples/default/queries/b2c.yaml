@@ -20,7 +20,8 @@ wine-whiskey-cellar-tracking:
     - {q: "учет коллекции виски", i: category}
     - {q: "сканер этикеток вина", i: category}
     - {q: "как вести учет винной коллекции", i: problem}
-    - {q: "vivino", i: brand, b: Vivino}
+    - {q: "вивино", i: brand, b: "Vivino"}   # replaces 'vivino': in Yandex mostly the 'Vivinos' soundtrack
+    - {q: "vivino приложение", i: brand, b: "Vivino"}
     - {q: "cellartracker", i: brand, b: CellarTracker}
 
 tcg-sports-card-scanners:
@@ -151,7 +152,7 @@ nature-id-mushroom-bird-insect:
     - {q: "определитель птиц по голосу", i: category}
     - {q: "определить насекомое по фото", i: category}
     - {q: "определитель камней по фото", i: category}
-    - {q: "какой это гриб", i: problem}
+    - {q: "что за гриб по фото", i: problem}   # replaces 'какой это гриб': school biology ('грибы это какое царство')
     - {q: "iгрибник", i: brand, b: iГрибник}
     - {q: "экогид грибы", i: brand, b: Экогид}
 
@@ -239,7 +240,7 @@ couples-relationship-apps:
     - {q: "between app", i: brand, b: Between}
   ru:
     - {q: "приложение для пар", i: category, anchor: true}
-    - {q: "приложение для отношений", i: category}
+    # dropped 'приложение для отношений': dating apps for serious relationships (Wordstat 2026-11)
     - {q: "вопросы для пар приложение", i: category}
     - {q: "игры для пар приложение", i: category}
     - {q: "вопросы для сближения с партнером", i: problem}
@@ -322,7 +323,7 @@ subscription-trackers-cancellers:
   # no second Russian brand: 'rocket money' is the song 'Money Rocket' in Yandex, 'кошелек подписок' is wallet payments (Wordstat 2026-11)
   ru:
     - {q: "приложение для учета подписок", i: category, anchor: true}
-    - {q: "трекер подписок", i: category}
+    # dropped 'трекер подписок': Twitch sub trackers and sleep trackers (Wordstat 2026-11)
     - {q: "менеджер подписок", i: category}
     - {q: "приложение для управления подписками", i: category}
     - {q: "как найти все свои подписки", i: problem}
@@ -404,7 +405,7 @@ astrology-human-design:
     - {q: "натальная карта с расшифровкой", i: problem}
     - {q: "moonly", i: brand, b: Moonly}
     - {q: "humdes", i: brand, b: Humdes}
-    - {q: "навамша", i: brand, b: Навамша}
+    # dropped 'навамша': a Vedic astrology term, not a brand (Wordstat 2026-11)
 
 faith-devotional-apps:
   en:
@@ -424,7 +425,7 @@ faith-devotional-apps:
   ru:
     - {q: "православное приложение", i: category, anchor: true}
     - {q: "молитвослов приложение", i: category}
-    - {q: "приложение коран", i: category}
+    # dropped 'приложение коран': the same Wordstat demand as 'коран приложение' in muslim-apps-ru-cis (Wordstat 2026-11)
     - {q: "время намаза приложение", i: category}
     - {q: "библия приложение", i: category}
     - {q: "молитва на каждый день", i: problem}
@@ -478,7 +479,7 @@ ai-language-speaking-tutors:
     - {q: "практика английского с нейросетью", i: category}
     - {q: "собеседник для практики английского", i: category}
     - {q: "как практиковать разговорный английский одному", i: problem}
-    - {q: "praktika", i: brand, b: Praktika}
+    - {q: "praktika ai", i: brand, b: "Praktika"}   # replaces 'praktika': turnstiles and the Oxgard Praktika model
     - {q: "симплер английский", i: brand, b: Simpler}
     - {q: "loora", i: brand, b: Loora}
 
@@ -607,7 +608,7 @@ dog-training-apps:
     - {q: "как дрессировать щенка в домашних условиях", i: problem}
     - {q: "как приучить щенка к туалету", i: problem}
     - {q: "godog", i: brand, b: GoDog}
-    - {q: "dogo", i: brand, b: Dogo}
+    - {q: "dogo приложение", i: brand, b: "Dogo"}   # replaces 'dogo': adult content and the dogo argentino breed
 
 parental-control-family-locator:
   en:
@@ -652,7 +653,7 @@ anglers-fishing-apps:
     - {q: "определитель рыбы по фото", i: category}
     - {q: "прогноз клева на завтра", i: problem}
     - {q: "когда ловить рыбу приложение", i: brand, b: "Когда ловить рыбу"}
-    - {q: "fish deeper", i: brand, b: "Fish Deeper"}
+    - {q: "deeper эхолот", i: brand, b: "Fish Deeper"}   # replaces 'fish deeper': game codes ('deep fish codes')
 
 padel-racket-sports:
   en:
@@ -719,8 +720,9 @@ package-trackers:
     - {q: "отследить посылку по трек номеру", i: category}
     - {q: "все посылки в одном приложении", i: category}
     - {q: "как отследить посылку из китая", i: problem}
-    - {q: "где посылка", i: brand, b: ГдеПосылка}
-    - {q: "посылка приложение", i: brand, b: Посылка}
+    - {q: "гдепосылка", i: brand, b: "ГдеПосылка"}   # replaces 'где посылка': 145k/month of the plain phrase 'where is my parcel'
+    - {q: "track24", i: brand, b: "Track24"}   # replaces 'посылка приложение': Ozon / Почта России app queries
+    - {q: "17track", i: brand, b: "17track"}
     - {q: "1track", i: brand, b: 1Track}
 
 restock-drop-alerts:

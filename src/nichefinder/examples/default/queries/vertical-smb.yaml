@@ -458,7 +458,7 @@ staffing-agencies-ats:
     - {q: "система подбора персонала", i: category}
     - {q: "как вести базу кандидатов", i: problem}
     - {q: "huntflow", i: brand, b: Huntflow}
-    - {q: "e-staff", i: brand, b: "E-Staff"}
+    - {q: "e-staff рекрутер", i: brand, b: "E-Staff"}   # replaces 'e-staff': mixed with 'staff e schools'; E-Staff Рекрутер is the product name
     - {q: "поток рекрутинг", i: brand, b: Поток}
 
 distributors-order-entry-ai:

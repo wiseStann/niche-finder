@@ -43,7 +43,7 @@ indie-music-distribution-stems:
     - {q: убрать вокал из песни, i: category}
     - {q: как выпустить песню самому, i: problem}
     - {q: lalal ai, i: brand, b: LALAL.AI}
-    - {q: moises, i: brand, b: Moises}
+    - {q: moises ai, i: brand, b: Moises}   # replaces 'moises': broad match pulls in 'mois' (French months)
 
 collection-trackers-lego-watches-vinyl:
   en:
@@ -279,7 +279,7 @@ muslim-apps-ru-cis:
     - {q: athan app, i: brand, b: Athan}
     - {q: quran majeed, i: brand, b: Quran Majeed}
   ru:
-    - {q: время намаза, i: category, anchor: true}
+    - {q: приложение намаз, i: category, anchor: true}   # replaces 'время намаза': 1.47M/month of prayer-time lookups that Yandex answers in the results, not demand for an app
     - {q: коран приложение, i: category}
     - {q: приложение для мусульман, i: category}
     - {q: азкары приложение, i: category}
@@ -414,7 +414,8 @@ daycare-childcare-software:
     - {q: lillio, i: brand, b: Lillio}
     - {q: kangarootime, i: brand, b: Kangarootime}
   ru:
-    - {q: программа для детского сада, i: category, anchor: true}
+    - {q: автоматизация детского сада, i: category, anchor: true}   # replaces 'программа для детского сада': 12k/month of curricula (рабочая / образовательная программа), not software
+    - {q: программа учета для детского сада, i: category}
     - {q: crm для частного детского сада, i: category}
     - {q: приложение для детского сада родителям, i: category}
     - {q: как вести учет посещаемости в детском саду, i: problem}
@@ -517,7 +518,7 @@ cookie-consent-gdpr-widgets:
     - {q: termly, i: brand, b: Termly}
   ru:
     - {q: баннер cookie для сайта, i: category, anchor: true}
-    - {q: согласие на обработку персональных данных на сайте, i: category}
+    - {q: cookie consent, i: category}   # replaces 'согласие на обработку персональных данных на сайте': people look for consent form templates
     - {q: уведомление о cookie на сайте, i: category}
     - {q: нужно ли согласие на cookie на сайте, i: problem}
     - {q: cookieyes, i: brand, b: CookieYes}

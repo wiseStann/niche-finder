@@ -13,7 +13,7 @@ ctrl-smb-crm:
   ru:
     - {q: "crm для малого бизнеса", i: category, anchor: true}
     - {q: "crm система", i: category}
-    - {q: "простая crm", i: category}
+    - {q: "простая crm для малого бизнеса", i: category}   # replaces 'простая crm': 'crm простыми словами' definitions
     - {q: "как вести учет клиентов", i: problem}
     - {q: "амо crm", i: brand, b: amoCRM}
     - {q: "битрикс24", i: brand, b: Битрикс24}
@@ -30,7 +30,7 @@ ctrl-task-manager:
     - {q: "trello", i: brand, b: Trello}
     - {q: "notion", i: brand, b: Notion}
   ru:
-    - {q: "таск менеджер", i: category, anchor: true}
+    - {q: "таск трекер", i: category, anchor: true}   # replaces 'таск менеджер': a Deltarune character and adult content
     - {q: "программа для управления проектами", i: category}
     - {q: "планировщик задач для команды", i: category}
     - {q: "как вести задачи команды", i: problem}
@@ -52,7 +52,7 @@ ctrl-notes-app:
     - {q: "заметки приложение", i: category}
     - {q: "лучшие приложения для заметок", i: category}
     - {q: "evernote", i: brand, b: Evernote}
-    - {q: "obsidian", i: brand, b: Obsidian}
+    - {q: "obsidian заметки", i: brand, b: "Obsidian"}   # replaces 'obsidian': perfume, games, music
 
 ctrl-website-builder:
   en:
@@ -152,7 +152,8 @@ ctrl-transcription:
     - {q: "расшифровка аудиозаписи в текст онлайн", i: category}
     - {q: "видео в текст онлайн", i: category}
     - {q: "как транскрибировать интервью", i: problem}
-    - {q: "звук в букву", i: brand, b: "Звук в букву"}
+    - {q: "speech2text", i: brand, b: "Speech2Text"}   # replaces 'звук в букву': 490k/month of school phonetics
+    - {q: "teamlogs", i: brand, b: "Teamlogs"}
     - {q: "soniox", i: brand, b: Soniox}
 
 ctrl-ai-song-generator:
