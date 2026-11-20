@@ -1,5 +1,5 @@
-"""Offline tests for the Russian app-review stages (S10): RSS parsing, app choice, fetch from cache, sampling, LLM labels
-(with a fake model), the verdict rule and the report."""
+"""Offline tests for the Russian review stages (S10): RSS and Startpack parsing, app choice, fetch from cache, sampling,
+LLM labels (with a fake model), the verdict rule with segments, and the report."""
 from __future__ import annotations
 
 import argparse
@@ -12,6 +12,7 @@ import pytest
 import yaml
 
 from nichefinder import http, llm, tools
+from nichefinder.sources import startpack
 from nichefinder.stages import s10_ru_reviews_classify as classify
 from nichefinder.stages import s10_ru_reviews_fetch as fetch
 from nichefinder.stages import s10_ru_reviews_report as report
@@ -201,3 +202,81 @@ def test_report_writes_verdicts_and_a_draft_banner(tmp_path):
     assert "DRAFT" in md and "Budget apps" in md and "| 2 (2) | 50% |" in md
     (v,) = csv.DictReader(open(ws.out("ru_reviews_verdict.csv"), encoding="utf-8"))
     assert v["verdict"] == "🟢 gap" and v["status"] == "draft"
+
+
+# ---- Startpack ----------------------------------------------------------------
+
+def sp_card(code, name, reviews, stars=5):
+    return (f'<div class="app-list-panel professional-plan">'
+            f"<h2 class=\"app-list-name\"><a href='/application/{code}'>{name}</a></h2><div class=\"app-list-ratings\">"
+            + '<span class="rating-star-15-full "></span>' * stars
+            + f"<span class=\"rating-count-tag\"><a href='/application/{code}/reviews'\n title='x'>{reviews} reviews</a></span></div>"
+            f'<div class="app-list-brief"><p>{name} does things</p></div>'
+            f'<input type="checkbox" data-id="1" data-code="{code}"\n data-name=\'{name}\' data-cat="c"/></div>')
+
+
+def sp_review(day, slug, rating, pros, cons, text):
+    return (f'<article itemprop="review" id="review-1" class="review-content " data-strcode="{day}-{slug}" itemid="/review/x">'
+            f'<div class="review-content-name" itemprop="headline name">{slug} title</div>'
+            f"<meta itemprop=\"ratingValue\" itemscope itemtype=\"https://schema.org/Number\"\n content='{rating}' />"
+            f'<div class="review-content-pluses"><h4>P</h4><div class="editor-view-text"><p>{pros}</p></div></div>'
+            f'<div class="review-content-minuses"><h4>C</h4><div class="editor-view-text"><p>{cons}</p></div></div>'
+            f'<div class="review-content-text with-margin"><div class="editor-view-text"><p>{text}</p></div></div></article>')
+
+
+def sp_page(name, count, *reviews):
+    meta = (f'<div itemprop="aggregateRating" itemscope><meta itemprop="name" content="{name}" />'
+            f'<meta itemprop="ratingValue" content="4.25"/><meta itemprop="ratingCount" content="{count}" /></div>')
+    return meta + "".join(reviews) + " " * startpack.MIN_PAGE   # padded: shorter pages are not served from the cache
+
+
+def test_startpack_parsers():
+    page = '<div class="app-list-panel start"></div>' + sp_card("prod-a", "Prod A", "1 583", 4) + sp_card("prod-b", "Prod B", 7) + '<a href="?page=3">3</a>'
+    apps, last = startpack.parse_category(page)
+    assert [(a["code"], a["name"], a["reviews"], a["stars"]) for a in apps] == [("prod-a", "Prod A", 1583, 4), ("prod-b", "Prod B", 7, 5)]
+    assert last == 3 and apps[0]["brief"] == "Prod A does things"
+    html = sp_page("Prod &amp; Co", 77, sp_review("20261101", "good", 4, "fast &amp; simple", "no export", "We use it daily."))
+    (r,) = startpack.parse_reviews(html)
+    assert (r["id"], r["date"], r["rating"], r["pros"], r["cons"], r["text"]) == ("20261101-good", "2026-11-01", 4, "fast & simple", "no export", "We use it daily.")
+    assert startpack.review_text(r) == "Pros: fast & simple\nCons: no export\nWe use it daily."
+    assert startpack.parse_meta(html) == {"name": "Prod & Co", "reviews": 77, "rating": 4.25}
+
+
+def test_fetch_startpack_from_map_and_cache(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path)
+    (tmp_path / "config" / "startpack_map.yaml").write_text(yaml.safe_dump({
+        "budget": {"apps": ["prod-a"], "categories": ["finance"], "exclude": ["prod-x"]},
+        "usonly": {"apps": ["prod-a"]}}), encoding="utf-8")
+    month, cache = "2026-11", ws.cache("startpack")
+
+    def put(key, text):
+        http.cache_file(cache, key, ".html").write_text(text, encoding="utf-8")
+
+    put(f"{month}|category|finance|1", sp_card("prod-x", "X", 900) + sp_card("prod-b", "Prod B", 40) + sp_card("prod-c", "Tiny", 2) + " " * startpack.MIN_PAGE)
+    put(f"{month}|reviews|prod-a|1", sp_page("Prod A", 3, sp_review("20261101", "new", 2, "cheap", "no export", "Lacks export to Excel"),
+                                             sp_review("20220101", "old", 5, "ok", "", "Too old for the window")))
+    put(f"{month}|reviews|prod-b|1", sp_page("Prod B", 1, sp_review("20250505", "mid", 5, "", "", "Works well for our team")))
+    monkeypatch.setattr(http, "request", lambda *a, **k: pytest.fail("network call"))
+    fetch.run(ws, argparse.Namespace(niches=""))
+    docs = [json.loads(x) for x in open(ws.out(fetch.DOCS), encoding="utf-8")]
+    assert sorted((d["app_id"], d["id"]) for d in docs) == [("prod-a", "20261101-new"), ("prod-b", "20250505-mid")]   # 36-month window
+    assert all(d["niche_id"] == "budget" and d["store"] == "startpack" for d in docs)
+    assert next(d for d in docs if d["app_id"] == "prod-a")["text"].startswith("Pros: cheap\nCons: no export")
+    apps = {r["app_id"]: r for r in csv.DictReader(open(ws.out(fetch.APPS), encoding="utf-8"))}
+    assert set(apps) == {"prod-a", "prod-b"}   # prod-x excluded, prod-c under startpack_min_reviews, usonly is geo global
+    assert (apps["prod-a"]["app"], apps["prod-a"]["ratings"], apps["prod-a"]["rating"]) == ("Prod A", "3", "3.5")   # mean of the fetched reviews, not the site aggregate
+
+
+def test_verdict_cohorts_per_segment_and_top_app_caution():
+    cfg = fetch.DEFAULTS["verdict"]
+    rows = {f"c{i}": llm_row(f"c{i}", unmet=0.10 + 0.02 * i) for i in range(6)}            # B2C: 0.10 .. 0.20
+    rows.update({f"b{i}": llm_row(f"b{i}", unmet=0.16 + 0.01 * i) for i in range(6)})     # B2B: 0.16 .. 0.21
+    segs = {k: ("B2C" if k.startswith("c") else "B2B") for k in rows}
+    v = report.reviews_verdicts(rows, cfg, segs)
+    assert v["b5"]["verdict"] == "🟢 gap" and v["b5"]["segment"] == "B2B" and v["b5"]["cohort"] == 6
+    assert v["b0"]["verdict"] != "🟢 gap"            # above the floor, but at the bottom of its own segment
+    assert v["c4"]["verdict"] == "🟢 gap"            # 0.18 is low against B2B, high within B2C
+    pooled = report.reviews_verdicts(rows, cfg)
+    assert pooled["c4"]["verdict"] != "🟢 gap"       # in one pooled cohort it would not be
+    rows["b5"].update(top_app="startpack:Prod A", top_app_share=0.8)
+    assert "80% of these reviews are about one product (Prod A)" in report.reviews_verdicts(rows, cfg, segs)["b5"]["reason"]

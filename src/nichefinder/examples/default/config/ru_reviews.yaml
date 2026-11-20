@@ -1,4 +1,5 @@
-# Russian app reviews (S10): what users of the leading apps of a niche write in the Russian App Store and Google Play.
+# Russian reviews (S10): what users of the leading products of a niche write in the Russian App Store, Google Play and
+# Startpack (business software; which products: config/startpack_map.yaml).
 # Read by s10_ru_reviews_fetch (`fetch`), s10_ru_reviews_classify (`sample`) and s10_ru_reviews_report (`verdict`).
 # Rationale: docs/methodology.md section 9.
 #
@@ -14,6 +15,10 @@ fetch:
   min_ratings: 20         # skip apps with fewer store ratings (no review history to speak of)
   appstore_pages: 10      # App Store RSS: 50 newest reviews a page; Apple serves 10 pages at most
   gplay_reviews: 500      # Google Play: newest Russian reviews per app
+  startpack_window_months: 36   # Startpack: B2B products collect reviews slowly; in a 24-month window half of the B2B
+                                # niches tried on 2026-11-20 had fewer than 80 reviews
+  startpack_pages: 4      # Startpack: 50 newest reviews a page
+  startpack_min_reviews: 5   # Startpack products taken from `categories` need at least this many reviews
 
 sample:
   max_reviews: 240        # per niche, taken round-robin over its apps; the LLM labels 12 reviews per call
@@ -21,13 +26,16 @@ sample:
 
 # Verdict: a rule, not a score; it does not change the S6 verdict. Shares are over reviews about the app itself.
 # Written reviews lean negative (the unhappy user is the one who writes), so the rule compares niches with each other:
-# a share must be in the top third of the cohort (mid-rank percentile) AND above an absolute floor.
+# a share must be in the top third of the cohort (mid-rank percentile) AND above an absolute floor. Cohorts are per segment
+# (B2C + prosumer, B2B), because the sources differ: app stores for B2C, mostly Startpack for B2B, which leans positive.
 verdict:
   min_app_reviews: 80     # quiet: fewer classified reviews about the app itself
   min_apps: 2             # quiet: fewer apps with substantive reviews in the sample
-  min_cohort: 6           # with fewer measured niches percentiles mean nothing: the floors alone decide
+  min_cohort: 6           # with fewer measured niches in a segment percentiles mean nothing: the floors alone decide
   gap_pct: 0.67           # gap: unmet-need share (missing feature + price + switching) in the top third...
   gap_floor: 0.15         # ...and at least this share
   quality_pct: 0.67       # quality: complaints about bugs, UX, ads and support in the top third...
   quality_floor: 0.30     # ...and at least this share
   content_praise: 0.50    # content: praise at least this share, and neither of the above
+  top_app_warn: 0.60      # a caution in the reason (not a gate) when one product gives more of the sample than this:
+                          # Startpack reviews come in vendor campaigns, so one product can be most of a B2B niche's voice

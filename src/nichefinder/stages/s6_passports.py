@@ -255,9 +255,9 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         if qr:
             qrl, qrt = ql.get(nid) or {}, qt.get(nid) or {}
             qp = lambda k: f"{float(qrl[k]):.0%}" if qrl.get(k) not in ("", None) else "—"  # noqa: E731
-            L += ["## Buyer voice (Russian app reviews, S10)", "",
+            L += ["## Buyer voice (Russian reviews, S10)", "",
                   f"**Reviews verdict: {qr['verdict']}** - {qr['reason']}." + (" _The thresholds are a draft (`config/ru_reviews.yaml`)._" if qr.get("status") != "fixed" else "")
-                  + " Source: Russian App Store and Google Play reviews of the niche's leading apps; the rule and the per-app tables are in `S10-ru-reviews.md`.", ""]
+                  + " Source: Russian App Store, Google Play and Startpack reviews of the niche's leading products; the rule and the per-product tables are in `S10-ru-reviews.md`.", ""]
             if qrl:
                 L.append(f"- **LLM labels** ({qrl['classified']} reviews, {qrl['about_app']} about the app): unmet needs {qp('unmet_share')} (missing feature {qp('missing_feature_share')}, "
                          f"price {qp('pricing_share')}, switching {qp('switching_share')}), quality complaints {qp('quality_share')} (bugs, UX, ads, support), praise {qp('praise_share')}.")

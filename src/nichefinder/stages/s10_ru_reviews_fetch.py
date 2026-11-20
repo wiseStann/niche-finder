@@ -1,18 +1,22 @@
-"""Russian App Store and Google Play reviews of the leading apps of each shortlisted niche (no keys).
+"""Russian reviews of the leading products of each shortlisted niche: App Store, Google Play and Startpack (no keys).
 
-Which apps: per niche (geo `both` or `ru`) and store, the relevant apps with the most ratings, at most
-`fetch.apps_per_store`, each with at least `fetch.min_ratings` ratings (config/ru_reviews.yaml):
-- App Store RU: data/out/appstore_apps.csv from s5_appstore (store ru, relevant=1, after the manual edits in
-  config/appstore_relevance.yaml);
-- Google Play RU: data/out/gplay_apps.csv from s8_gplay_details (country ru, the relevant set of s8_gplay_filter).
+Which products: per niche (geo `both` or `ru`) and store, at most `fetch.apps_per_store` (config/ru_reviews.yaml):
+- App Store RU: the relevant apps with the most ratings (at least `fetch.min_ratings`) from data/out/appstore_apps.csv
+  (s5_appstore; store ru, relevant=1, after the manual edits in config/appstore_relevance.yaml);
+- Google Play RU: the same from data/out/gplay_apps.csv (s8_gplay_details; country ru, the relevant set of s8_gplay_filter);
+- Startpack (startpack.ru, business software - the voice of B2B buyers that app stores do not have): the products listed
+  for the niche in config/startpack_map.yaml (`apps`, in that order), then the products of its `categories` with the most
+  reviews (at least `fetch.startpack_min_reviews`), minus `exclude`. Niches without an entry are not looked up.
 How: App Store - the public customer-reviews RSS feed (itunes.apple.com/ru/rss/customerreviews/page=N/id=ID/
 sortby=mostrecent/json), 50 newest reviews a page, `fetch.appstore_pages` pages at most (Apple serves 10).
 Google Play - google-play-scraper through the Node helper gplay_reviews.mjs, the `fetch.gplay_reviews` newest reviews
-in Russian. Without Node the Google Play part is skipped with a note. Reviews older than `fetch.window_months` before the
-run date and reviews without text are dropped.
+in Russian; without Node this part is skipped with a note. Startpack - review pages sorted by date (sources/startpack.py),
+`fetch.startpack_pages` pages of 50. Reviews without text are dropped, and so are reviews older than `fetch.window_months`
+before the run date (`fetch.startpack_window_months` for Startpack: B2B products collect reviews more slowly).
 
 Reviews keep coming, so the run month is part of every cache key: a re-run in the same month is free and offline, and
-the next month fetches fresh reviews. Cache: data/cache/ru_reviews/ (App Store pages), data/cache/gplay_reviews/ (Node).
+the next month fetches fresh reviews. Cache: data/cache/ru_reviews/ (App Store pages), data/cache/gplay_reviews/ (Node),
+data/cache/startpack/ (HTML).
 Output: data/out/ru_reviews_docs.jsonl (one line per review and niche: niche_id, store, app_id, app, id, date, rating,
 title, text, version, thumbs) and data/out/ru_reviews_apps.csv (per niche and app: store ratings, reviews fetched and
 kept, the oldest kept review, status). A run with --niches replaces only those niches in both files.
@@ -25,25 +29,28 @@ import csv
 import json
 import os
 import subprocess
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 from nichefinder import http, niches, tools
+from nichefinder.sources import startpack
 from nichefinder.stages.s10_reddit_fetch import months_back
 from nichefinder.workspace import Workspace
 
-SUMMARY = "Russian App Store and Google Play reviews of each niche's leading apps"
+SUMMARY = "Russian reviews of each niche's leading products: App Store, Google Play, Startpack"
 KEYS: tuple[str, ...] = ()
-NEEDS: tuple[str, ...] = ()   # Node is optional: without it only the App Store part runs
+NEEDS: tuple[str, ...] = ()   # Node is optional: without it the Google Play part is skipped
 
 CONFIG = "ru_reviews.yaml"
+STARTPACK_MAP = "startpack_map.yaml"
 DEFAULTS = {
-    "fetch": {"window_months": 12, "apps_per_store": 8, "min_ratings": 20, "appstore_pages": 10, "gplay_reviews": 500},
+    "fetch": {"window_months": 12, "apps_per_store": 8, "min_ratings": 20, "appstore_pages": 10, "gplay_reviews": 500,
+              "startpack_window_months": 36, "startpack_pages": 4, "startpack_min_reviews": 5},
     "sample": {"max_reviews": 240, "min_chars": 40},
     "verdict": {"min_app_reviews": 80, "min_apps": 2, "min_cohort": 6, "gap_pct": 0.67, "gap_floor": 0.15,
-                "quality_pct": 0.67, "quality_floor": 0.30, "content_praise": 0.50},
+                "quality_pct": 0.67, "quality_floor": 0.30, "content_praise": 0.50, "top_app_warn": 0.60},
 }
 RSS = "https://itunes.apple.com/ru/rss/customerreviews/page={page}/id={app_id}/sortby=mostrecent/json"
-STORE_NAME = {"appstore": "App Store", "gplay": "Google Play"}
+STORE_NAME = {"appstore": "App Store", "gplay": "Google Play", "startpack": "Startpack"}
 DOCS, APPS, GPLAY_PLAN = "ru_reviews_docs.jsonl", "ru_reviews_apps.csv", "ru_reviews_gplay_plan.json"
 APP_COLS = ["niche_id", "store", "app_id", "app", "developer", "ratings", "rating", "fetched", "kept", "oldest", "status"]
 
@@ -98,6 +105,30 @@ def pick_apps(ws: Workspace, ids: list[str], st: dict) -> list[dict]:
     out = []
     for key in sorted(by, key=lambda k: (order[k[0]], k[1])):
         out += sorted(by[key].values(), key=lambda c: -c["ratings"])[: int(st["apps_per_store"])]
+    return out
+
+
+def startpack_apps(ws: Workspace, ids: list[str], st: dict, month: str) -> list[dict]:
+    """Startpack products per niche from config/startpack_map.yaml: the listed `apps` first, then the products of its
+    `categories` with the most reviews, minus `exclude`; at most apps_per_store. Ratings are filled in after the fetch."""
+    smap = ws.load_config(STARTPACK_MAP, {}) or {}
+    out = []
+    for nid in ids:
+        m = smap.get(nid) or {}
+        if not isinstance(m, dict) or not (m.get("apps") or m.get("categories")):
+            continue
+        exclude = set(m.get("exclude") or [])
+        known: dict[str, dict] = {}
+        for cat in m.get("categories") or []:
+            for a in startpack.category(ws, cat, month):
+                known.setdefault(a["code"], a)
+        listed = list(dict.fromkeys(str(c) for c in m.get("apps") or []))
+        auto = [a["code"] for a in sorted(known.values(), key=lambda a: -a["reviews"])
+                if a["reviews"] >= int(st["startpack_min_reviews"]) and a["code"] not in listed]
+        for code in [c for c in listed + auto if c not in exclude][: int(st["apps_per_store"])]:
+            a = known.get(code) or {}
+            out.append({"niche_id": nid, "store": "startpack", "app_id": code, "app": a.get("name") or code, "developer": "",
+                        "ratings": a.get("reviews", 0), "rating": a.get("stars", 0.0)})
     return out
 
 
@@ -196,38 +227,55 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
 
 def run(ws: Workspace, args: argparse.Namespace) -> None:
     st = settings(ws, "fetch")
-    if not ws.out("appstore_apps.csv").is_file() and not ws.out("gplay_apps.csv").is_file():
-        print("neither appstore_apps.csv nor gplay_apps.csv found - run s5_appstore and the s8_gplay_* stages first")
+    has_map = bool(ws.load_config(STARTPACK_MAP, {}))
+    if not ws.out("appstore_apps.csv").is_file() and not ws.out("gplay_apps.csv").is_file() and not has_map:
+        print("no appstore_apps.csv, gplay_apps.csv or config/startpack_map.yaml - run s5_appstore and the s8_gplay_* stages first")
         return
     ids = target_niches(ws, args.niches)
-    apps = pick_apps(ws, ids, st)
-    if not apps:
-        print(f"no Russian apps with >= {st['min_ratings']} ratings for {len(ids)} niches with geo both/ru - nothing to fetch")
-        return
     month = f"{ws.today:%Y-%m}"
-    start = months_back(ws.today, int(st["window_months"])).isoformat()
+    apps = pick_apps(ws, ids, st) + startpack_apps(ws, ids, st, month)
+    if not apps:
+        print(f"no Russian apps with >= {st['min_ratings']} ratings and no Startpack products for {len(ids)} niches with geo both/ru")
+        return
     end = ws.today.isoformat()
-    print(f"{len(apps)} apps in {len({a['niche_id'] for a in apps})} niches; reviews from {start} to {end}")
+    start = {"appstore": months_back(ws.today, int(st["window_months"])).isoformat()}
+    start["gplay"] = start["appstore"]
+    start["startpack"] = months_back(ws.today, int(st["startpack_window_months"])).isoformat()
+    print(f"{len(apps)} products in {len({a['niche_id'] for a in apps})} niches; reviews from {start['appstore']} "
+          f"(Startpack from {start['startpack']}) to {end}")
     fetched: dict[tuple[str, str], tuple[list[dict], str]] = {}
     for a in apps:
-        if a["store"] == "appstore" and ("appstore", a["app_id"]) not in fetched:
-            fetched[("appstore", a["app_id"])] = appstore_reviews(ws, a["app_id"], st["appstore_pages"], month)
+        key = (a["store"], a["app_id"])
+        if key in fetched:
+            continue
+        if a["store"] == "appstore":
+            fetched[key] = appstore_reviews(ws, a["app_id"], st["appstore_pages"], month)
+        elif a["store"] == "startpack":
+            items, status, meta = startpack.reviews(ws, a["app_id"], month, st["startpack_pages"], since=start["startpack"])
+            fetched[key] = ([{**x, "text": startpack.review_text(x), "version": "", "thumbs": 0} for x in items], status)
+            # The review page knows the name and the review count. Its aggregate rating is not the mean of the reviews
+            # (NotiSend: 1.0 over 151 mostly positive reviews on 2026-11-20), so the mean of the fetched reviews is used.
+            mean = round(sum(x["rating"] for x in items) / len(items), 2) if items else 0.0
+            for b in apps:
+                if b["store"] == "startpack" and b["app_id"] == a["app_id"]:
+                    b.update(app=meta.get("name") or b["app"], ratings=meta.get("reviews") or b["ratings"], rating=mean)
     for app_id, res in gplay_reviews(ws, [a for a in apps if a["store"] == "gplay"], st["gplay_reviews"], month).items():
         fetched[("gplay", app_id)] = res
     docs, app_rows = [], []
-    per_niche = defaultdict(lambda: [0, 0])
+    per_niche = defaultdict(Counter)
     for a in apps:
         items, status = fetched.get((a["store"], a["app_id"]), ([], "not fetched"))
-        kept = [x for x in items if x["text"] and start <= x["date"] <= end]
+        kept = [x for x in items if x["text"] and start[a["store"]] <= x["date"] <= end]
         for x in kept:
-            docs.append({"niche_id": a["niche_id"], "store": a["store"], "app_id": a["app_id"], "app": a["app"], **x})
+            docs.append({"niche_id": a["niche_id"], "store": a["store"], "app_id": a["app_id"], "app": a["app"],
+                         **{k: x[k] for k in ("id", "date", "rating", "title", "text", "version", "thumbs")}})
         app_rows.append({**{k: a[k] for k in ("niche_id", "store", "app_id", "app", "developer", "ratings", "rating")},
                          "fetched": len(items), "kept": len(kept), "oldest": min((x["date"] for x in kept), default=""), "status": status})
-        per_niche[a["niche_id"]][0 if a["store"] == "appstore" else 1] += len(kept)
+        per_niche[a["niche_id"]][a["store"]] += len(kept)
     for nid in ids:
         if nid in per_niche:
-            n_as, n_gp = per_niche[nid]
-            print(f"  {nid:36} App Store {n_as:5}  Google Play {n_gp:5}")
+            c = per_niche[nid]
+            print(f"  {nid:36} App Store {c['appstore']:5}  Google Play {c['gplay']:5}  Startpack {c['startpack']:5}")
     merge_write(ws, ids, docs, app_rows, partial=bool(args.niches))
     bad = [r for r in app_rows if r["status"] != "ok"]
     print(f"-> {DOCS} ({len(docs)} reviews), {APPS} ({len(app_rows)} apps" + (f", {len(bad)} not fetched in full" if bad else "") + ")")

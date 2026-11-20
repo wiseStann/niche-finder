@@ -112,7 +112,7 @@ The funnel in one table (details in [stages.md](stages.md)):
 | S7 report | Leaderboard and HTML report | free |
 | S8 off-search demand | Is there demand where Google cannot see it? | free |
 | S9 supply over time | Who is growing now, and do new entrants survive? | free |
-| S10 buyer voice | What do buyers say about existing products? Reddit, plus Russian App Store and Google Play reviews for niches with geo `both`/`ru` | LLM tokens |
+| S10 buyer voice | What do buyers say about existing products? Reddit, plus Russian reviews (App Store, Google Play, Startpack for business software) for niches with geo `both`/`ru` | LLM tokens |
 | info cohort | For micro info products sold through short video: does the topic draw views, can a small channel break through, do creators already sell through Telegram? | free (YouTube quota) |
 
 ### S0 - Universe
@@ -480,11 +480,11 @@ The rule was tightened once: a first version required only "in motion" (seeking 
 
 **Biases to remember:** Reddit skews US and technical; it lags new categories; LLM themes and quotes are not hand-validated.
 
-### Russian buyer voice: app reviews
+### Russian buyer voice: reviews
 
-Reddit hears almost no Russian speakers, yet most shortlisted niches have geo `both`. For them S10 also reads the reviews of each niche's leading apps in the Russian App Store and Google Play (`s10_ru_reviews_*`, market `ru`; settings and thresholds in `config/ru_reviews.yaml`).
+Reddit hears almost no Russian speakers, yet most shortlisted niches have geo `both`. For them S10 also reads the reviews of each niche's leading products in the Russian App Store and Google Play and, for business software, on Startpack (`s10_ru_reviews_*`, market `ru`; settings and thresholds in `config/ru_reviews.yaml`).
 
-**Collection.** Per niche and store: the relevant apps with the most ratings from the S5 App Store set and the S8 Google Play set (by default up to 8 per store, at least 20 ratings each). App Store: the public reviews RSS, at most the 500 newest reviews per app. Google Play: the 500 newest Russian reviews. Only the last 12 months are kept.
+**Collection.** App stores, per niche and store: the relevant apps with the most ratings from the S5 App Store set and the S8 Google Play set (by default up to 8 per store, at least 20 ratings each). App Store: the public reviews RSS, at most the 500 newest reviews per app. Google Play: the 500 newest Russian reviews. Only the last 12 months are kept. Startpack (startpack.ru), the Russian analogue of Capterra, carries the B2B voice that app stores lack: the products listed per niche in `config/startpack_map.yaml`, up to 200 newest reviews each (pros, cons, text), last 36 months. Its categories are broad and overlap (an online-booking category mixes fitness CRMs, clinics and hotel PMS), so the map lists products by hand rather than taking whole categories. B2B products collect reviews slowly: in a 24-month window half of the B2B niches tried on 2026-11-20 had fewer than 80 reviews, hence 36 months.
 
 **Labelling.** Up to 240 reviews per niche with at least 40 characters, drawn round-robin across apps so the leader does not drown the smaller players. The LLM marks whether a review is about the app or about the offline service behind it (the driver, the salon, the shop), the intent, the pain, the switch and willingness to pay. Shares are over reviews about the app. **Unmet needs** = missing feature + price + switching: what a new product could offer. **Quality** = bugs + UX + ads + support: the incumbents do the job badly.
 
@@ -498,9 +498,9 @@ Reddit hears almost no Russian speakers, yet most shortlisted niches have geo `b
 | Mixed | everything else |
 | Quiet | fewer than 80 labeled reviews about the app, or fewer than 2 apps |
 
-Why relative: written reviews lean negative, since the unhappy user is the one who writes. An absolute complaint threshold like the Reddit rule's 20 % would pass nearly every niche, so a share must stand out against the other niches of the run and clear an absolute floor. With fewer than 6 measured niches percentiles mean nothing and the floors alone decide. The thresholds start as a draft (`status: draft`, a banner in the report) and are fixed before the first real verdicts are read, under the same rules as the score weights.
+Why relative: written reviews lean negative, since the unhappy user is the one who writes. An absolute complaint threshold like the Reddit rule's 20 % would pass nearly every niche, so a share must stand out against the other niches of the run and clear an absolute floor. Percentiles are taken within a segment, B2C + prosumer or B2B, as in the score: the segments are heard through different sources with different biases (app stores lean negative, Startpack leans positive), and one pooled cohort would rank the sources, not the niches. With fewer than 6 measured niches in a segment percentiles mean nothing and the floors alone decide. The thresholds start as a draft (`status: draft`, a banner in the report) and are fixed before the first real verdicts are read, under the same rules as the score weights.
 
-**Biases:** reviews come from people who already use an app, so they show what is missing in existing products, not demand from people who have none. RuStore and web-only services are not covered, so B2B niches without mobile apps are quiet here. For big apps the 500-review cap covers days or weeks, not a year.
+**Biases:** reviews come from people who already use a product, so they show what is missing in existing products, not demand from people who have none. Startpack reviews arrive in vendor campaigns (bursts of same-day five-star reviews from new accounts), so one product can be most of a niche's B2B voice: the reason then carries a caution when one product gives more than 60 % of the sample. RuStore is not covered, and a B2B niche without mobile apps or Startpack products is quiet here. For big apps the 500-review cap covers days or weeks, not a year.
 
 ---
 

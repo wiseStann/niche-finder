@@ -467,7 +467,7 @@ sources:
         cost: $0
         limits: "403"
         probe: {date: 2026-09-17, http: 403, note: "dead end"}
-    caveats: ["Reddit is US / English; Russian-language voice: app reviews of the RU App Store and Google Play (s10_ru_reviews_*), Otvety Mail.ru planned (otvet_mail_ru); otzovik / VK / Telegram / 4PDA by hand"]
+    caveats: ["Reddit is US / English; Russian-language voice: app reviews of the RU App Store and Google Play (s10_ru_reviews_*), Otvety Mail.ru probed and thin (otvet_mail_ru); otzovik / VK / Telegram / 4PDA by hand"]
     plan: "Add 'buyer' subreddits (r/smallbusiness, r/Entrepreneur, r/SaaS) to the markers of 'which tool do you use for X' - partly present in the reddit term list already"
 
   - id: otvet_mail_ru
@@ -482,28 +482,31 @@ sources:
     freshness: daily
     status: planned
     adapter: null
-    priority: P2
+    priority: P3
     access:
       - method: api
         endpoint: "https://otvet.mail.ru/api/topic/question/<id> ; /api/topic/answers/<id> (the site's own JSON, used by its Nuxt front end)"
         auth: none
         cost: $0
-        limits: "unofficial, may change without notice"
-        probe: {date: 2026-11-20, http: 200, note: "question and answers as JSON without a key"}
+        limits: "unofficial, may change without notice; old questions are served too (id 45.7 M = 2010, 230 M = 2022, 270 M = November 2026)"
+        probe: {date: 2026-11-20, http: 200, note: "question and answers (replies, best_replies) as JSON without a key"}
       - method: api
-        endpoint: "https://otvet.mail.ru/api/topic/search?text=..."
+        endpoint: "https://otvet.mail.ru/api/topic/search?text=...&sort=rel&limit=20&offset=N"
         auth: none
         cost: $0
-        limits: "20 recent posts sorted by date, barely related to the query - useless for finding questions"
-        probe: {date: 2026-11-20, http: 200, note: "'programma dlya ucheta sklada' returned posts about the USA, Windows admin rights and cutlets"}
+        limits: "without sort=rel the results are recent posts barely related to the query; with it the first 2 pages are relevant, deeper pages fall back to recent noise"
+        probe: {date: 2026-11-20, http: 200, note: "'prilozhenie dlya ucheta raskhodov' -> 'Posovetuyte prilozhenie dlya vedeniya ucheta dokhodov i raskhodov' (2024) and similar"}
       - method: serp
-        endpoint: "DataForSEO Google SERP 'site:otvet.mail.ru <query>' (sources/dataforseo.serp), then the question JSON by id"
+        endpoint: "DataForSEO Google SERP 'site:otvet.mail.ru <query>'"
         auth: "DataForSEO login"
-        cost: "a fraction of a cent per query"
-        limits: "much of the archive is 2008-2015: filter by created_at"
-        probe: {date: 2026-11-20, http: null, note: "not tried"}
-    caveats: ["Relaunched by VK in May 2025, 38.6 M monthly users (Mediascope, January 2025); a young mass audience - weak for B2B", "Yandex Q is read-only since June 2023: an archive, no fresh voice"]
-    plan: "Discovery through the SERP, questions and answers through the JSON API, then the S10 labelling (seeking / complaint / switching / price) as for Reddit"
+        cost: "not needed: sort=rel finds the same questions for free"
+        limits: "Google in DataForSEO rejects location_code 2643 (Russia)"
+        probe: {date: 2026-11-20, http: 200, note: "40501 Invalid Field: 'location_code'"}
+    caveats:
+      - "Relaunched by VK in May 2025, 38.6 M monthly users (Mediascope, January 2025); a young mass audience"
+      - "Thin recent signal (probe 2026-11-20, 6 niches, RU category/problem queries, first 3 pages, query words in the title): 36-128 relevant questions per niche over all years, mostly 2008-2020; since 2023 - budgeting 20, calories 30, workout log 16, shift scheduling 10, landlords 3, auto repair 2"
+      - "Yandex Q is read-only since June 2023: an archive, no fresh voice"
+    plan: "Not worth a stage for now: Russian B2C voice is covered by app reviews (thousands per niche), and Otvety is nearly empty for B2B. Revisit only as a qualitative block (questions, recommended products) for B2C or info-product topics"
 
   # ══════════════════════════════════════════════════════════════════════════
   # CROWDFUNDING - pre-order as demand before the product
@@ -1449,7 +1452,7 @@ sources:
         cost: $0
         limits: "open"
         probe: {date: 2026-09-17, http: 200, note: "works"}
-    caveats: []
+    caveats: ["App pages carry no review texts (probe 2026-11-20): not a buyer-voice source"]
     plan: "-"
 
   - id: startpack
@@ -1457,20 +1460,52 @@ sources:
     group: ru_registry
     geo: ru
     url: https://startpack.ru
-    role: [evaluation]
-    signals: ["Russian SaaS catalogue by category - the Russian analogue of Capterra"]
-    stages: [s0]
-    feeds: []
-    freshness: weekly
-    status: blocked
-    adapter: null
-    priority: none
+    role: [voice, evaluation]
+    signals: ["s10: Russian B2B reviews (rating, pros, cons, text) of the products listed per niche - unmet needs, quality complaints, switching; the voice app stores do not have for B2B"]
+    stages: [s10]
+    feeds: ["data/out/ru_reviews_*.csv|jsonl|json (store = startpack)"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s10_ru_reviews_fetch
+    priority: P1
     access:
+      - method: html
+        endpoint: "https://startpack.ru/application/<code>/reviews?sort_by=date&sort_desc=desc&page=N (50 reviews a page, schema.org Review); /category/<slug>?page=N (products with review counts)"
+        auth: none
+        cost: $0
+        limits: "robots.txt allows these pages (it disallows /review/, /rest/, /goto/) and sets ai-input=yes, ai-train=no; the site is a JS front end, but these pages are rendered on the server; 1 request/s"
+        probe: {date: 2026-11-20, http: 200, note: "Bitrix24: 696 reviews, all 50 on page 1 from 2026; 2,228 products in the sitemap, 165 categories"}
       - method: html
         endpoint: "https://startpack.ru/category/..."
         auth: none
         cost: $0
-        limits: "403"
-        probe: {date: 2026-09-17, http: 403, note: "closed"}
-    caveats: []
-    plan: "Not worth implementing"
+        limits: "403 at the earlier probe"
+        probe: {date: 2026-09-17, http: 403, note: "closed then"}
+    caveats:
+      - "Leans positive: vendors run review campaigns (bursts of same-day five-star reviews from new accounts); one product can be most of a niche's reviews"
+      - "Categories are broad and overlap, so products are mapped to niches by hand (config/startpack_map.yaml)"
+      - "B2B reviews accumulate slowly: the window is 36 months; in 24 months half of the B2B niches tried had fewer than 80 reviews"
+    plan: "Done (2026-11-20): a third store in s10_ru_reviews_*; percentiles within the B2C and B2B segments"
+
+  - id: vc_ru
+    name: vc.ru (Osnova)
+    group: community
+    geo: ru
+    url: https://vc.ru
+    role: [voice]
+    signals: ["entrepreneurs' posts and comments; in practice niche posts are mostly vendor SEO content - a supply signal, not buyer voice"]
+    stages: [s10]
+    feeds: []
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P3
+    access:
+      - method: api
+        endpoint: "https://api.vc.ru/v2.10/search/posts?q=... (anonymous; params sorting, dateFrom, editorial)"
+        auth: none
+        cost: $0
+        limits: "unofficial; loose matching ('total' in the thousands for a niche query)"
+        probe: {date: 2026-11-20, http: 200, note: "'programma dlya fitnes kluba': 11 vendor posts from 2024 with 0 comments; long comment threads sit under general posts, not niche ones"}
+    caveats: ["Niche-specific posts are vendor content marketing; buyer comments are few"]
+    plan: "Not a buyer-voice source; maybe a supply signal (vendor content intensity, indie builders posting launches)"

@@ -1,0 +1,68 @@
+# Startpack products per niche for the Russian review layer (S10, s10_ru_reviews_fetch): the voice of Russian B2B
+# buyers, which the App Store and Google Play do not have.
+#
+# Startpack (startpack.ru) is a catalogue of business software with user reviews. Its categories are broad and overlap
+# (an online-booking category mixes fitness CRMs, clinics and hotel PMS), so each niche lists its products explicitly:
+#   apps:        product codes from startpack.ru/application/<code>, most relevant first (at most fetch.apps_per_store are used)
+#   categories:  optional: add the products of whole categories (startpack.ru/category/<slug>) with the most reviews
+#   exclude:     optional: product codes to drop from the categories
+#   note:        why these products, and where they are only a proxy for the niche
+# Niches without an entry are not looked up on Startpack.
+#
+# Draft of 2026-11-20, from the category pages (products with at least 5 reviews). Review it before reading the
+# verdicts. No products with reviews were found for: shift-scheduling-deskless, small-landlords-pm,
+# marketplace-seller-analytics, digital-signage-smb, cookie-consent-gdpr-widgets, esignature-smb (one product),
+# staffing-agencies-ats, reviews-reputation-local.
+
+gym-martial-arts-studios:
+  apps: [fitbase, 1c-fitness-club, alfacrm]
+  note: "Fitness-club and sports-school CRMs; Alfa CRM serves training centres and sports schools alike"
+
+salon-beauty-booking:
+  apps: [dikidi-business, yclients, easyweek, beauty-pro, get-in-line]
+
+tutoring-language-schools:
+  apps: [alfacrm, holyhope, moyklass]
+
+ru-online-schools-experts:
+  apps: [skillspace, gurucan, coreapp, prodamus-xl, bazium]
+  note: "Course platforms; Bazium is also a site builder"
+
+sms-marketing-smb:
+  apps: [smsgorod, smsintel, smsprofi, exolve, unisender-email, notisend]
+  note: "UniSender and NotiSend sell e-mail and SMS: many of their reviews are about e-mail"
+
+loyalty-wallet-passes:
+  apps: [boomerangme, teyca, cloudloyalty, kilbil, samosale, getmeback, rarus]
+  note: "Boomerangme and TEYCA issue Wallet cards; the rest are loyalty platforms for retail and services"
+
+ai-phone-receptionist-local:
+  apps: [voicebox, zvonobot, neuron, calldog, oki-toki]
+  note: "Proxy: Russian voice robots and auto-dialers are mostly outbound; no inbound AI receptionist with reviews"
+
+whatsapp-telegram-business-messaging:
+  apps: [salebot, textback, chat2desk, intellectdialog, teletype, whatcrm]
+
+str-hosts-tools:
+  apps: [lite-pms, bnovo-hotel, travelline, kontur-hotel]
+  note: "Proxy: PMS and channel managers for hotels, hostels and apartments; short-term rental hosts use them too"
+
+auto-repair-shops:
+  apps: [stocrm, remont-online-workshop, rocketwash]
+  note: "stoCRM is auto-service CRM; RemOnline serves repair businesses in general; RocketWash is car wash and detailing"
+
+home-services-field-ops:
+  apps: [planado, mobiforce-management-employees, hubex, okdesk]
+  note: "Field-service management: requests, dispatch, mobile technicians"
+
+florists-software:
+  apps: [posiflora]
+
+ctrl-smb-crm:
+  apps: [amocrm-online, 1c-bitrix24, megaplan-business-automation, aspro-cloud, brizo, okocrm, prostoy-business, wirecrm-system]
+
+ctrl-task-manager:
+  apps: [yougile, weeek, kaiten, shtab, worksection-project-management, planfix-project-management, moo-team, ganttpro-chart]
+
+ctrl-website-builder:
+  apps: [tilda-publishing, nethouse-website-builder, tobiz, creatium, lpmotor, ukit, bloxy, wix-create-site]

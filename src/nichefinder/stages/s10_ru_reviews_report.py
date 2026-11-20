@@ -1,13 +1,17 @@
-"""Russian app-review voice: the verdict per niche (data/out/ru_reviews_verdict.csv) and the report reports/S10-ru-reviews.md.
+"""Russian review voice (App Store, Google Play, Startpack): the verdict per niche (data/out/ru_reviews_verdict.csv) and
+the report reports/S10-ru-reviews.md.
 
 Input: ru_reviews_apps.csv, ru_reviews_docs.jsonl (s10_ru_reviews_fetch), ru_reviews_llm.csv, ru_reviews_themes.json
-(s10_ru_reviews_classify), score_final.csv (S6, optional), config/ru_reviews.yaml (`verdict`, `sample`, `status`).
+(s10_ru_reviews_classify), score_final.csv (S6, optional), niches.yaml (side), config/ru_reviews.yaml (`verdict`,
+`sample`, `status`).
 
 The verdict is a rule, not a score, and it does not change the S6 verdict (see reviews_verdicts()). It is relative:
 written reviews lean negative, since the unhappy user is the one who writes, so an absolute complaint threshold such as
 the Reddit rule's 20 % would pass nearly every niche. A share must be in the top of the cohort (mid-rank percentile among
-the niches measured in this run) and above an absolute floor. With fewer than `verdict.min_cohort` measured niches the
-floors alone decide. While config/ru_reviews.yaml has `status: draft` the report says so at the top.
+the niches of the same segment measured in this run: B2C + prosumer, or B2B) and above an absolute floor. Segments are
+separate because their sources differ: app stores for B2C, mostly Startpack for B2B, which leans positive. With fewer
+than `verdict.min_cohort` measured niches in a segment the floors alone decide. While config/ru_reviews.yaml has
+`status: draft` the report says so at the top.
 """
 from __future__ import annotations
 
@@ -21,13 +25,13 @@ from nichefinder.stages.info_score import pct
 from nichefinder.stages.s10_ru_reviews_fetch import APPS, DOCS, STORE_NAME, config_status, settings
 from nichefinder.workspace import Workspace
 
-SUMMARY = "Report: Russian app-review voice per niche (verdict rule, pain themes, switches)"
+SUMMARY = "Report: Russian review voice per niche (verdict rule within B2C/B2B, pain themes, switches)"
 KEYS: tuple[str, ...] = ()
 NEEDS: tuple[str, ...] = ()
 
 VERD = {"green": "🟢", "yellow": "🟡", "red": "🔴"}
 VERDICT_COLS = ["niche_id", "verdict", "reason", "about_app", "apps", "unmet_share", "unmet_pct", "quality_share", "quality_pct",
-                "praise_share", "cohort", "status"]
+                "praise_share", "segment", "cohort", "status"]
 
 
 def f(x, d=None):
@@ -42,26 +46,34 @@ def pc(x) -> str:
     return "-" if v is None else f"{v:.0%}"
 
 
-def reviews_verdicts(llm_rows: dict[str, dict], cfg: dict) -> dict[str, dict]:
-    """niche_id -> {verdict, reason, unmet_pct, quality_pct, cohort}. Labels: 🟢 gap, 🟡 quality, 🟡 content, 🟡 mixed, ⚪ quiet.
-    `llm_rows` are rows of ru_reviews_llm.csv; `cfg` is the `verdict` block of config/ru_reviews.yaml."""
+def segment(side: str) -> str:
+    """Cohort of a niche: B2C (b2c, prosumer) or B2B, as in s6_score. Sources differ by segment (app stores vs Startpack)."""
+    return "B2C" if side in ("b2c", "prosumer") else "B2B"
+
+
+def reviews_verdicts(llm_rows: dict[str, dict], cfg: dict, segments: dict[str, str] | None = None) -> dict[str, dict]:
+    """niche_id -> {verdict, reason, unmet_pct, quality_pct, segment, cohort}. Labels: 🟢 gap, 🟡 quality, 🟡 content, 🟡 mixed,
+    ⚪ quiet. `llm_rows` are rows of ru_reviews_llm.csv; `cfg` is the `verdict` block of config/ru_reviews.yaml; `segments`
+    maps niche_id to its cohort (percentiles are taken within it; one cohort when omitted)."""
+    seg = {nid: (segments or {}).get(nid, "all") for nid in llm_rows}
     measured = {nid: r for nid, r in llm_rows.items()
                 if (f(r.get("about_app"), 0) or 0) >= cfg["min_app_reviews"] and (f(r.get("apps"), 0) or 0) >= cfg["min_apps"]}
-    floors_only = len(measured) < cfg["min_cohort"]
-    un = [f(r["unmet_share"], 0) for r in measured.values()]
-    qu = [f(r["quality_share"], 0) for r in measured.values()]
     out = {}
     for nid, r in llm_rows.items():
+        peers = [m for m in measured if seg[m] == seg[nid]]
         if nid not in measured:
-            out[nid] = {"verdict": "⚪ quiet", "unmet_pct": "", "quality_pct": "", "cohort": len(measured),
+            out[nid] = {"verdict": "⚪ quiet", "unmet_pct": "", "quality_pct": "", "segment": seg[nid], "cohort": len(peers),
                         "reason": f"{int(f(r.get('about_app'), 0) or 0)} labeled reviews about the app from {int(f(r.get('apps'), 0) or 0)} apps "
-                                  f"(needs {cfg['min_app_reviews']} and {cfg['min_apps']}) - the Russian stores say too little about this niche"}
+                                  f"(needs {cfg['min_app_reviews']} and {cfg['min_apps']}) - Russian reviews say too little about this niche"}
             continue
+        floors_only = len(peers) < cfg["min_cohort"]
+        un = [f(measured[m]["unmet_share"], 0) for m in peers]
+        qu = [f(measured[m]["quality_share"], 0) for m in peers]
         u, q, p = f(r["unmet_share"], 0), f(r["quality_share"], 0), f(r["praise_share"], 0)
         pu, pq = pct(un, u), pct(qu, q)
         top_u = floors_only or pu >= cfg["gap_pct"]
         top_q = floors_only or pq >= cfg["quality_pct"]
-        rank = "" if floors_only else f", percentile {pu:.0%} of {len(measured)} niches"
+        rank = "" if floors_only else f", percentile {pu:.0%} of {len(peers)} {seg[nid]} niches"
         if u >= cfg["gap_floor"] and top_u:
             v, why = "🟢 gap", (f"{u:.0%} of reviews about the app ask for a missing feature, complain about price or switch "
                                 f"(features {pc(r['missing_feature_share'])}, price {pc(r['pricing_share'])}, switching {pc(r['switching_share'])}){rank}")
@@ -72,7 +84,10 @@ def reviews_verdicts(llm_rows: dict[str, dict], cfg: dict) -> dict[str, dict]:
             v, why = "🟡 content", f"praise {p:.0%}, unmet needs {u:.0%}, quality complaints {q:.0%} - users are broadly happy with what exists"
         else:
             v, why = "🟡 mixed", f"unmet needs {u:.0%}, quality complaints {q:.0%}, praise {p:.0%} - no share stands out against the cohort"
-        out[nid] = {"verdict": v, "reason": why, "unmet_pct": round(pu, 3), "quality_pct": round(pq, 3), "cohort": len(measured)}
+        top = f(r.get("top_app_share"), 0) or 0
+        if top > cfg["top_app_warn"]:
+            why += f"; caution: {top:.0%} of these reviews are about one product ({str(r.get('top_app', '')).split(':', 1)[-1]}), so this is mostly its users' voice"
+        out[nid] = {"verdict": v, "reason": why, "unmet_pct": round(pu, 3), "quality_pct": round(pq, 3), "segment": seg[nid], "cohort": len(peers)}
     return out
 
 
@@ -112,52 +127,56 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     themes = json.loads(tp.read_text(encoding="utf-8")) if tp.is_file() else {}
     score = {r["niche_id"]: r for r in rd("score_final.csv")}
     per_n, per_a = docs_stats(ws, int(scfg["min_chars"]))
-    verdicts = reviews_verdicts(llm, vcfg)
+    segments = {n["id"]: segment(n.get("side", "")) for n in niches.load_niches(ws)}
+    verdicts = reviews_verdicts(llm, vcfg, segments)
     with open(ws.out("ru_reviews_verdict.csv"), "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=VERDICT_COLS)
         w.writeheader()
         for nid, v in verdicts.items():
             r = llm[nid]
-            w.writerow({"niche_id": nid, **{k: v[k] for k in ("verdict", "reason", "unmet_pct", "quality_pct", "cohort")},
+            w.writerow({"niche_id": nid, **{k: v[k] for k in ("verdict", "reason", "unmet_pct", "quality_pct", "segment", "cohort")},
                         **{k: r.get(k, "") for k in ("about_app", "apps", "unmet_share", "quality_share", "praise_share")}, "status": status})
 
     ids = list(dict.fromkeys(r["niche_id"] for r in apps))
     ids.sort(key=lambda x: -(f(score.get(x, {}).get("score"), 0) or 0))
-    cohort = next((v["cohort"] for v in verdicts.values()), 0)
+    cohorts = {v["segment"]: v["cohort"] for v in verdicts.values()}
+    cohort_note = "; ".join(f"{s} {c} measured niches" + (f" (< {vcfg['min_cohort']}: the floors alone decide)" if c < vcfg["min_cohort"] else "")
+                            for s, c in sorted(cohorts.items()))
     n_rev = sum(per_n[x]["n"] for x in ids)
-    L = [f"# S10: buyer voice - Russian app reviews (updated {ws.today.isoformat()})", ""]
+    L = [f"# S10: buyer voice - Russian reviews: App Store, Google Play, Startpack (updated {ws.today.isoformat()})", ""]
     if status != "fixed":
         L += ["> **DRAFT.** The thresholds in `config/ru_reviews.yaml` are not fixed yet (`status: draft`). Fix them before reading "
               "the verdicts below as a decision, then change them only with a written reason.", ""]
     n_lab = sum(int(f(r["classified"], 0) or 0) for r in llm.values())
-    L += [f"{len(ids)} niches, {len(apps)} apps, {n_rev:,} reviews from the last {fcfg['window_months']} months; {n_lab:,} labeled by an LLM.", "",
+    L += [f"{len(ids)} niches, {len(apps)} products, {n_rev:,} reviews (app stores: the last {fcfg['window_months']} months, Startpack: the last "
+          f"{fcfg['startpack_window_months']}); {n_lab:,} labeled by an LLM.", "",
           "**How it was collected.** For each shortlisted niche whose geo includes Russia: the relevant apps with the most ratings in the Russian "
           f"App Store (`s5_appstore`) and Google Play (`s8_gplay_*`), up to {fcfg['apps_per_store']} per store with at least {fcfg['min_ratings']} ratings. "
           f"App Store: the public reviews RSS, the {50 * int(fcfg['appstore_pages'])} newest reviews at most. Google Play: the {fcfg['gplay_reviews']} newest "
-          "Russian reviews (google-play-scraper). No keys.", "",
+          "Russian reviews (google-play-scraper). Startpack (a catalogue of business software, the B2B voice): the products listed for the niche in "
+          f"`config/startpack_map.yaml`, up to {50 * int(fcfg['startpack_pages'])} newest reviews each (pros, cons, text). No keys.", "",
           f"**What is measured.** A sample of up to {scfg['max_reviews']} reviews per niche with at least {scfg['min_chars']} characters, drawn evenly "
           "across apps, is labeled by an LLM: whether the review is about the app or the service behind it, the intent (bug, UX, missing feature, price, "
           "ads, support, switching, praise), the pain, the switch \"from -> to\", willingness to pay and a quote. Shares are over reviews about the app: "
           "**unmet needs** = missing feature + price + switching (what a new product could offer), **quality** = bugs + UX + ads + support "
           "(the incumbents do the job badly). Pains are then clustered into themes.", "",
           "**Limits.** Reviews come from users of existing apps: they show what is missing in what people already use, not demand from people "
-          "who have no app yet. Stores bias the sample (apps ask happy users for ratings; angry users write). RuStore and web services are not "
-          "covered, so B2B niches without mobile apps are quiet here. App Store RSS serves at most 500 newest reviews per app, so for big apps the "
-          "window is days or weeks, not a year. LLM labels and themes are not hand-validated.", "",
+          "who have no app yet. Stores bias the sample (apps ask happy users for ratings; angry users write). Startpack leans positive: vendors run "
+          "review campaigns (bursts of same-day five-star reviews from new accounts), which is why B2B niches form their own cohort. RuStore is not "
+          "covered, and a B2B niche without mobile apps or Startpack products is quiet here. App Store RSS serves at most 500 newest reviews per app, so "
+          "for big apps the window is days or weeks, not a year. LLM labels and themes are not hand-validated.", "",
           "**Verdict (a rule, not a score; it does not change S6):** 🟢 \"gap\" - unmet needs >= "
           f"{vcfg['gap_floor']:.0%} and in the top of the cohort (percentile >= {vcfg['gap_pct']:.0%}); 🟡 \"quality\" - not a gap, but bug/UX/ads/support "
           f"complaints >= {vcfg['quality_floor']:.0%} and percentile >= {vcfg['quality_pct']:.0%}; 🟡 \"content\" - praise >= {vcfg['content_praise']:.0%}; "
           f"🟡 \"mixed\" - the rest; ⚪ \"quiet\" - fewer than {vcfg['min_app_reviews']} labeled reviews about the app or fewer than {vcfg['min_apps']} apps. "
-          "Written reviews lean negative, so an absolute complaint threshold would pass nearly every niche; the rule compares niches with each other. "
-          + (f"**This run has {cohort} measured niches (< {vcfg['min_cohort']}): percentiles are not used, the floors alone decide.**"
-             if cohort < vcfg["min_cohort"] else f"Cohort: {cohort} measured niches."), "",
+          "Written reviews lean negative, so an absolute complaint threshold would pass nearly every niche; the rule compares niches with each other, "
+          f"within their segment (B2C + prosumer, B2B - the sources and their biases differ). **Cohorts: {cohort_note or 'none'}.**", "",
           "## 1. Summary", "",
-          "| # | Niche | S6 | Score | Reviews verdict | Apps AS / GP | Reviews (substantive) | 1-2 stars | Unmet: feature / price / switch | Quality | Praise | Pain theme #1 | Switch #1 |",
+          "| # | Niche | S6 | Score | Reviews verdict | Products AS / GP / SP | Reviews (substantive) | 1-2 stars | Unmet: feature / price / switch | Quality | Praise | Pain theme #1 | Switch #1 |",
           "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for k, nid in enumerate(ids, 1):
         s, c, l, v = score.get(nid, {}), per_n[nid], llm.get(nid), verdicts.get(nid)
-        n_as = sum(1 for r in by_app[nid] if r["store"] == "appstore")
-        n_gp = sum(1 for r in by_app[nid] if r["store"] == "gplay")
+        n_as, n_gp, n_sp = (sum(1 for r in by_app[nid] if r["store"] == st) for st in ("appstore", "gplay", "startpack"))
         low = f"{c['low'] / c['n']:.0%}" if c["n"] else "-"
         if l:
             unmet = f"**{pc(l['unmet_share'])}**: {pc(l['missing_feature_share'])} / {pc(l['pricing_share'])} / {pc(l['switching_share'])}"
@@ -165,7 +184,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         else:
             unmet, rest = "-", "- | - | - | -"
         L.append(f"| {k} | {names.get(nid, nid)} | {VERD.get(s.get('verdict'), '')} | {s.get('score', '')} | {v['verdict'] if v else '- (no LLM labels)'} | "
-                 f"{n_as} / {n_gp} | {c['n']} ({c['subst']}) | {low} | {unmet} | {rest} |")
+                 f"{n_as} / {n_gp} / {n_sp} | {c['n']} ({c['subst']}) | {low} | {unmet} | {rest} |")
     groups = defaultdict(list)
     for nid in ids:
         if nid in verdicts:

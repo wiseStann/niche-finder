@@ -1,5 +1,5 @@
-"""Label Russian app reviews with an LLM (what each review is about, the pain it names, switching, willingness to pay),
-then cluster the pains of each niche into themes.
+"""Label Russian reviews (App Store, Google Play, Startpack) with an LLM: what each review is about, the pain it names,
+switching, willingness to pay; then cluster the pains of each niche into themes.
 
 Input: data/out/ru_reviews_docs.jsonl (s10_ru_reviews_fetch), config/ru_reviews.yaml (`sample`).
 Sample per niche: reviews with at least `sample.min_chars` characters of text (shorter ones such as "Super!" name no
@@ -11,7 +11,8 @@ pain, products, from_to, wtp and a verbatim quote. Shares are over reviews about
   unmet_share   = missing_feature + pricing + switching   (what a new entrant could offer)
   quality_share = bug + ux + ads + support                 (the incumbents do the job badly)
 Output: data/out/ru_reviews_items.jsonl (per review), ru_reviews_themes.json (per niche: pain themes with counts and
-quotes, switches, intents per app), ru_reviews_llm.csv (per niche). LLM as in s10_reddit_classify (LLM_API_KEY,
+quotes, switches, intents per app), ru_reviews_llm.csv (per niche; top_app_share = the share of the sample's reviews about
+the app that come from its largest product: when one product's review campaign dominates, the niche's voice is its voice). LLM as in s10_reddit_classify (LLM_API_KEY,
 LLM_BASE_URL, LLM_MODEL; cached in data/cache/llm/). Cost: one call per 12 reviews plus one clustering call per niche;
 --dry prints the sample sizes and a token estimate without any call.
 Usage: nf run s10_ru_reviews_classify -- [--niches a,b] [--dry]
@@ -28,7 +29,7 @@ from nichefinder import llm, niches
 from nichefinder.stages.s10_ru_reviews_fetch import DOCS, STORE_NAME, settings
 from nichefinder.workspace import Workspace
 
-SUMMARY = "LLM labels for Russian app reviews: about, intent, pain, switching, willingness to pay"
+SUMMARY = "LLM labels for Russian reviews: about, intent, pain, switching, willingness to pay"
 KEYS: tuple[str, ...] = ("LLM_API_KEY",)
 NEEDS: tuple[str, ...] = ()
 
@@ -37,9 +38,10 @@ INTENTS = ("bug", "ux", "missing_feature", "pricing", "ads", "support", "switchi
 UNMET = ("missing_feature", "pricing", "switching")
 QUALITY = ("bug", "ux", "ads", "support")
 
-SYSTEM = ("You label app store reviews (mostly in Russian) of apps in a specific niche. For each item return strict JSON. Fields: "
+SYSTEM = ("You label reviews (mostly in Russian) of apps and online services in a specific niche, from the App Store, Google Play and "
+          "Startpack (a catalogue of business software where reviews come as pros, cons and text). For each item return strict JSON. Fields: "
           "i (item index); "
-          "about (one of: app = about the app itself: features, bugs, design, price, ads, support; service = about the offline service or goods "
+          "about (one of: app = about the app or service itself: features, bugs, design, price, ads, support; service = about the offline service or goods "
           "behind the app (a driver, a salon, a delivery, a shop, a bank branch), not about the software; off_topic = empty, spam or unintelligible); "
           "intent (for about=app one of: bug = crashes, errors, data loss, stopped working; ux = inconvenient or confusing to use, slow; "
           "missing_feature = asks for a feature or says the app lacks something the user needs; pricing = price, subscription, paywall, payment problems; "
@@ -168,8 +170,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                  "about": dict(Counter(r["about"] for r in recs)), "wtp": dict(Counter(r["wtp"] for r in recs)), "n": len(recs)}
         pains = [r for r in recs if r["about"] == "app" and r["pain"] and r["intent"] in UNMET + QUALITY]
         if pains:
-            user = (f"Niche: {names.get(nid, nid)}. Below are {len(pains)} pain statements extracted from Russian App Store and Google Play reviews "
-                    "of the niche's apps, one per line as 'k: [intent] pain | quote'. Group them into 6-12 themes (distinct unmet needs or complaints). "
+            user = (f"Niche: {names.get(nid, nid)}. Below are {len(pains)} pain statements extracted from Russian reviews (App Store, Google Play, "
+                    "Startpack) of the niche's apps and services, one per line as 'k: [intent] pain | quote'. Group them into 6-12 themes (distinct unmet needs or complaints). "
                     "For each theme return: theme (short English name), kind (unmet = a missing feature, price or switching; quality = bugs, UX, ads or "
                     "support of existing apps), description (one sentence), count (number of statements in it), ids (list of k), "
                     "quotes (2 best verbatim quotes from the list). Output JSON {\"themes\": [...]}, sorted by count desc.\n\n"
@@ -185,8 +187,10 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         sh = shares(recs)
         wtp = Counter(r["wtp"] for r in recs)
         top = t_out["themes"][0] if t_out["themes"] else {}
+        top_app = max(per_app.items(), key=lambda kv: kv[1]["n"], default=("", Counter()))
         summary.append({"niche_id": nid, "sampled": len(sel), "classified": len(recs), "apps": len({r["app_id"] for r in recs if r["about"] == "app"}),
                         **sh, "app_share": round(sh["about_app"] / max(1, len(recs)), 3),
+                        "top_app": top_app[0], "top_app_share": round(top_app[1]["n"] / max(1, sh["about_app"]), 3),
                         "too_expensive": wtp.get("too_expensive", 0), "worth_it": wtp.get("worth_it", 0), "wants_free": wtp.get("wants_free", 0),
                         "cancelled": wtp.get("cancelled", 0), "themes": len(t_out["themes"]), "top_theme": top.get("theme", ""),
                         "top_theme_kind": top.get("kind", ""), "top_theme_count": top.get("count", ""),

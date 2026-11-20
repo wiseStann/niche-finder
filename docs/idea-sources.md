@@ -90,8 +90,8 @@ The generated registry follows.
 
 Generated from [`idea-sources.yaml`](idea-sources.yaml) by `scripts/render_idea_sources.py`. Edit only the YAML.
 
-**50 sources, 77 access methods:** ✅ in_pipeline - 23, 🛠 planned - 8, ✋ manual - 5, ⛔ blocked - 11, 💰 paid - 3.  
-Priorities: P1 - 6, P2 - 20, P3 - 15, none - 9.
+**51 sources, 79 access methods:** ✅ in_pipeline - 24, 🛠 planned - 9, ✋ manual - 5, ⛔ blocked - 10, 💰 paid - 3.  
+Priorities: P1 - 7, P2 - 19, P3 - 17, none - 8.
 
 Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implemented) · ✋ by hand / browser only · ⛔ closed from the probing network · 💰 paid only. **Probe:** the HTTP code of a keyless curl probe (date). **Role:** discovery = entities for the universe, evaluation = a metric for a niche, voice = buyer voice, trend = dynamics over time.
 
@@ -100,12 +100,13 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | P | Source | Group | Stage | Stage groups | What it would give |
 |---|---|---|---|---|---|
 | P1 | Empire Flippers (API) | m_and_a | not implemented | s0, s5, s6 | 29 requests -> a CSV of listings; in the deals stage count ef_listings, ef_sold_12m, ef_median_profit, ef_multiple per niche; in the ceiling stage the median SaaS multiple is an anchor for the exit price |
-| P2 | Otvety Mail.ru (Q&A) | community | not implemented | s10 | Discovery through the SERP, questions and answers through the JSON API, then the S10 labelling (seeking / complaint / switching / price) as for Reddit |
 | P2 | Wellfound (AngelList Talent) | hiring | not implemented | s8, s0 | Walk /role/l/<role>/<location> for 10 roles x 5 locations monthly -> JSON from the HTML -> a company table with high_concept; match to niches. Low priority: HN hiring gives the same more cheaply |
 | P2 | Launching Next | launch | not implemented | s0 | Collect the RSS daily into a cache (accumulate), merge into the universe once a month; use as a third 'launch density' counter (PH + BetaList + LN) |
 | P2 | Quiet Light Brokerage | m_and_a | not implemented | s5, s6 | The same fetcher as Empire Flippers: page -> CSV; multiples by type feed the ceiling stage |
 | P2 | Google Patents (XHR) | patents | not implemented | s5, s6 | For shortlisted niches: total over 24 months and over the 24 months before (YoY), top-3 assignees; an IP:bigtech flag if the top 3 include Google / Apple / Microsoft / Amazon / Meta / Salesforce / Intuit. On demand only - not part of a mandatory run |
 | P2 | Portfolios of top funds (a16z, Sequoia, Accel, Index, NEA, Greylock, ...) | vc_portfolio | not implemented | s0, s6 | A stage for the 5 SSR funds (a16z JSON, Index, NEA, Greylock, Accel) -> a CSV (fund, name, one_liner, category, url); a snapshot every quarter; a VC:crowded flag at >= 3 portfolio companies in a niche goes into the passport |
+| P3 | Otvety Mail.ru (Q&A) | community | not implemented | s10 | Not worth a stage for now: Russian B2C voice is covered by app reviews (thousands per niche), and Otvety is nearly empty for B2B. Revisit only as a qualitative block (questions, recommended products) for B2C or info-product topics |
+| P3 | vc.ru (Osnova) | community | not implemented | s10 | Not a buyer-voice source; maybe a supply signal (vendor content intensity, indie builders posting launches) |
 | P3 | Remote OK (API) | hiring | not implemented | s8 | A daily accumulator into a cache folder; match monthly |
 
 ## Summary table
@@ -125,7 +126,8 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **Indie Hackers** (`indie_hackers`) | community | global | discovery, voice | daily | html_spa · none · $0 | 200 (2026-09-20) | ✋ manual | P3 | s0, s5 |
 | **Hacker News (Algolia API)** (`hacker_news`) | community | global | discovery, voice, trend | realtime | api · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P1 | s8 |
 | **Reddit (Arctic Shift + subredditstats)** (`reddit`) | community | global | voice, trend | daily | api · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s8, s10 |
-| **Otvety Mail.ru (Q&A)** (`otvet_mail_ru`) | community | ru | voice | daily | api · none · $0 | 200 (2026-11-20) | 🛠 planned | P2 | s10 |
+| **Otvety Mail.ru (Q&A)** (`otvet_mail_ru`) | community | ru | voice | daily | api · none · $0 | 200 (2026-11-20) | 🛠 planned | P3 | s10 |
+| **vc.ru (Osnova)** (`vc_ru`) | community | ru | voice | daily | api · none · $0 | 200 (2026-11-20) | 🛠 planned | P3 | s10 |
 | **Kickstarter (Web Robots dumps)** (`kickstarter`) | crowdfunding | global | discovery, evaluation | monthly | bulk_dump · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
 | **Indiegogo** (`indiegogo`) | crowdfunding | global | discovery | daily | html · none · $0 | 403 (2026-09-20) | ⛔ blocked | none | s0 |
 | **Planeta.ru / Boomstarter (RU)** (`ru_crowdfunding`) | crowdfunding | ru | discovery | daily | html · none · $0 | 307 (2026-09-20) | ✋ manual | none | s0 |
@@ -161,7 +163,7 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **Register of Russian software (Ministry of Digital Development)** (`reestr_mincifry`) | ru_registry | ru | evaluation | daily | html_ssr · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s0 |
 | **zakupki.gov.ru (Federal Laws 44-FZ / 223-FZ)** (`zakupki`) | ru_registry | ru | evaluation | daily | html · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s0 |
 | **Bitrix24 Market** (`bitrix24_market`) | ru_registry | ru | evaluation | daily | html · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P3 | s0 |
-| **Startpack** (`startpack`) | ru_registry | ru | evaluation | weekly | html · none · $0 | 403 (2026-09-17) | ⛔ blocked | none | s0 |
+| **Startpack** (`startpack`) | ru_registry | ru | voice, evaluation | daily | html · none · $0 | 200 (2026-11-20) | ✅ in_pipeline | P1 | s10 |
 
 ## Sources by group
 
@@ -430,11 +432,11 @@ Feeds: `data/out/reddit_niche.csv`; `data/out/reddit_voice*.csv|json`; `data/out
 | api | reddit.com/*.json, the official API | application request - the form is closed | $0 | 403 | 403 2026-09-17 - dead end |
 
 Traps:
-- Reddit is US / English; Russian-language voice: app reviews of the RU App Store and Google Play (s10_ru_reviews_*), Otvety Mail.ru planned (otvet_mail_ru); otzovik / VK / Telegram / 4PDA by hand
+- Reddit is US / English; Russian-language voice: app reviews of the RU App Store and Google Play (s10_ru_reviews_*), Otvety Mail.ru probed and thin (otvet_mail_ru); otzovik / VK / Telegram / 4PDA by hand
 
 Plan: Add 'buyer' subreddits (r/smallbusiness, r/Entrepreneur, r/SaaS) to the markers of 'which tool do you use for X' - partly present in the reddit term list already
 
-#### 🛠 Otvety Mail.ru (Q&A) (`otvet_mail_ru`) - P2
+#### 🛠 Otvety Mail.ru (Q&A) (`otvet_mail_ru`) - P3
 
 https://otvet.mail.ru · geo ru · role voice · freshness daily · stage groups s10 · stage not implemented
 
@@ -445,15 +447,32 @@ Feeds: `planned: Russian Q&A documents for the S10 corpus`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| api | https://otvet.mail.ru/api/topic/question/<id> ; /api/topic/answers/<id> (the site's own JSON, used by its Nuxt front end) | none | $0 | unofficial, may change without notice | 200 2026-11-20 - question and answers as JSON without a key |
-| api | https://otvet.mail.ru/api/topic/search?text=... | none | $0 | 20 recent posts sorted by date, barely related to the query - useless for finding questions | 200 2026-11-20 - 'programma dlya ucheta sklada' returned posts about the USA, Windows admin rights and cutlets |
-| serp | DataForSEO Google SERP 'site:otvet.mail.ru <query>' (sources/dataforseo.serp), then the question JSON by id | DataForSEO login | a fraction of a cent per query | much of the archive is 2008-2015: filter by created_at | None 2026-11-20 - not tried |
+| api | https://otvet.mail.ru/api/topic/question/<id> ; /api/topic/answers/<id> (the site's own JSON, used by its Nuxt front end) | none | $0 | unofficial, may change without notice; old questions are served too (id 45.7 M = 2010, 230 M = 2022, 270 M = November 2026) | 200 2026-11-20 - question and answers (replies, best_replies) as JSON without a key |
+| api | https://otvet.mail.ru/api/topic/search?text=...&sort=rel&limit=20&offset=N | none | $0 | without sort=rel the results are recent posts barely related to the query; with it the first 2 pages are relevant, deeper pages fall back to recent noise | 200 2026-11-20 - 'prilozhenie dlya ucheta raskhodov' -> 'Posovetuyte prilozhenie dlya vedeniya ucheta dokhodov i raskhodov' (2024) and similar |
+| serp | DataForSEO Google SERP 'site:otvet.mail.ru <query>' | DataForSEO login | not needed: sort=rel finds the same questions for free | Google in DataForSEO rejects location_code 2643 (Russia) | 200 2026-11-20 - 40501 Invalid Field: 'location_code' |
 
 Traps:
-- Relaunched by VK in May 2025, 38.6 M monthly users (Mediascope, January 2025); a young mass audience - weak for B2B
+- Relaunched by VK in May 2025, 38.6 M monthly users (Mediascope, January 2025); a young mass audience
+- Thin recent signal (probe 2026-11-20, 6 niches, RU category/problem queries, first 3 pages, query words in the title): 36-128 relevant questions per niche over all years, mostly 2008-2020; since 2023 - budgeting 20, calories 30, workout log 16, shift scheduling 10, landlords 3, auto repair 2
 - Yandex Q is read-only since June 2023: an archive, no fresh voice
 
-Plan: Discovery through the SERP, questions and answers through the JSON API, then the S10 labelling (seeking / complaint / switching / price) as for Reddit
+Plan: Not worth a stage for now: Russian B2C voice is covered by app reviews (thousands per niche), and Otvety is nearly empty for B2B. Revisit only as a qualitative block (questions, recommended products) for B2C or info-product topics
+
+#### 🛠 vc.ru (Osnova) (`vc_ru`) - P3
+
+https://vc.ru · geo ru · role voice · freshness daily · stage groups s10 · stage not implemented
+
+Signals:
+- entrepreneurs' posts and comments; in practice niche posts are mostly vendor SEO content - a supply signal, not buyer voice
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://api.vc.ru/v2.10/search/posts?q=... (anonymous; params sorting, dateFrom, editorial) | none | $0 | unofficial; loose matching ('total' in the thousands for a niche query) | 200 2026-11-20 - 'programma dlya fitnes kluba': 11 vendor posts from 2024 with 0 comments; long comment threads sit under general posts, not niche ones |
+
+Traps:
+- Niche-specific posts are vendor content marketing; buyer comments are few
+
+Plan: Not a buyer-voice source; maybe a supply signal (vendor content intensity, indie builders posting launches)
 
 ### crowdfunding - Crowdfunding - a pre-order as demand before the product (B2C hardware / consumer)
 
@@ -1081,18 +1100,29 @@ Feeds: `data/out/ru_b2b_bitrix.csv`
 |---|---|---|---|---|---|
 | html | https://www.bitrix24.ru/apps/?category=... | none | $0 | open | 200 2026-09-17 - works |
 
+Traps:
+- App pages carry no review texts (probe 2026-11-20): not a buyer-voice source
+
 Plan: -
 
-#### ⛔ Startpack (`startpack`) - none
+#### ✅ Startpack (`startpack`) - P1
 
-https://startpack.ru · geo ru · role evaluation · freshness weekly · stage groups s0 · stage not implemented
+https://startpack.ru · geo ru · role voice, evaluation · freshness daily · stage groups s10 · stage `s10_ru_reviews_fetch`
 
 Signals:
-- Russian SaaS catalogue by category - the Russian analogue of Capterra
+- s10: Russian B2B reviews (rating, pros, cons, text) of the products listed per niche - unmet needs, quality complaints, switching; the voice app stores do not have for B2B
+
+Feeds: `data/out/ru_reviews_*.csv|jsonl|json (store = startpack)`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| html | https://startpack.ru/category/... | none | $0 | 403 | 403 2026-09-17 - closed |
+| html | https://startpack.ru/application/<code>/reviews?sort_by=date&sort_desc=desc&page=N (50 reviews a page, schema.org Review); /category/<slug>?page=N (products with review counts) | none | $0 | robots.txt allows these pages (it disallows /review/, /rest/, /goto/) and sets ai-input=yes, ai-train=no; the site is a JS front end, but these pages are rendered on the server; 1 request/s | 200 2026-11-20 - Bitrix24: 696 reviews, all 50 on page 1 from 2026; 2,228 products in the sitemap, 165 categories |
+| html | https://startpack.ru/category/... | none | $0 | 403 at the earlier probe | 403 2026-09-17 - closed then |
 
-Plan: Not worth implementing
+Traps:
+- Leans positive: vendors run review campaigns (bursts of same-day five-star reviews from new accounts); one product can be most of a niche's reviews
+- Categories are broad and overlap, so products are mapped to niches by hand (config/startpack_map.yaml)
+- B2B reviews accumulate slowly: the window is 36 months; in 24 months half of the B2B niches tried had fewer than 80 reviews
+
+Plan: Done (2026-11-20): a third store in s10_ru_reviews_*; percentiles within the B2C and B2B segments
 
