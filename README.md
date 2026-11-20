@@ -121,7 +121,7 @@ Every stage is a separate command. Every external response is cached in the work
 | `s10` | Buyer voice from Reddit |
 | `s6` | Score, gates, verdicts, path to goal, passports |
 | `s7` | HTML leaderboard |
-| `info` | Separate cohort for micro info products sold through short video and Telegram: YouTube autocomplete ideas, Shorts metrics (views, room for newcomers, Telegram funnels, offers), its own score and report |
+| `info` | Separate cohort for micro info products sold through short video and Telegram: topics by Wordstat demand (topic-free intent words, LLM-sorted), YouTube autocomplete ideas, Shorts metrics (views, room for newcomers, Telegram funnels, offers), its own score and report |
 | `ru` | Optional Russian B2B module: software registry, public procurement, Bitrix24 Market, hh.ru, Wordstat |
 
 Inputs, outputs, keys and cost of each of the 63 stages: [docs/stages.md](docs/stages.md).

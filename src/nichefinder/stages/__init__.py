@@ -101,6 +101,7 @@ STAGES: list[Stage] = [
     Stage("s6_passports", "s6"),
     Stage("s7_html", "s7"),
     # Info cohort: short video -> Telegram channel -> micro product (config/info_topics.yaml; its own score)
+    Stage("info_discover", "info", market="ru"),
     Stage("info_suggest", "info"),
     Stage("info_youtube", "info"),
     Stage("info_score", "info"),

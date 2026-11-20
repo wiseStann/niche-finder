@@ -53,8 +53,9 @@ CHANNELS = {
 
 
 class FakeApi:
-    def __init__(self):
+    def __init__(self, videos: dict | None = None):
         self.calls: list[tuple[str, dict, dict]] = []
+        self.videos = VIDEOS if videos is None else videos
 
     def __call__(self, url, headers=None, **kw):
         u = urllib.parse.urlparse(url)
@@ -62,9 +63,9 @@ class FakeApi:
         method = u.path.rsplit("/", 1)[-1]
         self.calls.append((method, q, headers or {}))
         if method == "search":
-            items = [{"id": {"videoId": v}} for v in VIDEOS]
+            items = [{"id": {"videoId": v}} for v in self.videos]
         else:
-            src = VIDEOS if method == "videos" else CHANNELS
+            src = self.videos if method == "videos" else CHANNELS
             items = [src[i] for i in q["id"].split(",") if i in src]
         return http.Response(200, json.dumps({"items": items}))
 
@@ -166,7 +167,7 @@ def test_info_score_gates_verdicts_and_report(tmp_path):
     assert scored["quiet"]["gates"] == "I1:views" and set(scored["quiet"]["flags"].split()) == {"I:top3", "I:no-tg"}
     assert scored["mid"]["verdict"] == "yellow"
     md = ws.report("info.md").read_text(encoding="utf-8")
-    assert "DRAFT weights" in md and "later (quota)" in md
+    assert "DRAFT weights" in md and "- later (quota: not measured yet" in md
 
 
 def test_info_suggest_aggregates_expansions(tmp_path, monkeypatch):
@@ -210,3 +211,80 @@ def test_must_ignores_hashtags_must_not_does_not():
             video("x", 30, 70_000, "A", "Самооценка и уверенность", "2026-05-01", "#прикол")]
     kept = info_youtube.video_rows("s", vids, list(CHANNELS.values()), measure, "ru", must="самооцен", must_not="прикол")
     assert [r["video_id"] for r in kept] == ["w"]          # t: only a hashtag; x: excluded by a hashtag
+
+
+# ---- info_discover ----------------------------------------------------------
+
+def test_discover_demand_drops_nested_phrases_and_slug():
+    from nichefinder.stages import info_discover
+    rows = [("курсы английского", 100), ("курсы английского онлайн", 30), ("английский для детей", 50)]
+    assert info_discover.demand(rows) == 150                  # "онлайн" variant is inside "курсы английского"
+    assert info_discover.slug("английский язык", 1) == "angliyskiy-yazyk"
+    assert info_discover.slug("ёж", 7) == "ezh" and info_discover.slug("!!!", 7) == "topic-7"
+
+
+def test_discover_end_to_end(tmp_path, monkeypatch):
+    from nichefinder import llm
+    from nichefinder.sources import wordstat
+    from nichefinder.stages import info_discover
+    ws = make_ws(tmp_path, [{"id": "old", "q": ["x"]}])
+    (tmp_path / "config" / "info_discover.yaml").write_text(yaml.safe_dump(
+        {"stems": ["онлайн курсы", "как"], "min_count": 100, "batch": 2, "top_n": 2}, allow_unicode=True), encoding="utf-8")
+    data = {"онлайн курсы": [("курсы английского", 900), ("курс доллара онлайн", 5000), ("курсы английского онлайн", 300)],
+            "как": [("как похудеть", 800), ("как пишется", 4000), ("как выучить английский", 200), ("как сделать", 50)]}
+    monkeypatch.setattr(wordstat, "top_requests", lambda ws, s, n, log=None: (
+        {"results": [{"phrase": p, "count": c} for p, c in data[s]]}, False))
+    labels = {"курсы английского": ["L", "английский язык", "lang"], "курсы английского онлайн": ["L", "английский язык", "lang"],
+              "как выучить английский": ["L", "английский язык", "lang"], "как похудеть": ["F", "похудение", "health"]}
+    prompts = []
+
+    def fake_chat(ws, messages, **kw):
+        if messages[0]["role"] == "system":
+            prompts.append(messages[0]["content"])
+            out = []
+            for line in messages[1]["content"].splitlines():
+                i, p = line.split(". ", 1)
+                out.append([int(i), *labels[p]] if p in labels else [int(i), "O"])
+            return {"r": out}, False, None
+        return {"t": [{"topic": "английский язык", "yt": "английский язык", "must": "англ", "who": "взрослые",
+                       "task": "заговорить", "product": "разговорник, 390 ₽"},
+                      {"topic": "похудение", "yt": "похудение", "must": "(broken", "who": "w", "task": "t", "product": "p"}]}, False, None
+    monkeypatch.setattr(llm, "chat_json", fake_chat)
+    info_discover.run(ws, argparse.Namespace(write_topics=-1))
+    topics = list(csv.DictReader(open(ws.out("info_discover.csv"), encoding="utf-8")))
+    assert [(t["topic"], t["demand"]) for t in topics] == [("английский язык", "1100"), ("похудение", "800")]
+    assert "английский язык" in prompts[-1]                    # later batches see the topics named so far
+    phrases = {r["phrase"]: r for r in csv.DictReader(open(ws.out("info_discover_phrases.csv"), encoding="utf-8"))}
+    assert phrases["курс доллара онлайн"]["kind"] == "O" and "как сделать" not in phrases   # below min_count
+    written = yaml.safe_load(ws.config("info_topics.yaml").read_text(encoding="utf-8"))
+    assert [t["id"] for t in written["topics"]] == ["angliyskiy-yazyk", "pohudenie"]
+    assert written["topics"][0]["must"] == "англий|англ"                 # topic stem + the model stem, "язык" generic
+    assert written["topics"][1]["must"] == "похуде"                      # an invalid model regex falls back to topic stems
+    assert written["topics"][0]["q"] == ["английский язык"]              # the phrase is the topic itself
+    assert written["_settings"]["lang"] == "ru"
+    assert yaml.safe_load(ws.config("info_topics.previous.yaml").read_text(encoding="utf-8"))["topics"][0]["id"] == "old"
+    assert info.validate(ws)[0] == []
+
+
+def test_discover_build_must_drops_generic_and_short_stems():
+    from nichefinder.stages import info_discover
+    m = info_discover.build_must("гитара", "гитар|аккорд|бо|нот|начинающ|урок")
+    assert m.split("|") == ["гитар", "аккорд"]                           # no "бо", "нот", "начинающ", "урок"
+    assert info_discover.build_must("программирование", "алгоритм|код").split("|") == ["програ", "алгоритм"]
+    assert info_discover.build_must("1с", "1с|обучен|бухгалт") == r"\b1с\b|бухгалт"   # bare "1с" would hide in words
+    assert info_discover.build_must("вязание спицами", "спиц|петл").split("|")[:2] == ["вязан", "спица"]
+    assert info_discover.build_must("обучение чтению", "чтен|букв") == "чтени|чтен|букв"    # "обучение" is generic
+
+
+def test_info_youtube_global_top_is_not_thin(tmp_path, monkeypatch):
+    """A short phrase whose most viewed top is English-language hits: status global, not a thin (red) topic."""
+    vids = {f"e{i}": video(f"e{i}", 30, 1_000_000, "B", f"Guitar lesson {i}", "2026-05-01") for i in range(8)}
+    vids.update({"r1": video("r1", 30, 50_000, "A", "Гитара для начинающих", "2026-05-01")})
+    ws = make_ws(tmp_path, [{"id": "guitar", "q": ["гитара"], "must": "гитар"}])
+    monkeypatch.setenv("YOUTUBE_API_KEY", "k")
+    monkeypatch.setattr(http, "request", FakeApi(vids))
+    info_youtube.run(ws, argparse.Namespace(budget=1000, only=""))
+    (row,) = list(csv.DictReader(open(ws.out("info_youtube.csv"), encoding="utf-8")))
+    assert (row["status"], row["dropped_lang"], row["n_videos"]) == ("global", "8", "1")
+    info_score.run(ws, argparse.Namespace())
+    assert "guitar (global: the most viewed top" in ws.report("info.md").read_text(encoding="utf-8")

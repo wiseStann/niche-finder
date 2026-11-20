@@ -47,7 +47,8 @@ class Client:
         try:
             data = http.request(url, headers={"X-Goog-Api-Key": key}, timeout=30).json()
         except http.HttpError as e:
-            if e.status == 403 and "quota" in e.body.lower():
+            # 403 quotaExceeded for the unit pool; 429 "Search Queries per day" for the separate search bucket
+            if e.status in (403, 429) and "quota" in e.body.lower():
                 raise QuotaExceeded("the daily YouTube API quota is spent; re-run after midnight Pacific time") from None
             raise
         self.used += COST[method]

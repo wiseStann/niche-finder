@@ -1,0 +1,32 @@
+# info_discover: the topic universe of the info cohort from demand data instead of the researcher's guesses.
+# Stems are intent words that name NO topic: the data decides which subjects carry the demand. Fix them before the
+# run; changing them after seeing the ranking is the same as changing score weights.
+#
+# Traps found when the stems were chosen (Wordstat broad match lemmatizes): "курсы" becomes "курс" and the top is
+# currency rates, so "онлайн курсы" is used; "гайд" is mostly game guides, "марафон" anime marathons and "уроки"
+# school lesson plans - the LLM sorts those out as kind O (or M for lesson plans), the stems stay generic.
+stems:
+  # learning intent
+  - онлайн курсы
+  - обучение
+  - научиться
+  - уроки
+  - для начинающих
+  - с нуля
+  - мастер класс
+  - гайд
+  - марафон
+  # problem intent
+  - как
+  - как правильно
+  - что делать если
+  - как избавиться от
+  - как перестать
+  - как справиться с
+  - как улучшить
+
+num_phrases: 2000     # Wordstat top requests per stem (the API maximum)
+min_count: 3000       # phrases below this many impressions per month are not sorted (the long tail adds little demand)
+batch: 250            # phrases per LLM call
+top_n: 60             # default size of the topic list written by --write-topics (about 6,000 YouTube units to measure)
+report_n: 150         # topics shown in reports/info_discover.md

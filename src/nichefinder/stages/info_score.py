@@ -132,7 +132,11 @@ def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str
                      f"{share(r.get('small_share'))} | {share(r.get('tg_channel_share'))} | "
                      f"{share(r.get('offer_share'))} | {r.get('n_videos')} | {' '.join(x for x in (r['gates'], r['flags']) if x)} |")
     if rest:
-        lines += ["", "Not scored: " + ", ".join(f"{r['topic_id']} ({r.get('status')})" for r in rest)]
+        why = {"global": "the most viewed top of the phrase is foreign-language; add a Russian-specific phrase",
+               "quota": "not measured yet; re-run info_youtube after the quota reset (midnight Pacific time)",
+               "empty": "no Shorts passed the filters"}
+        lines += ["", "Not scored:"]
+        lines += [f"- {r['topic_id']} ({r.get('status')}: {why.get(r.get('status'), '')})" for r in rest]
     for r in scored:
         lines += ["", f"## {r['rank']}. {r['topic_id']}: {r['verdict']}, {r['score']}", ""]
         for k in ("who", "task", "product"):

@@ -60,7 +60,7 @@ MEASURE = {
 CYRILLIC = re.compile("[\u0400-\u04FF]")
 HASHTAG = re.compile(r"#\w+")
 DURATION = re.compile(r"P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$")
-TOPIC_COLS = ["topic_id", "status", "phrases", "n_found", "n_videos", "n_channels", "views_median", "views_p90",
+TOPIC_COLS = ["topic_id", "status", "phrases", "n_found", "dropped_lang", "dropped_must", "n_videos", "n_channels", "views_median", "views_p90",
               "subs_median", "breakout_share", "small_share", "top3_share", "tg_channel_share",
               "tg_video_share", "offer_share", "recent", "older", "recent_ratio", "window_from"]
 VIDEO_COLS = ["topic_id", "video_id", "published", "seconds", "views", "likes", "comments", "channel_id",
@@ -97,27 +97,28 @@ def _int(v) -> int | None:
 
 
 def video_rows(topic_id: str, videos: list[dict], channels: list[dict], measure: dict, lang: str,
-               must: str = "", must_not: str = "") -> list[dict]:
-    """Kept videos of one topic with their channel and the per-video flags."""
+               must: str = "", must_not: str = "", dropped: dict | None = None) -> list[dict]:
+    """Kept videos of one topic with their channel and the per-video flags. `dropped`, when given, counts the videos
+    each filter removed: long, lang, must, must_not."""
     tg = re.compile(measure["tg_pattern"], re.I)
     offer = re.compile(measure["offer_pattern"], re.I)
     need = re.compile(must, re.I) if must else None
     drop = re.compile(must_not, re.I) if must_not else None
     ch = {c["id"]: c for c in channels}
     rows = []
+    dropped = {} if dropped is None else dropped
     for v in videos:
         sn, st = v.get("snippet") or {}, v.get("statistics") or {}
         sec = seconds((v.get("contentDetails") or {}).get("duration", ""))
         views = _int(st.get("viewCount"))
         title = sn.get("title") or ""
         desc = sn.get("description") or ""
-        if views is None or not 0 < sec <= measure["shorts_max_seconds"]:
-            continue
-        if lang == "ru" and not CYRILLIC.search(title):
-            continue
-        if need and not need.search(HASHTAG.sub(" ", title + "\n" + desc)):
-            continue
-        if drop and drop.search(title + "\n" + desc):
+        reason = ("long" if views is None or not 0 < sec <= measure["shorts_max_seconds"] else
+                  "lang" if lang == "ru" and not CYRILLIC.search(title) else
+                  "must" if need and not need.search(HASHTAG.sub(" ", title + "\n" + desc)) else
+                  "must_not" if drop and drop.search(title + "\n" + desc) else "")
+        if reason:
+            dropped[reason] = dropped.get(reason, 0) + 1
             continue
         c = ch.get(sn.get("channelId"), {})
         cst = c.get("statistics") or {}
@@ -187,7 +188,9 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     errors, _ = info.validate(ws)
     if errors:
         raise SystemExit("config/info_topics.yaml: " + "; ".join(errors))
-    measure = {**MEASURE, **((ws.load_config(info.SCORE_FILE, {}) or {}).get("measure") or {})}
+    score_cfg = ws.load_config(info.SCORE_FILE, {}) or {}
+    measure = {**MEASURE, **(score_cfg.get("measure") or {})}
+    min_videos = int((score_cfg.get("gates") or {}).get("min_videos", 10))
     lang, region = str(settings["lang"]), str(settings["region"])
     start = window_start(ws.today, settings["window_months"])
     mid = start + (ws.today - start) / 2
@@ -212,9 +215,16 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             rows.append({**row, "status": "quota"})
             print(f"  !! {tid}: {e}", flush=True)
             continue
-        kept = video_rows(tid, videos, chans, measure, lang, t.get("must") or "", t.get("must_not") or "")
+        dropped: dict[str, int] = {}
+        kept = video_rows(tid, videos, chans, measure, lang, t.get("must") or "", t.get("must_not") or "", dropped)
         m = metrics(kept, measure, mid)
-        rows.append({**row, "status": "ok" if kept else "empty", "n_found": len(ids), **m})
+        # The most viewed top of a short phrase can be global: English-language hits fill it and the language filter
+        # leaves a handful. That says "this phrase cannot measure the Russian top", not "the topic is thin".
+        status = "ok" if kept else "empty"
+        if len(kept) < min_videos and dropped.get("lang", 0) >= len(videos) / 2:
+            status = "global"
+        rows.append({**row, "status": status, "n_found": len(ids), "dropped_lang": dropped.get("lang", 0),
+                     "dropped_must": dropped.get("must", 0) + dropped.get("must_not", 0), **m})
         vrows += kept
         print(f"  {tid:32} found={len(ids):>3} shorts={m['n_videos']:>3} median={m.get('views_median', '-'):>9} "
               f"breakout={m.get('breakout_share', '-')} small={m.get('small_share', '-')} "
