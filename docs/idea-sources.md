@@ -90,8 +90,8 @@ The generated registry follows.
 
 Generated from [`idea-sources.yaml`](idea-sources.yaml) by `scripts/render_idea_sources.py`. Edit only the YAML.
 
-**49 sources, 72 access methods:** ✅ in_pipeline - 23, 🛠 planned - 7, ✋ manual - 5, ⛔ blocked - 11, 💰 paid - 3.  
-Priorities: P1 - 6, P2 - 19, P3 - 15, none - 9.
+**50 sources, 77 access methods:** ✅ in_pipeline - 23, 🛠 planned - 8, ✋ manual - 5, ⛔ blocked - 11, 💰 paid - 3.  
+Priorities: P1 - 6, P2 - 20, P3 - 15, none - 9.
 
 Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implemented) · ✋ by hand / browser only · ⛔ closed from the probing network · 💰 paid only. **Probe:** the HTTP code of a keyless curl probe (date). **Role:** discovery = entities for the universe, evaluation = a metric for a niche, voice = buyer voice, trend = dynamics over time.
 
@@ -100,6 +100,7 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | P | Source | Group | Stage | Stage groups | What it would give |
 |---|---|---|---|---|---|
 | P1 | Empire Flippers (API) | m_and_a | not implemented | s0, s5, s6 | 29 requests -> a CSV of listings; in the deals stage count ef_listings, ef_sold_12m, ef_median_profit, ef_multiple per niche; in the ceiling stage the median SaaS multiple is an anchor for the exit price |
+| P2 | Otvety Mail.ru (Q&A) | community | not implemented | s10 | Discovery through the SERP, questions and answers through the JSON API, then the S10 labelling (seeking / complaint / switching / price) as for Reddit |
 | P2 | Wellfound (AngelList Talent) | hiring | not implemented | s8, s0 | Walk /role/l/<role>/<location> for 10 roles x 5 locations monthly -> JSON from the HTML -> a company table with high_concept; match to niches. Low priority: HN hiring gives the same more cheaply |
 | P2 | Launching Next | launch | not implemented | s0 | Collect the RSS daily into a cache (accumulate), merge into the universe once a month; use as a third 'launch density' counter (PH + BetaList + LN) |
 | P2 | Quiet Light Brokerage | m_and_a | not implemented | s5, s6 | The same fetcher as Empire Flippers: page -> CSV; multiples by type feed the ceiling stage |
@@ -124,6 +125,7 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **Indie Hackers** (`indie_hackers`) | community | global | discovery, voice | daily | html_spa · none · $0 | 200 (2026-09-20) | ✋ manual | P3 | s0, s5 |
 | **Hacker News (Algolia API)** (`hacker_news`) | community | global | discovery, voice, trend | realtime | api · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P1 | s8 |
 | **Reddit (Arctic Shift + subredditstats)** (`reddit`) | community | global | voice, trend | daily | api · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s8, s10 |
+| **Otvety Mail.ru (Q&A)** (`otvet_mail_ru`) | community | ru | voice | daily | api · none · $0 | 200 (2026-11-20) | 🛠 planned | P2 | s10 |
 | **Kickstarter (Web Robots dumps)** (`kickstarter`) | crowdfunding | global | discovery, evaluation | monthly | bulk_dump · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
 | **Indiegogo** (`indiegogo`) | crowdfunding | global | discovery | daily | html · none · $0 | 403 (2026-09-20) | ⛔ blocked | none | s0 |
 | **Planeta.ru / Boomstarter (RU)** (`ru_crowdfunding`) | crowdfunding | ru | discovery | daily | html · none · $0 | 307 (2026-09-20) | ✋ manual | none | s0 |
@@ -146,8 +148,8 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **FE International / Microns / Tiny Acquisitions / SideProjectors** (`fe_microns_tiny`) | m_and_a | global | discovery | daily | html · none · $0 | 200 (2026-09-20) | ✋ manual | P3 | s0 |
 | **BizBuySell / BusinessesForSale.com** (`bizbuysell`) | m_and_a | global | discovery, evaluation | daily | html · none · $0 | 403 (2026-09-20) | ⛔ blocked | P3 | s6 |
 | **RU 'ready business': Avito / Biboss / Altera Invest / business-asset** (`ru_business_sale`) | m_and_a | ru | discovery, evaluation | daily | html · none · $0 | 429 (2026-09-20) | ⛔ blocked | P3 | s6 |
-| **App Store (iTunes Search / RSS / pages)** (`appstore`) | store | both | discovery, evaluation, trend | daily | api · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P2 | s0, s5, s8, s9 |
-| **Google Play (google-play-scraper)** (`google_play`) | store | both | discovery, evaluation, trend | daily | scraper · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P2 | s0, s5, s8, s9 |
+| **App Store (iTunes Search / RSS / pages)** (`appstore`) | store | both | discovery, evaluation, trend, voice | daily | api · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P2 | s0, s5, s8, s9, s10 |
+| **Google Play (google-play-scraper)** (`google_play`) | store | both | discovery, evaluation, trend, voice | daily | scraper · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P2 | s0, s5, s8, s9, s10 |
 | **Shopify App Store** (`shopify_app_store`) | store | global | discovery, evaluation | daily | html_ssr · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P2 | s0, s5 |
 | **WordPress.org plugins** (`wordpress_org`) | store | global | discovery | daily | api · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P3 | s0 |
 | **Capterra / GetApp (Gartner Digital Markets)** (`capterra_getapp`) | store | global | evaluation | weekly | html_ssr · none · $0 | 200 (2026-09-15) | ✅ in_pipeline | P2 | s5 |
@@ -428,9 +430,30 @@ Feeds: `data/out/reddit_niche.csv`; `data/out/reddit_voice*.csv|json`; `data/out
 | api | reddit.com/*.json, the official API | application request - the form is closed | $0 | 403 | 403 2026-09-17 - dead end |
 
 Traps:
-- Reddit is US / English; for Russian-language voice use otzovik / VK / Telegram / 4PDA by hand for 1-2 niches
+- Reddit is US / English; Russian-language voice: app reviews of the RU App Store and Google Play (s10_ru_reviews_*), Otvety Mail.ru planned (otvet_mail_ru); otzovik / VK / Telegram / 4PDA by hand
 
 Plan: Add 'buyer' subreddits (r/smallbusiness, r/Entrepreneur, r/SaaS) to the markers of 'which tool do you use for X' - partly present in the reddit term list already
+
+#### 🛠 Otvety Mail.ru (Q&A) (`otvet_mail_ru`) - P2
+
+https://otvet.mail.ru · geo ru · role voice · freshness daily · stage groups s10 · stage not implemented
+
+Signals:
+- s10: Russian 'which app / program for X' questions and their answers - seeking, complaints, products named; mass B2C audience
+
+Feeds: `planned: Russian Q&A documents for the S10 corpus`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://otvet.mail.ru/api/topic/question/<id> ; /api/topic/answers/<id> (the site's own JSON, used by its Nuxt front end) | none | $0 | unofficial, may change without notice | 200 2026-11-20 - question and answers as JSON without a key |
+| api | https://otvet.mail.ru/api/topic/search?text=... | none | $0 | 20 recent posts sorted by date, barely related to the query - useless for finding questions | 200 2026-11-20 - 'programma dlya ucheta sklada' returned posts about the USA, Windows admin rights and cutlets |
+| serp | DataForSEO Google SERP 'site:otvet.mail.ru <query>' (sources/dataforseo.serp), then the question JSON by id | DataForSEO login | a fraction of a cent per query | much of the archive is 2008-2015: filter by created_at | None 2026-11-20 - not tried |
+
+Traps:
+- Relaunched by VK in May 2025, 38.6 M monthly users (Mediascope, January 2025); a young mass audience - weak for B2B
+- Yandex Q is read-only since June 2023: an archive, no fresh voice
+
+Plan: Discovery through the SERP, questions and answers through the JSON API, then the S10 labelling (seeking / complaint / switching / price) as for Reddit
 
 ### crowdfunding - Crowdfunding - a pre-order as demand before the product (B2C hardware / consumer)
 
@@ -849,31 +872,39 @@ Plan: By hand: Avito in a browser - number of listings and median profit per cus
 
 #### ✅ App Store (iTunes Search / RSS / pages) (`appstore`) - P2
 
-https://apps.apple.com · geo both · role discovery, evaluation, trend · freshness daily · stage groups s0, s5, s8, s9 · stage `s0_appstore_top`, `s5_appstore`, `s5_appstore_metrics`, `s5_pricing_b2c`, `s8_appstore_velocity`, `s9_snapshot`, `s9_entrants`
+https://apps.apple.com · geo both · role discovery, evaluation, trend, voice · freshness daily · stage groups s0, s5, s8, s9, s10 · stage `s0_appstore_top`, `s5_appstore`, `s5_appstore_metrics`, `s5_pricing_b2c`, `s8_appstore_velocity`, `s9_snapshot`, `s9_entrants`, `s10_ru_reviews_fetch`
 
 Signals:
-- top-grossing by genre (s0); number of apps, ratings, top-1 concentration, IAP prices (s5); rating accumulation speed (s8); snapshots (s9); survival of newcomers
+- top-grossing by genre (s0); number of apps, ratings, top-1 concentration, IAP prices (s5); rating accumulation speed (s8); snapshots (s9); survival of newcomers; s10: Russian reviews of the leading apps - unmet needs, quality complaints, switching
 
-Feeds: `data/out/appstore_*.csv`; `data/out/pricing_b2c*.csv`; `data/out/appstore_velocity.csv`; `data/out/entrant_survival.csv`
+Feeds: `data/out/appstore_*.csv`; `data/out/pricing_b2c*.csv`; `data/out/appstore_velocity.csv`; `data/out/entrant_survival.csv`; `data/out/ru_reviews_*.csv|jsonl|json`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
 | api | https://itunes.apple.com/search?term=...&entity=software&country=us\|ru ; /lookup?id=... ; RSS top-grossing | none | $0 | ~20 requests/min; relevance - position <= 15 + config/appstore_relevance.yaml | 200 2026-09-16 - 5,542 apps in the snapshot |
+| api | https://itunes.apple.com/ru/rss/customerreviews/page=N/id=<trackId>/sortby=mostrecent/json | none | $0 | 50 newest reviews a page, pages 1-10 (page 11 -> 400): at most 500 per app; an app without reviews has no `entry` | 200 2026-11-20 - 50 Russian reviews per page with rating, version, date |
+
+Traps:
+- Reviews: at most the 500 newest per app, so for big apps the window is days or weeks; written reviews lean negative - compare niches with each other, not with a fixed threshold
 
 Plan: -
 
 #### ✅ Google Play (google-play-scraper) (`google_play`) - P2
 
-https://play.google.com · geo both · role discovery, evaluation, trend · freshness daily · stage groups s0, s5, s8, s9 · stage `s0_gplay_top`, `s8_gplay_search`, `s8_gplay_filter`, `s8_gplay_details`, `s8_gplay_metrics`, `s9_gplay_refresh`
+https://play.google.com · geo both · role discovery, evaluation, trend, voice · freshness daily · stage groups s0, s5, s8, s9, s10 · stage `s0_gplay_top`, `s8_gplay_search`, `s8_gplay_filter`, `s8_gplay_details`, `s8_gplay_metrics`, `s9_gplay_refresh`, `s10_ru_reviews_fetch`
 
 Signals:
-- US / RU top charts (s0); installs, ratings, leader <= 50% - the 'second platform' rule (s5 / s8); snapshots (s9)
+- US / RU top charts (s0); installs, ratings, leader <= 50% - the 'second platform' rule (s5 / s8); snapshots (s9); s10: Russian reviews of the leading apps
 
-Feeds: `data/out/gplay_*.csv`; `data/out/offsearch.csv`
+Feeds: `data/out/gplay_*.csv`; `data/out/offsearch.csv`; `data/out/ru_reviews_*.csv|jsonl|json`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
 | scraper | npm google-play-scraper (search, app, list) | none | $0 | ~30 min for a full refresh of 2,392 apps | 200 2026-09-16 - works |
+| scraper | npm google-play-scraper reviews({appId, lang: 'ru', country: 'ru', sort: NEWEST, num}) | none | $0 | ~1 app/s with a pause; node helper gplay_reviews.mjs | 200 2026-11-20 - 100 of 100 requested Russian reviews returned |
+
+Traps:
+- Reviews: written reviews lean negative - compare niches with each other, not with a fixed threshold
 
 Plan: -
 

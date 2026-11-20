@@ -112,7 +112,7 @@ The funnel in one table (details in [stages.md](stages.md)):
 | S7 report | Leaderboard and HTML report | free |
 | S8 off-search demand | Is there demand where Google cannot see it? | free |
 | S9 supply over time | Who is growing now, and do new entrants survive? | free |
-| S10 buyer voice | What do buyers say about existing products? | LLM tokens |
+| S10 buyer voice | What do buyers say about existing products? Reddit, plus Russian App Store and Google Play reviews for niches with geo `both`/`ru` | LLM tokens |
 | info cohort | For micro info products sold through short video: does the topic draw views, can a small channel break through, do creators already sell through Telegram? | free (YouTube quota) |
 
 ### S0 - Universe
@@ -235,7 +235,7 @@ Why outside search? B2B demand barely exists in search ("meeting summary" can ha
 - **Snapshots.** `freeze` stores the relevant apps (App Store: `relevant = 1`, not `na`; Google Play: not excluded) under `data/snapshots/<date>/`; `refresh` fetches fresh rating counts later (iTunes lookup, 150 ids per call, keyless); a Google Play refresh stores fresh cards in a separate cache. `diff` computes per-app and per-niche growth: share of growth from apps up to 24 months old, share of the leader in growth. This replaces S8's computed "velocity" with a direct measurement and answers "who is growing now", which no demand source can.
 - **Entrant survival** (`entrant_survival.csv`, from data already in the App Store set). Cohort = relevant US apps released 12-24 months ago. Alive = updated within 180 days; traction = at least 1,000 ratings. Flags when the cohort has at least 8 apps: `E:churn` (alive below 50 %) and `E:traction` (traction at least 30 %). The flags do not enter the score. They separate a healthy open market from a **clone factory**: high fragmentation plus many new releases and a small leader looks identical in the score, but a factory shows a cohort that stops updating and never earns ratings.
 
-### S10 - Buyer voice (Reddit)
+### S10 - Buyer voice (Reddit; Russian app reviews)
 
 Described in section 9.
 
@@ -478,6 +478,28 @@ The rule was tightened once: a first version required only "in motion" (seeking 
 
 **Biases to remember:** Reddit skews US and technical; it lags new categories; LLM themes and quotes are not hand-validated.
 
+### Russian buyer voice: app reviews
+
+Reddit hears almost no Russian speakers, yet most shortlisted niches have geo `both`. For them S10 also reads the reviews of each niche's leading apps in the Russian App Store and Google Play (`s10_ru_reviews_*`, market `ru`; settings and thresholds in `config/ru_reviews.yaml`).
+
+**Collection.** Per niche and store: the relevant apps with the most ratings from the S5 App Store set and the S8 Google Play set (by default up to 8 per store, at least 20 ratings each). App Store: the public reviews RSS, at most the 500 newest reviews per app. Google Play: the 500 newest Russian reviews. Only the last 12 months are kept.
+
+**Labelling.** Up to 240 reviews per niche with at least 40 characters, drawn round-robin across apps so the leader does not drown the smaller players. The LLM marks whether a review is about the app or about the offline service behind it (the driver, the salon, the shop), the intent, the pain, the switch and willingness to pay. Shares are over reviews about the app. **Unmet needs** = missing feature + price + switching: what a new product could offer. **Quality** = bugs + UX + ads + support: the incumbents do the job badly.
+
+**Verdict rule** (not a score; `reviews_verdicts()`; it does not change S6):
+
+| Verdict | Condition |
+|---|---|
+| **Gap** (green) | unmet-need share >= 15 % and in the top third of the cohort (mid-rank percentile >= 0.67) |
+| Quality | not a gap; bug/UX/ads/support share >= 30 % and in the top third |
+| Content | praise >= 50 % and neither of the above |
+| Mixed | everything else |
+| Quiet | fewer than 80 labeled reviews about the app, or fewer than 2 apps |
+
+Why relative: written reviews lean negative, since the unhappy user is the one who writes. An absolute complaint threshold like the Reddit rule's 20 % would pass nearly every niche, so a share must stand out against the other niches of the run and clear an absolute floor. With fewer than 6 measured niches percentiles mean nothing and the floors alone decide. The thresholds start as a draft (`status: draft`, a banner in the report) and are fixed before the first real verdicts are read, under the same rules as the score weights.
+
+**Biases:** reviews come from people who already use an app, so they show what is missing in existing products, not demand from people who have none. RuStore and web-only services are not covered, so B2B niches without mobile apps are quiet here. For big apps the 500-review cap covers days or weeks, not a year.
+
 ---
 
 ## 10. What the pipeline proves and what it cannot
@@ -494,7 +516,7 @@ The rule was tightened once: a first version required only "in motion" (seeking 
 
 | Not covered | Consequence |
 |---|---|
-| **Customer conversations.** No interviews, no willingness-to-pay test, no evidence of a specific buyer's pain | A green niche has a market; it does not have *your* customer. Reddit voice is a weak, biased substitute |
+| **Customer conversations.** No interviews, no willingness-to-pay test, no evidence of a specific buyer's pain | A green niche has a market; it does not have *your* customer. Reddit voice and app reviews are weak, biased substitutes |
 | **Customer-acquisition cost.** The path-to-goal layer says how many payers you need, not what each costs. Keyword Planner CPC is the only price signal | The most likely reason a "reachable" niche fails is that acquisition costs more than revenue per customer |
 | **True market size.** Sizes are proxies (ratings x multipliers, reviews x multipliers, searches x conversion), accurate to about a factor of two at best; some niche sizes are manual estimates | Do not quote a niche size to anyone as a fact |
 | **Revenue of competitors.** Only listings and top-grossing positions are visible | You cannot see unit economics |

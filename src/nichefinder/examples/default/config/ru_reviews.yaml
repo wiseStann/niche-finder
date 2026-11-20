@@ -1,0 +1,33 @@
+# Russian app reviews (S10): what users of the leading apps of a niche write in the Russian App Store and Google Play.
+# Read by s10_ru_reviews_fetch (`fetch`), s10_ru_reviews_classify (`sample`) and s10_ru_reviews_report (`verdict`).
+# Rationale: docs/methodology.md section 9.
+#
+# status: draft until the thresholds are fixed. Fix them BEFORE reading the first real verdicts (set `status: fixed`
+# and `fixed_on`); after that every change needs a written reason in `changes`, never to rescue a favourite niche.
+status: draft
+fixed_on:
+changes: []
+
+fetch:
+  window_months: 12       # reviews older than this, counted back from the run date, are dropped
+  apps_per_store: 8       # per niche and store: the relevant apps with the most ratings
+  min_ratings: 20         # skip apps with fewer store ratings (no review history to speak of)
+  appstore_pages: 10      # App Store RSS: 50 newest reviews a page; Apple serves 10 pages at most
+  gplay_reviews: 500      # Google Play: newest Russian reviews per app
+
+sample:
+  max_reviews: 240        # per niche, taken round-robin over its apps; the LLM labels 12 reviews per call
+  min_chars: 40           # shorter reviews ("Super!", "Does not work") name no pain and are not sent to the LLM
+
+# Verdict: a rule, not a score; it does not change the S6 verdict. Shares are over reviews about the app itself.
+# Written reviews lean negative (the unhappy user is the one who writes), so the rule compares niches with each other:
+# a share must be in the top third of the cohort (mid-rank percentile) AND above an absolute floor.
+verdict:
+  min_app_reviews: 80     # quiet: fewer classified reviews about the app itself
+  min_apps: 2             # quiet: fewer apps with substantive reviews in the sample
+  min_cohort: 6           # with fewer measured niches percentiles mean nothing: the floors alone decide
+  gap_pct: 0.67           # gap: unmet-need share (missing feature + price + switching) in the top third...
+  gap_floor: 0.15         # ...and at least this share
+  quality_pct: 0.67       # quality: complaints about bugs, UX, ads and support in the top third...
+  quality_floor: 0.30     # ...and at least this share
+  content_praise: 0.50    # content: praise at least this share, and neither of the above

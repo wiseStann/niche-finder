@@ -6,7 +6,8 @@ Optional inputs (the matching passport block is skipped when a file is missing):
 capterra_categories_stats.csv, shopify_metrics.csv, pricing_b2b.csv, pricing_b2c.csv, deals.csv, deals_matches.csv
 (with BetaList / Product Radar / Kickstarter launches), path_to_goal.csv (s6_ceiling), entrant_survival.csv (S9),
 offsearch.csv (S8, with Hacker News), reddit_voice.csv, reddit_brands.csv,
-reddit_voice_llm.csv, reddit_voice_themes.json (S10); config/overrides.yaml (notes, lens, manual supply estimates).
+reddit_voice_llm.csv, reddit_voice_themes.json, ru_reviews_verdict.csv, ru_reviews_llm.csv, ru_reviews_themes.json (S10);
+config/overrides.yaml (notes, lens, manual supply estimates).
 """
 from __future__ import annotations
 
@@ -107,6 +108,10 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     rl = _rows(out("reddit_voice_llm.csv"), "niche_id")
     rt = json.load(open(out("reddit_voice_themes.json"), encoding="utf-8")) if os.path.exists(out("reddit_voice_themes.json")) else {}
     reddit_verdict = _reddit_verdict()
+    # S10 buyer voice in Russian: app-review verdict (s10_ru_reviews_report), shares and pain themes (s10_ru_reviews_classify)
+    qv = _rows(out("ru_reviews_verdict.csv"), "niche_id")
+    ql = _rows(out("ru_reviews_llm.csv"), "niche_id")
+    qt = json.load(open(out("ru_reviews_themes.json"), encoding="utf-8")) if os.path.exists(out("ru_reviews_themes.json")) else {}
     pdir = ws.report("passports")
     pdir.mkdir(parents=True, exist_ok=True)
 
@@ -245,6 +250,25 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             sw = [(k, c) for k, c in (t10.get("switching") or []) if "?" not in k and len(set(y.strip() for y in k.split("->"))) == 2]
             if sw:
                 L += ["", "Switches \"from → to\": " + "; ".join(f"{k} ({c})" for k, c in sw[:8]) + "."]
+            L.append("")
+        qr = qv.get(nid)
+        if qr:
+            qrl, qrt = ql.get(nid) or {}, qt.get(nid) or {}
+            qp = lambda k: f"{float(qrl[k]):.0%}" if qrl.get(k) not in ("", None) else "—"  # noqa: E731
+            L += ["## Buyer voice (Russian app reviews, S10)", "",
+                  f"**Reviews verdict: {qr['verdict']}** - {qr['reason']}." + (" _The thresholds are a draft (`config/ru_reviews.yaml`)._" if qr.get("status") != "fixed" else "")
+                  + " Source: Russian App Store and Google Play reviews of the niche's leading apps; the rule and the per-app tables are in `S10-ru-reviews.md`.", ""]
+            if qrl:
+                L.append(f"- **LLM labels** ({qrl['classified']} reviews, {qrl['about_app']} about the app): unmet needs {qp('unmet_share')} (missing feature {qp('missing_feature_share')}, "
+                         f"price {qp('pricing_share')}, switching {qp('switching_share')}), quality complaints {qp('quality_share')} (bugs, UX, ads, support), praise {qp('praise_share')}.")
+            if qrt.get("themes"):
+                L += ["", "**Pain themes in Russian reviews** (LLM clustering, by frequency):", ""]
+                for th in qrt["themes"][:8]:
+                    qs = "; ".join(f"\"{str(q)[:140]}\"" for q in (th.get("quotes") or [])[:2])
+                    L.append(f"- **{th.get('theme', '')}** [{th.get('kind', '')}] ({th.get('count', '')}) - {th.get('description', '')}" + (f" Quotes: {qs}" if qs else ""))
+            qsw = [(k, c) for k, c in (qrt.get("switching") or []) if "?" not in k]
+            if qsw:
+                L += ["", "Switches \"from → to\": " + "; ".join(f"{k} ({c})" for k, c in qsw[:8]) + "."]
             L.append("")
         # feasibility and lens
         fe = m.get("feas") or {}

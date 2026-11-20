@@ -9,7 +9,7 @@ Each stage is a module in this package with:
     def run(ws, args) -> None
 
 Groups: s0 universe · s1 niches · s2 queries · s3 search demand · s4 trend depth · s5 supply depth ·
-s8 off-search demand · s9 supply over time · s10 buyer voice (Reddit) · s6 score and passports ·
+s8 off-search demand · s9 supply over time · s10 buyer voice (Reddit; Russian app reviews) · s6 score and passports ·
 s7 HTML leaderboard · info micro info products (short video -> Telegram, own score) · ru Russian B2B module.
 """
 from __future__ import annotations
@@ -90,6 +90,10 @@ STAGES: list[Stage] = [
     Stage("s10_reddit_classify", "s10"),
     Stage("s10_reddit_metrics", "s10"),
     Stage("s10_reddit_report", "s10"),
+    # S10 — buyer voice in Russian: App Store RU and Google Play RU reviews of each niche's leading apps
+    Stage("s10_ru_reviews_fetch", "s10", market="ru"),
+    Stage("s10_ru_reviews_classify", "s10", market="ru"),
+    Stage("s10_ru_reviews_report", "s10", market="ru"),
     # S6 — final score, ceiling, passports; S7 — leaderboard
     Stage("s6_rescore", "s6"),
     Stage("s6_ru", "s6", market="ru"),

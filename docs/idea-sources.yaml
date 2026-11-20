@@ -467,8 +467,43 @@ sources:
         cost: $0
         limits: "403"
         probe: {date: 2026-09-17, http: 403, note: "dead end"}
-    caveats: ["Reddit is US / English; for Russian-language voice use otzovik / VK / Telegram / 4PDA by hand for 1-2 niches"]
+    caveats: ["Reddit is US / English; Russian-language voice: app reviews of the RU App Store and Google Play (s10_ru_reviews_*), Otvety Mail.ru planned (otvet_mail_ru); otzovik / VK / Telegram / 4PDA by hand"]
     plan: "Add 'buyer' subreddits (r/smallbusiness, r/Entrepreneur, r/SaaS) to the markers of 'which tool do you use for X' - partly present in the reddit term list already"
+
+  - id: otvet_mail_ru
+    name: Otvety Mail.ru (Q&A)
+    group: community
+    geo: ru
+    url: https://otvet.mail.ru
+    role: [voice]
+    signals: ["s10: Russian 'which app / program for X' questions and their answers - seeking, complaints, products named; mass B2C audience"]
+    stages: [s10]
+    feeds: ["planned: Russian Q&A documents for the S10 corpus"]
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://otvet.mail.ru/api/topic/question/<id> ; /api/topic/answers/<id> (the site's own JSON, used by its Nuxt front end)"
+        auth: none
+        cost: $0
+        limits: "unofficial, may change without notice"
+        probe: {date: 2026-11-20, http: 200, note: "question and answers as JSON without a key"}
+      - method: api
+        endpoint: "https://otvet.mail.ru/api/topic/search?text=..."
+        auth: none
+        cost: $0
+        limits: "20 recent posts sorted by date, barely related to the query - useless for finding questions"
+        probe: {date: 2026-11-20, http: 200, note: "'programma dlya ucheta sklada' returned posts about the USA, Windows admin rights and cutlets"}
+      - method: serp
+        endpoint: "DataForSEO Google SERP 'site:otvet.mail.ru <query>' (sources/dataforseo.serp), then the question JSON by id"
+        auth: "DataForSEO login"
+        cost: "a fraction of a cent per query"
+        limits: "much of the archive is 2008-2015: filter by created_at"
+        probe: {date: 2026-11-20, http: null, note: "not tried"}
+    caveats: ["Relaunched by VK in May 2025, 38.6 M monthly users (Mediascope, January 2025); a young mass audience - weak for B2B", "Yandex Q is read-only since June 2023: an archive, no fresh voice"]
+    plan: "Discovery through the SERP, questions and answers through the JSON API, then the S10 labelling (seeking / complaint / switching / price) as for Reddit"
 
   # ══════════════════════════════════════════════════════════════════════════
   # CROWDFUNDING - pre-order as demand before the product
@@ -1103,13 +1138,13 @@ sources:
     group: store
     geo: both
     url: https://apps.apple.com
-    role: [discovery, evaluation, trend]
-    signals: ["top-grossing by genre (s0); number of apps, ratings, top-1 concentration, IAP prices (s5); rating accumulation speed (s8); snapshots (s9); survival of newcomers"]
-    stages: [s0, s5, s8, s9]
-    feeds: ["data/out/appstore_*.csv", "data/out/pricing_b2c*.csv", "data/out/appstore_velocity.csv", "data/out/entrant_survival.csv"]
+    role: [discovery, evaluation, trend, voice]
+    signals: ["top-grossing by genre (s0); number of apps, ratings, top-1 concentration, IAP prices (s5); rating accumulation speed (s8); snapshots (s9); survival of newcomers; s10: Russian reviews of the leading apps - unmet needs, quality complaints, switching"]
+    stages: [s0, s5, s8, s9, s10]
+    feeds: ["data/out/appstore_*.csv", "data/out/pricing_b2c*.csv", "data/out/appstore_velocity.csv", "data/out/entrant_survival.csv", "data/out/ru_reviews_*.csv|jsonl|json"]
     freshness: daily
     status: in_pipeline
-    adapter: [s0_appstore_top, s5_appstore, s5_appstore_metrics, s5_pricing_b2c, s8_appstore_velocity, s9_snapshot, s9_entrants]
+    adapter: [s0_appstore_top, s5_appstore, s5_appstore_metrics, s5_pricing_b2c, s8_appstore_velocity, s9_snapshot, s9_entrants, s10_ru_reviews_fetch]
     priority: P2
     access:
       - method: api
@@ -1118,7 +1153,13 @@ sources:
         cost: $0
         limits: "~20 requests/min; relevance - position <= 15 + config/appstore_relevance.yaml"
         probe: {date: 2026-09-16, http: 200, note: "5,542 apps in the snapshot"}
-    caveats: []
+      - method: api
+        endpoint: "https://itunes.apple.com/ru/rss/customerreviews/page=N/id=<trackId>/sortby=mostrecent/json"
+        auth: none
+        cost: $0
+        limits: "50 newest reviews a page, pages 1-10 (page 11 -> 400): at most 500 per app; an app without reviews has no `entry`"
+        probe: {date: 2026-11-20, http: 200, note: "50 Russian reviews per page with rating, version, date"}
+    caveats: ["Reviews: at most the 500 newest per app, so for big apps the window is days or weeks; written reviews lean negative - compare niches with each other, not with a fixed threshold"]
     plan: "-"
 
   - id: google_play
@@ -1126,13 +1167,13 @@ sources:
     group: store
     geo: both
     url: https://play.google.com
-    role: [discovery, evaluation, trend]
-    signals: ["US / RU top charts (s0); installs, ratings, leader <= 50% - the 'second platform' rule (s5 / s8); snapshots (s9)"]
-    stages: [s0, s5, s8, s9]
-    feeds: ["data/out/gplay_*.csv", "data/out/offsearch.csv"]
+    role: [discovery, evaluation, trend, voice]
+    signals: ["US / RU top charts (s0); installs, ratings, leader <= 50% - the 'second platform' rule (s5 / s8); snapshots (s9); s10: Russian reviews of the leading apps"]
+    stages: [s0, s5, s8, s9, s10]
+    feeds: ["data/out/gplay_*.csv", "data/out/offsearch.csv", "data/out/ru_reviews_*.csv|jsonl|json"]
     freshness: daily
     status: in_pipeline
-    adapter: [s0_gplay_top, s8_gplay_search, s8_gplay_filter, s8_gplay_details, s8_gplay_metrics, s9_gplay_refresh]
+    adapter: [s0_gplay_top, s8_gplay_search, s8_gplay_filter, s8_gplay_details, s8_gplay_metrics, s9_gplay_refresh, s10_ru_reviews_fetch]
     priority: P2
     access:
       - method: scraper
@@ -1141,7 +1182,13 @@ sources:
         cost: $0
         limits: "~30 min for a full refresh of 2,392 apps"
         probe: {date: 2026-09-16, http: 200, note: "works"}
-    caveats: []
+      - method: scraper
+        endpoint: "npm google-play-scraper reviews({appId, lang: 'ru', country: 'ru', sort: NEWEST, num})"
+        auth: none
+        cost: $0
+        limits: "~1 app/s with a pause; node helper gplay_reviews.mjs"
+        probe: {date: 2026-11-20, http: 200, note: "100 of 100 requested Russian reviews returned"}
+    caveats: ["Reviews: written reviews lean negative - compare niches with each other, not with a fixed threshold"]
     plan: "-"
 
   - id: shopify_app_store
