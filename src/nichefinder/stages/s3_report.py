@@ -4,7 +4,10 @@ Input: data/out/metrics_quick.csv (s3_metrics), config/score.yaml, config/shortl
 When config/shortlist.yaml does not exist (or with --rewrite-shortlist) the shortlist is written automatically:
   tier_a = niches that pass gates G0-G2 in the US pool (control niches excluded), best score first;
   tier_b = niches cut only by the top-1 brand gate (G2:top1) with US demand >= shortlist.tier_b_min_demand
-           and a top-1 brand share <= shortlist.tier_b_max_top1 (both in config/score.yaml), highest demand first.
+           and a top-1 brand share <= shortlist.tier_b_max_top1 (both in config/score.yaml), highest demand first;
+  tier_c = control niches that S3 has not settled (methodology section 2, rule 5): red / platform controls that passed the
+           gates (S5 / S6 must still catch them) and every green control (S6 must confirm it, or, if S3 cut it,
+           an independent concentration signal must show whether the gate or the expectation is wrong).
 Each item is {id, why} with a generated reason. An existing shortlist is never overwritten without the flag;
 edit it by hand to add or drop niches, and every later stage reads it (S4, S5, S8, S9 work on the union of its tiers).
 """
@@ -31,6 +34,8 @@ SHORTLIST_HEADER = """\
 # tier_b: niches cut only by the top-1 brand gate, with demand >= {min_demand}/month and top-1 <= {max_top1:.0%}.
 #   That gate is sensitive to the 3-5 brands listed per niche, so concentration is re-checked against an independent
 #   signal (rating share in the app stores, reviews on directories). A "leader + long tail" market moves to tier_a.
+# tier_c: control niches whose expected verdict S3 has not yet confirmed. They go through the deep stages for calibration
+#   and sit in the same scoring cohort; if one ends with a verdict other than the expected one, suspect the scoring.
 # ru: reserved for the Russian module.
 """
 
@@ -101,13 +106,32 @@ def auto_shortlist(rows, cfg, pref):
     tier_b = [{"id": r["id"], "why": f"{num(r.get(f'{pref}_demand_cat'))}/month, trend {r.get(f'{pref}_trend', '')}, {_brand(r, pref)} "
                                       f"(cut by the top-1 brand gate), score {r[f'{pref}_quick_score']}; re-check concentration outside search"}
               for r in b]
-    return {"tier_a": tier_a, "tier_b": tier_b}
+
+    tier_c = []
+    for r in rows:
+        expected = r.get("control")
+        if not expected or not r.get(f"{pref}_quick_score"):
+            continue
+        passed = r.get(f"{pref}_pass") == "1"
+        gates = r.get(f"{pref}_gates", "")
+        if expected == "green":
+            why = ("control, expected green; passed S3 - S6 must keep it green" if passed else
+                   f"control, expected green, but cut at S3 ({gates}); re-check concentration outside search - "
+                   "a fragmented market there means the gate is suspect, a concentrated one means the expectation is")
+        elif passed:
+            why = f"control, expected {expected}; passed the S3 gates - S5 / S6 must turn it red"
+            if expected == "platform":
+                why += " (gate G3 is the manual platform_risk in config/overrides.yaml)"
+        else:
+            continue    # a red / platform control already cut at S3 behaved as expected
+        tier_c.append({"id": r["id"], "why": why})
+    return {"tier_a": tier_a, "tier_b": tier_b, "tier_c": tier_c}
 
 
 def write_shortlist(path, sl, cfg):
     s = cfg.get("shortlist") or {}
     out = [SHORTLIST_HEADER.format(min_demand=f"{float(s.get('tier_b_min_demand', 3000)):,.0f}", max_top1=float(s.get("tier_b_max_top1", 0.8)))]
-    for tier in ("tier_a", "tier_b"):
+    for tier in ("tier_a", "tier_b", "tier_c"):
         out.append(f"{tier}:")
         for it in sl[tier]:
             out.append(f"  - {{id: {it['id']}, why: {json.dumps(it['why'], ensure_ascii=False)}}}")
@@ -134,7 +158,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         sl_path.parent.mkdir(parents=True, exist_ok=True)
         auto = auto_shortlist(rows, cfg, main_pref)
         write_shortlist(sl_path, auto, cfg)
-        print(f"shortlist written: tier_a {len(auto['tier_a'])}, tier_b {len(auto['tier_b'])} -> {sl_path}")
+        print(f"shortlist written: tier_a {len(auto['tier_a'])}, tier_b {len(auto['tier_b'])}, tier_c {len(auto['tier_c'])} -> {sl_path}")
     else:
         print(f"shortlist kept: {sl_path} (use --rewrite-shortlist to regenerate)")
 

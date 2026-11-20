@@ -90,3 +90,10 @@ youth-sports-team-management:
 personal-budgeting-apps:
   slugs: [budgeting-software]
   note: "the Capterra category is corporate budgeting, not personal; use the App Store for B2C"
+
+# Control niches carried into the deep stages as tier_c (s3_report): B2B controls need a Capterra category, otherwise
+# s5_merge falls back to the App Store and measures mobile to-do apps instead of the B2B market the control stands for.
+ctrl-task-manager:
+  slugs: [project-management-software, task-management-software]
+ctrl-website-builder:
+  slugs: [website-builder-software]

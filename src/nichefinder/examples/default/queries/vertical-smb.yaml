@@ -204,8 +204,11 @@ interior-designers-pm:
   ru:
     - {q: "программа для дизайнера интерьера", i: category, anchor: true}
     - {q: "crm для дизайн студии", i: category}
+    - {q: "crm для дизайнера интерьера", i: category}
     - {q: "спецификация для дизайн проекта", i: problem}
     - {q: "как вести проекты дизайнеру интерьера", i: problem}
+    - {q: "houzz", i: brand, b: Houzz}
+    - {q: "planoplan", i: brand, b: Planoplan}
 
 event-equipment-rental:
   en:
@@ -226,6 +229,8 @@ event-equipment-rental:
     - {q: "crm для аренды оборудования", i: category}
     - {q: "учет аренды оборудования excel", i: problem}
     - {q: "rentprog", i: brand, b: RentProg}
+    - {q: "rent in hand", i: brand, b: "Rent in Hand"}
+    - {q: "rentinhand", i: brand, b: "Rent in Hand"}
 
 sign-print-shops:
   en:
@@ -245,6 +250,8 @@ sign-print-shops:
     - {q: "программа для рекламного агентства расчет заказов", i: category}
     - {q: "учет заказов типографии", i: category}
     - {q: "калькулятор стоимости печати", i: problem}
+    - {q: "1с полиграфия", i: brand, b: "1С:Полиграфия"}
+    - {q: "printeffect", i: brand, b: PrintEffect}
 
 auto-repair-shops:
   en:
@@ -285,6 +292,8 @@ home-inspectors-reports:
     - {q: "акт осмотра квартиры приложение", i: category}
     - {q: "чек лист приемки квартиры", i: problem}
     - {q: "акт приема передачи квартиры с дефектами образец", i: problem}
+    - {q: "аудитор квартир", i: brand, b: "Аудитор квартир"}
+    - {q: "приемка про приложение", i: brand, b: "Приёмка Про"}
 
 str-hosts-tools:
   en:
@@ -409,7 +418,6 @@ home-services-field-ops:
     - {q: "cleaning business software", i: category}
     - {q: "lawn care business software", i: category}
     - {q: "hvac software for small business", i: category}
-    - {q: "pest control software", i: category}
     - {q: "ai answering service for contractors", i: category}
     - {q: "how to schedule jobs for a service business", i: problem}
     - {q: "cleaning business invoice template", i: problem}
@@ -425,6 +433,8 @@ home-services-field-ops:
     - {q: "crm для сантехников", i: category}
     - {q: "учет заявок мастеров", i: problem}
     - {q: "planado", i: brand, b: Planado}
+    - {q: "okdesk", i: brand, b: Okdesk}
+    - {q: "hubex", i: brand, b: HubEx}
 
 staffing-agencies-ats:
   en:
@@ -482,12 +492,14 @@ accounting-practices-client-portal:
     - {q: "canopy tax", i: brand, b: Canopy}
     - {q: "client hub", i: brand, b: "Client Hub"}
     - {q: "financial cents", i: brand, b: "Financial Cents"}
+  # no second Russian brand with search demand: firms run on 1С:БухОбслуживание (a franchise network, not a tool) or on horizontal Saby / Битрикс24 (Wordstat 2026-11)
   ru:
     - {q: "программа для бухгалтерской фирмы", i: category, anchor: true}
     - {q: "crm для бухгалтерских услуг", i: category}
     - {q: "личный кабинет клиента бухгалтерия", i: category}
     - {q: "сбор документов от клиентов бухгалтерия", i: problem}
     - {q: "как вести клиентов бухгалтеру аутсорсеру", i: problem}
+    - {q: "taxdome", i: brand, b: TaxDome}
 
 law-firm-intake:
   en:

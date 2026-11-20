@@ -304,6 +304,8 @@ screen-time-focus-apps:
     - {q: "приложение против зависимости от телефона", i: category}
     - {q: "как меньше сидеть в телефоне", i: problem}
     - {q: "покус приложение", i: brand, b: Покус}
+    - {q: "forest приложение", i: brand, b: Forest}
+    - {q: "stayfree", i: brand, b: StayFree}
 
 subscription-trackers-cancellers:
   en:
@@ -317,9 +319,12 @@ subscription-trackers-cancellers:
     - {q: "bobby app", i: brand, b: Bobby}
     - {q: "subpilot", i: brand, b: SubPilot}
     - {q: "trim app", i: brand, b: Trim}
+  # no second Russian brand: 'rocket money' is the song 'Money Rocket' in Yandex, 'кошелек подписок' is wallet payments (Wordstat 2026-11)
   ru:
     - {q: "приложение для учета подписок", i: category, anchor: true}
     - {q: "трекер подписок", i: category}
+    - {q: "менеджер подписок", i: category}
+    - {q: "приложение для управления подписками", i: category}
     - {q: "как найти все свои подписки", i: problem}
     - {q: "как отменить все подписки", i: problem}
     - {q: "bobby подписки", i: brand, b: Bobby}
@@ -531,7 +536,6 @@ ai-study-flashcards:
     - {q: "ии конспект лекции", i: category, anchor: true}
     - {q: "карточки для запоминания приложение", i: category}
     - {q: "нейросеть для учебы", i: category}
-    - {q: "гдз по фото", i: category}
     - {q: "тест из конспекта нейросеть", i: category}
     - {q: "как быстро выучить материал к экзамену", i: problem}
     - {q: "notix", i: brand, b: Notix}
@@ -714,6 +718,7 @@ package-trackers:
     - {q: "трекер посылок", i: category}
     - {q: "отследить посылку по трек номеру", i: category}
     - {q: "все посылки в одном приложении", i: category}
+    - {q: "как отследить посылку из китая", i: problem}
     - {q: "где посылка", i: brand, b: ГдеПосылка}
     - {q: "посылка приложение", i: brand, b: Посылка}
     - {q: "1track", i: brand, b: 1Track}

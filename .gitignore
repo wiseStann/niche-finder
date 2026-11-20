@@ -13,6 +13,9 @@ build/
 dist/
 .pytest_cache/
 
+# Editor settings (personal)
+.vscode/
+
 # Node (Google Play helpers)
 node_modules/
 

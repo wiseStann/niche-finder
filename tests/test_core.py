@@ -103,6 +103,45 @@ def test_validate_catches_missing_anchor(tmp_path):
     assert any("anchors" in e for e in errors)
 
 
+def test_validate_warns_only_on_shared_demand_queries(tmp_path):
+    """A brand shared by two niches is a shared competitor; a shared category query double-counts demand."""
+    ws = make_ws(tmp_path)
+    (tmp_path / "niches.yaml").write_text(yaml.safe_dump([
+        {"id": "dog-daycare", "geo": "global", "side": "b2b-smb", "tier": "A"},
+        {"id": "pet-grooming", "geo": "global", "side": "b2b-smb", "tier": "A"},
+    ]), encoding="utf-8")
+    q = yaml.safe_load((tmp_path / "queries" / "q.yaml").read_text(encoding="utf-8"))
+    q["pet-grooming"] = {"en": [
+        {"q": "grooming software", "i": "category", "anchor": True},
+        {"q": "kennel software", "i": "category"},       # also a category query of dog-daycare
+        {"q": "gingr", "i": "brand", "b": "Gingr"},      # also a brand query of dog-daycare
+    ]}
+    (tmp_path / "queries" / "q.yaml").write_text(yaml.safe_dump(q), encoding="utf-8")
+    errors, warns, _ = niches.validate(ws)
+    assert errors == []
+    dups = [w for w in warns if w.startswith("duplicate query")]
+    assert len(dups) == 1 and "'kennel software'" in dups[0]
+
+
+def test_auto_shortlist_carries_unsettled_controls():
+    from nichefinder.stages.s3_report import auto_shortlist
+
+    def row(nid, control="", passed=True, score="60"):
+        return {"id": nid, "control": control, "expertise_flag": "0", "us_quick_score": score,
+                "us_pass": "1" if passed else "0", "us_gates": "" if passed else "G2:top1",
+                "us_demand_cat": "5000", "us_top1_brand_share": "0.6", "us_trend": "FLAT"}
+
+    rows = [row("niche-a"),
+            row("ctrl-red-passed", "red"), row("ctrl-red-cut", "red", passed=False),
+            row("ctrl-platform-passed", "platform"),
+            row("ctrl-green-cut", "green", passed=False), row("ctrl-green-passed", "green"),
+            row("ctrl-no-data", "red", score="")]
+    sl = auto_shortlist(rows, {"shortlist": {}}, "us")
+    assert [it["id"] for it in sl["tier_a"]] == ["niche-a"]
+    assert [it["id"] for it in sl["tier_c"]] == ["ctrl-red-passed", "ctrl-platform-passed", "ctrl-green-cut", "ctrl-green-passed"]
+    assert "overrides.yaml" in sl["tier_c"][1]["why"]
+
+
 def test_registry_resolve():
     names = [s.name for s in STAGES]
     assert len(names) == len(set(names))

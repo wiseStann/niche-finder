@@ -165,7 +165,7 @@
   tier: A
   sources: [tinyseed, g2]
   evidence: Gather (TinySeed); G2 'Home Furnishing', 'Architecture'
-  competitors: [Houzz Pro, Mydoma, DesignFiles, Studio Designer, Gather, Programa]
+  competitors: [Houzz Pro, Mydoma, DesignFiles, Studio Designer, Gather, Programa, "Planoplan (RU)"]
   expertise_flag: 0
 
 - id: event-equipment-rental
@@ -178,7 +178,7 @@
   tier: A
   sources: [tinyseed, g2]
   evidence: RentKit (TinySeed); G2 'Equipment Rental'
-  competitors: [Booqable, Goodshuffle Pro, Rentman, Point of Rental, RentKit, "RentProg (RU)"]
+  competitors: [Booqable, Goodshuffle Pro, Rentman, Point of Rental, RentKit, "RentProg (RU)", "Rent in Hand (RU)"]
   expertise_flag: 0
 
 - id: sign-print-shops
@@ -191,7 +191,7 @@
   tier: A
   sources: [tinyseed, g2]
   evidence: SignTracker (TinySeed); G2 'Print Fulfillment'
-  competitors: [shopVOX, Printavo, Ordant, Cyrious, SignTracker]
+  competitors: [shopVOX, Printavo, Ordant, Cyrious, SignTracker, "1С:Полиграфия (RU)", "PrintEffect (RU)"]
   expertise_flag: 0
 
 - id: auto-repair-shops
@@ -217,7 +217,7 @@
   tier: A
   sources: [yc, g2]
   evidence: "Opusense AI — AI for Field Inspection Reports (YC S25); G2 'Home Inspection'; Russia: new-build apartment acceptance inspections"
-  competitors: [Spectora, HomeGauge, Inspectify, Opusense, "Домклик приёмка (RU, платформа)"]
+  competitors: [Spectora, HomeGauge, Inspectify, Opusense, "Домклик приёмка (RU, платформа)", "Аудитор квартир (RU)", "Приёмка Про (RU)"]
   expertise_flag: 0
 
 - id: str-hosts-tools
@@ -309,7 +309,7 @@
   tier: A
   sources: [yc, tinyseed, appstore-us, g2]
   evidence: "Hey Telo, Maive, Robby, CentralComs, Cactus, Cohesive (YC — 6 companies); Spraye (TinySeed); Jobber #24 Business US; G2 'Cleaning Services', 'Pest Control', 'Landscape'"
-  competitors: [Jobber, Housecall Pro, ServiceTitan, Workiz, FieldPulse, "Planado (RU)"]
+  competitors: [Jobber, Housecall Pro, ServiceTitan, Workiz, FieldPulse, "Planado (RU)", "Okdesk (RU)", "HubEx (RU)"]
   expertise_flag: 0
   notes: Large horizontal players exist; the opening is AI call handling and narrow sub-verticals
 
@@ -436,7 +436,7 @@
   tier: A
   sources: [appstore-us, appstore-ru]
   evidence: "9 apps in the Business US top 100: Invoice Fly, Invoice Simple, Joist, Invoice2go, Billdu, Tiny Invoice, Invoice Home, Freebie, Easy Invoice"
-  competitors: [Invoice Simple, Invoice Fly, Joist, Billdu, Invoice Home, "Мой Склад (RU)"]
+  competitors: [Invoice Simple, Invoice Fly, Joist, Billdu, Invoice Home, "Мой Склад (RU)", "Контур.Эльба (RU)"]
   expertise_flag: 0
   notes: Classic example of a market with many small players — useful for calibrating fragmentation
 
@@ -799,7 +799,7 @@
   tier: A
   sources: [flippa, appstore-us]
   evidence: "AI photo platform dating+headshots, $0.79M ARR, AI headshot $287k revenue, AceFace (Flippa); ReShoot #5, Pose #8 Graphics US"
-  competitors: [Aragon AI, HeadshotPro, BetterPic, Photo AI, "Bakery Headshots"]
+  competitors: [Aragon AI, HeadshotPro, BetterPic, Photo AI, "Bakery Headshots", Lensa]
   expertise_flag: 0
   notes: Commodity niche, but many small profitable players are proven
 
@@ -993,7 +993,7 @@
   tier: B
   sources: [appstore-us, appstore-ru, ph]
   evidence: "Opal #43, BePresent #62 Productivity US; Pokus (RU); Mochi Focus, Unloop (PH)"
-  competitors: [Opal, one sec, BePresent, ScreenZen, Freedom]
+  competitors: [Opal, one sec, BePresent, ScreenZen, Freedom, StayFree]
   expertise_flag: 0
   notes: Apple's native Screen Time is a platform risk
 
@@ -1795,7 +1795,7 @@
   tier: B
   sources: [g2]
   evidence: G2 Dry Cleaning Software (CleanCloud, SMRT, Enlite); RU — Agbis Khimchistka
-  competitors: [CleanCloud, SMRT, Enlite, "Агбис (RU)"]
+  competitors: [CleanCloud, SMRT, Enlite, "Агбис (RU)", "1С Химчистка (RU)"]
   expertise_flag: 0
 
 - id: florists-software
@@ -1808,7 +1808,7 @@
   tier: B
   sources: [g2]
   evidence: G2 Florist Software (Floranext, Lovingly, Hana, FloristWare); RU — Posiflora
-  competitors: [Floranext, Lovingly, FloristWare, "Posiflora (RU)"]
+  competitors: [Floranext, Lovingly, FloristWare, "Posiflora (RU)", "FloraPoint (RU)"]
   expertise_flag: 0
 
 - id: funeral-homes-software
@@ -1874,7 +1874,7 @@
   tier: A
   sources: [g2, gplay, appstore-us]
   evidence: brightwheel (Education Google Play US), Procare, HiMama/Lillio, Daily Connect — top-grossing; G2 Child Care Software; RU — private kindergartens
-  competitors: [brightwheel, Procare, Lillio, Kangarootime, "Kidsoft (RU)"]
+  competitors: [brightwheel, Procare, Lillio, Kangarootime, "Kidsoft (RU)", "ParaPlan CRM (RU)", "МойКласс (RU)"]
   expertise_flag: 0
 
 - id: coaching-business-platforms
@@ -1887,7 +1887,7 @@
   tier: B
   sources: [g2]
   evidence: G2 Coaching Software (Paperbell, CoachAccountable, Practice, Satori, Simply.Coach)
-  competitors: [Paperbell, CoachAccountable, Practice, Satori, Simply.Coach]
+  competitors: [Paperbell, CoachAccountable, Practice, Satori, Simply.Coach, "АнтиТренинги (RU)"]
   expertise_flag: 0
 
 - id: parent-school-communication

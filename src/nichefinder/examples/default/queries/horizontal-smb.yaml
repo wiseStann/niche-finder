@@ -74,6 +74,7 @@ invoice-estimate-mobile-apps:
     - {q: "программа для составления смет для мастеров", i: category}
     - {q: "как выставить счет на оплату ип", i: problem}
     - {q: "мой склад", i: brand, b: "МойСклад"}
+    - {q: "контур эльба", i: brand, b: "Контур.Эльба"}
 
 shift-scheduling-deskless:
   en:
@@ -155,6 +156,7 @@ digital-business-cards:
     - {q: "qr визитка создать", i: category}
     - {q: "как сделать электронную визитку", i: problem}
     - {q: "myqrcards", i: brand, b: MyQRcards}
+    - {q: "hihello", i: brand, b: HiHello}
 
 loyalty-wallet-passes:
   en:
@@ -319,6 +321,7 @@ reseller-crosslisting-scanners:
     - {q: "list perfectly", i: brand, b: "List Perfectly"}
     - {q: "crosslist", i: brand, b: Crosslist}
     - {q: "flipwise", i: brand, b: Flipwise}
+  # no second Russian brand: 'перекуп' in Yandex is mostly car flipping; vendoo 13/month (Wordstat 2026-11)
   ru:
     - {q: "приложение для перекупов", i: category, anchor: true}
     - {q: "программа для перепродажи товаров", i: category}
@@ -551,3 +554,5 @@ ai-headshots-photos:
     - {q: "фото для резюме нейросеть", i: category}
     - {q: "нейросеть фото для знакомств", i: category}
     - {q: "как сделать деловое фото дома", i: problem}
+    - {q: "lensa", i: brand, b: Lensa}
+    - {q: "aragon ai", i: brand, b: "Aragon AI"}

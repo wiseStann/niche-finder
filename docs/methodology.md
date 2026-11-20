@@ -163,7 +163,7 @@ BetaList and Product Radar show where founders are heading (rising), not proven 
 
 **Output:** `metrics_quick.csv` with gate flags, and a leaderboard per market. A quick score exists (demand + growth + the brand part of fragmentation, normalised to 0-100) but only orders the shortlist; it is not the final score.
 
-**Shortlisting:** pass = no `G0`, `G1`, `G2` flag (section 7.1); the human checkpoint then edits the list. A two-tier shortlist is used: tier A (passed G0-G2) and tier B (cut only by the top-1 brand gate but with substantial demand and a top-1 share that is not extreme) - because that gate depends on three to five hand-listed brands, tier B is re-tested against an independent concentration signal in S5. Niches with a top-1 brand share above ~80 % are not carried forward.
+**Shortlisting:** pass = no `G0`, `G1`, `G2` flag (section 7.1); the human checkpoint then edits the list. A two-tier shortlist is used: tier A (passed G0-G2) and tier B (cut only by the top-1 brand gate but with substantial demand and a top-1 share that is not extreme) - because that gate depends on three to five hand-listed brands, tier B is re-tested against an independent concentration signal in S5. Niches with a top-1 brand share above ~80 % are not carried forward. Control niches that S3 has not settled go along as tier C (principle 5): red and platform controls that passed the gates, which the deep stages must still turn red, and every green control, which S6 must confirm. A green control cut by the top-1 gate is re-tested like tier B; a fragmented market outside search then points at the gate, not at the control.
 
 ### S4 - Trend depth
 

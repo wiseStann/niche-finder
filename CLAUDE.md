@@ -35,7 +35,9 @@ CI (`.github/workflows/ci.yml`) runs pytest on Linux/Windows/macOS × Python 3.1
 
 - `.venv/` at the repo root: Python 3.12, package installed in editable mode with `[trends,dev]`.
 - `workspace/` at the repo root was created with `nf init workspace`. It is gitignored, including its `.env`. `google-play-scraper` is installed in `workspace/node_modules`. Run `nf` from inside `workspace/` or pass `-w workspace`.
-- No API keys are set yet, so the DataForSEO (S3 volumes), LLM (S10 classification) and Yandex (`ru`) stages are skipped until `workspace/.env` has the keys. `workspace/nf.yaml` has `markets: [us, ww, ru]`, so the Russian module (`ru_*`, `s6_ru`, `s8_hh`, Wordstat) is on.
+- `workspace/.env` holds the DataForSEO, LLM and Yandex keys, so `nf run all` runs every stage. DataForSEO is prepaid: `s3_dataforseo` prints the expected cost and the balance before it pulls. `workspace/nf.yaml` has `markets: [us, ww, ru]`, so the Russian module (`ru_*`, `s6_ru`, `s8_hh`, Wordstat) is on.
+- Wordstat allows about 100 requests per hour, so an uncached `s2_wordstat` or `s4_wordstat_dynamics` run takes hours. Run them in the background; a restart resumes from the cache.
+- The Windows console is cp1252: a script that prints Cyrillic needs `PYTHONIOENCODING=utf-8`, or `sys.stdout.reconfigure(encoding="utf-8")` under `python -I`, which ignores that variable.
 
 ## Architecture
 
@@ -55,7 +57,7 @@ Each pipeline step is a module in `src/nichefinder/stages/`, registered in `STAG
 Raising `keys.MissingKey` or `tools.ToolMissing` inside `run` makes the CLI skip the stage instead of failing it.
 
 Stages talk to each other only through workspace files: `data/raw/*.csv` (S0 dumps) → `data/out/*.csv|json` → `reports/*.md` and `reports/leaderboard.html`. The main hand-offs:
-- `metrics_quick.csv` (S3) → `config/shortlist.yaml`. `s3_report` writes the shortlist only when the file is missing, or with `--rewrite-shortlist`. It is a human checkpoint.
+- `metrics_quick.csv` (S3) → `config/shortlist.yaml`. `s3_report` writes the shortlist only when the file is missing, or with `--rewrite-shortlist`. It is a human checkpoint. Tiers: `tier_a` passed the gates, `tier_b` was cut only by the top-1 brand gate, `tier_c` holds the control niches S3 has not settled (they are scored in the same cohort for calibration).
 - The deep stages S4, S5, S8 and S9 measure only shortlisted niches.
 - `supply_deep.csv` (S5) → `score_final.csv` (S6) → passports and the leaderboard.
 
@@ -83,7 +85,8 @@ To add a data source, write a new stage module and add it to the registry. Vendo
 - `queries/*.yaml`: niche id → language → a list of `{q, i, b, anchor}`.
   - `i` is the intent: `category`, `problem`, `brand` or `info`. Brand queries need `b`, the brand name.
   - Each required language has exactly one `anchor: true` query.
-  - Minimums per language are 3 category, 1 problem and 2 brand queries; a shortfall is only a warning.
+  - Minimums per language are 3 category, 1 problem and 2 brand queries; a shortfall is only a warning. When no second brand has real demand, a YAML comment above the language block says so.
+  - A category or problem query listed in two niches is warned about, because its volume counts in both; keep it in the most specific niche. A shared brand query is fine: brand volume feeds only the concentration metrics.
 - `config/score.yaml`: weights and CPC bands.
 - `config/overrides.yaml`: human judgments per niche (platform risk, lock-in, feasibility, supply estimates, founder `fit`, a manual `verdict`).
 - Other `config/*.yaml` files: per-source maps and exclusions.

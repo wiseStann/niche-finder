@@ -80,7 +80,10 @@ def validate(ws: Workspace) -> tuple[list[str], list[str], Counter]:
     for nid in queries:
         if nid not in by_id:
             errors.append(f"{nid}: has queries but no niche in niches.yaml")
-    seen: dict[tuple[str, str], list[str]] = defaultdict(list)
+    # (lang, query) -> [(niche id, intent)]. A brand query shared by two niches is fine: brand volume feeds only the
+    # concentration metrics, so a competitor present in two overlapping niches belongs to both. A shared category or
+    # problem query is not: its volume is summed into the demand of every niche that lists it.
+    seen: dict[tuple[str, str], list[tuple[str, str]]] = defaultdict(list)
     stats: Counter = Counter()
     for nid, n in by_id.items():
         q = queries.get(nid)
@@ -104,7 +107,7 @@ def validate(ws: Workspace) -> tuple[list[str], list[str], Counter]:
                     errors.append(f"{nid}/{lang}: brand query without b: '{it['q']}'")
                 cnt[it["i"]] += 1
                 anchors += bool(it.get("anchor"))
-                seen[(lang, it["q"].strip().lower())].append(nid)
+                seen[(lang, it["q"].strip().lower())].append((nid, it["i"]))
                 stats[lang] += 1
                 stats[f"{lang}/{it['i']}"] += 1
             if anchors != 1:
@@ -114,9 +117,10 @@ def validate(ws: Workspace) -> tuple[list[str], list[str], Counter]:
                     warns.append(f"{nid}/{lang}: {k}={cnt[k]} (< {m})")
         for lang in set(q) - set(langs_required(n)):
             warns.append(f"{nid}: has {lang} queries but geo={n.get('geo', 'global')} — measured, not required")
-    for (lang, text), nids in seen.items():
-        if len(nids) > 1:
-            warns.append(f"duplicate query '{text}' ({lang}) in {nids}")
+    for (lang, text), uses in seen.items():
+        if len(uses) > 1 and any(i != "brand" for _, i in uses):
+            warns.append(f"duplicate query '{text}' ({lang}) in {[nid for nid, _ in uses]}: its demand counts in each; "
+                         "keep it in the most specific niche")
     stats["niches"] = len(niches)
     stats["with_queries"] = len(queries)
     return errors, warns, stats
