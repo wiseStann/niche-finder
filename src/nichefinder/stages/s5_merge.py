@@ -145,7 +145,6 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             "b2c_monetized": f(pb2c.get(nid, {}).get("monetized_share")), "b2c_median_monthly": f(pb2c.get(nid, {}).get("median_monthly")),
             "b2c_median_yearly": f(pb2c.get(nid, {}).get("median_yearly")), "b2c_with_monthly": f(pb2c.get(nid, {}).get("with_monthly")), "b2c_n": f(pb2c.get(nid, {}).get("n")),
             # deals
-            "flippa": f(deals.get(nid, {}).get("flippa_listings")), "flippa_rev": f(deals.get(nid, {}).get("flippa_with_revenue")), "flippa_max_mrr": f(deals.get(nid, {}).get("flippa_max_mrr")),
             "ph_12m": f(deals.get(nid, {}).get("ph_launches_12m")), "yc": f(deals.get(nid, {}).get("yc_companies")), "tinyseed": f(deals.get(nid, {}).get("tinyseed")),
             "topgross_us": f(deals.get(nid, {}).get("topgrossing_us")), "topgross_ru": f(deals.get(nid, {}).get("topgrossing_ru")),
         }

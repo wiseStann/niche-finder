@@ -59,24 +59,24 @@ sources:
     adapter: s0_producthunt
     priority: P2
     access:
+      - method: graphql
+        endpoint: "https://api.producthunt.com/v2/api/graphql  posts(featured: true, order: VOTES, postedAfter, postedBefore, first: 20)"
+        auth: "developer token PRODUCTHUNT_TOKEN (free, register an application at producthunt.com/v2/oauth/applications)"
+        cost: $0
+        limits: "query complexity <= 6,250 / 15 min; s0_producthunt waits for the reset on a rate-limit answer; the API terms restrict commercial use without permission from Product Hunt"
+        probe: {date: 2026-11-20, http: 200, note: "first run of s0_producthunt: 1,056 unique featured posts over 12 months (votes 213-1,496, all with topics); one rate-limit wait of ~8 min"}
       - method: html_ssr
         endpoint: "https://www.producthunt.com/leaderboard/{monthly|weekly}/{y}/{m}/all"
         auth: none
         cost: $0
-        limits: "~1.5 s between pages; 612 KB per page; JSON inside the HTML (regex on __typename:Post)"
-        probe: {date: 2026-09-20, http: 200, note: "works, same as on 2026-09-15; monthly and weekly leaderboards"}
+        limits: "Cloudflare JavaScript challenge; a browser User-Agent does not help, only a real browser would"
+        probe: {date: 2026-11-17, http: 403, note: "'Just a moment...' on every page; 200 on 2026-09-20"}
       - method: atom
         endpoint: "https://www.producthunt.com/feed  (?category=<topic-slug>)"
         auth: none
         cost: $0
         limits: "50 latest posts; has title, tagline, published, link; no votes and no topics"
         probe: {date: 2026-09-20, http: 200, note: "44 KB, 50 entries, the freshest - a daily pulse"}
-      - method: graphql
-        endpoint: "https://api.producthunt.com/v2/api/graphql"
-        auth: "developer token (free, register an application at producthunt.com/v2/oauth/applications)"
-        cost: $0
-        limits: "query complexity <= 6,250 / 15 min; posts(topic, postedAfter) + votesCount, commentsCount, makers, topics"
-        probe: {date: 2026-09-20, http: 401, note: "invalid_oauth_token without a token - expected; with a token it gives an exact slice by topic and date"}
       - method: html_ssr
         endpoint: "https://www.producthunt.com/topics/<slug>"
         auth: none
@@ -87,7 +87,8 @@ sources:
       - "Votes are bought or inflated; the signal is the number of launches and repeats, not votes"
       - "Biased toward AI wrappers and dev tools; SMB B2B verticals are poorly represented"
       - "Up to 4 topics per post, labelled by the authors - matching to a niche needs regexes (deal_keywords.yaml)"
-    plan: "Add the Atom feed as a daily pulse (a weekly delta of what launched per topic) and GraphQL for an exact per-topic slice once a token is available"
+      - "Since November 2026 the web pages answer automated clients with a Cloudflare challenge (leaderboards checked; the feed and topic pages are likely the same): use the API"
+    plan: "Done (2026-11-20): s0_producthunt reads the GraphQL API (top 60 featured posts a month and top 20 a week, 12 months). Next: a per-topic slice (posts(topic: ...)) for shortlisted niches"
 
   - id: product_radar
     name: Product Radar (RU)
@@ -964,20 +965,22 @@ sources:
     role: [discovery, evaluation]
     signals: ["SaaS for sale with revenue / profit / price -> flippa_listings, flippa_with_revenue, max / median MRR per niche"]
     stages: [s0, s5]
-    feeds: ["data/out/universe.csv (source=flippa, transactions)", "data/out/deals.csv: flippa_*"]
+    feeds: []
     freshness: daily
-    status: in_pipeline
-    adapter: s0_flippa
-    priority: P2
+    status: blocked
+    adapter: null
+    priority: none
     access:
       - method: html_ssr
         endpoint: "https://flippa.com/search?filter[property_type]=saas&page[number]=N"
         auth: none
         cost: $0
-        limits: "SSR JSON in the HTML, 15 pages (382 listings on 2026-09-15)"
-        probe: {date: 2026-09-15, http: 200, note: "works"}
-    caveats: ["The low segment (MRR $100-5k), many 'built in a month, selling'; revenue is self-reported"]
-    plan: "Add the filters property_type=app|ecommerce for B2C niches; a snapshot every month for the listings trend"
+        limits: "Cloudflare JavaScript challenge; no official API"
+        probe: {date: 2026-11-17, http: 403, note: "'Just a moment...'; 200 with SSR JSON (382 listings) on 2026-09-15"}
+    caveats:
+      - "The low segment (MRR $100-5k), many 'built in a month, selling'; revenue is self-reported"
+      - "Was the 3x marketplace term of the deals score; dropped on 2026-11-20 together with that term (methodology section 7.2). s0_flippa was removed"
+    plan: "Not worth a headless browser: passing the challenge breaks the terms of the site and breaks often. By hand for the top-5 niches, like Acquire.com"
 
   - id: empire_flippers
     name: Empire Flippers (API)
@@ -990,22 +993,23 @@ sources:
       - "multiple and 'days on market' per monetization type -> liquidity and exit price (the revenue ceiling)"
       - "listing_status For Sale / Sold / Under Offer -> deal speed per niche"
     stages: [s0, s5, s6]
-    feeds: ["data/out/universe.csv (source=ef, transactions)", "data/out/deals.csv: ef_listings, ef_median_profit, ef_multiple (idea)"]
+    feeds: ["data/raw/ef_listings.csv", "data/out/universe.csv (source=ef:software|ef:digital, transactions)", "data/out/deals.csv: ef_software, ef_software_sold, ef_median_profit, ef_median_multiple (passport, not scored)"]
     freshness: daily
-    status: planned
-    adapter: null
-    priority: P1
+    status: in_pipeline
+    adapter: s0_empireflippers
+    priority: P2
     access:
       - method: api
         endpoint: "https://api.empireflippers.com/api/v1/listings/list?limit=100&page=N"
         auth: none
         cost: $0
-        limits: "public JSON without a key; 2,878 listings = 29 pages of 100; the monetizations filter did not work via the query (check the syntax in the docs) - filter locally"
-        probe: {date: 2026-09-20, http: 200, note: "JSON, pagination.count=2878, P&L fields present; niche / industry are null (the niche is in public_title: '...in the Kitchenware Niche')"}
+        limits: "public JSON without a key; 29 pages of 100, ~34 KB per listing with monthly metrics (s0_empireflippers caches trimmed pages); the monetizations filter did not work via the query - filter locally"
+        probe: {date: 2026-11-20, http: 200, note: "count=2871 (2,688 sold, 162 for sale, 21 pending); fields include monetizations[], niches[] tags, customer_type, listing_multiple, first_listed_at"}
     caveats:
-      - "EF verifies the numbers - the best free source of real profit of small businesses; but SaaS is a minority (most are Amazon FBA / content / e-commerce)"
-      - "The niche is only in the title as text; match with the deal_keywords.yaml regexes over public_title + summary"
-    plan: "29 requests -> a CSV of listings; in the deals stage count ef_listings, ef_sold_12m, ef_median_profit, ef_multiple per niche; in the ceiling stage the median SaaS multiple is an anchor for the exit price"
+      - "EF verifies the numbers - the best free source of real profit of small businesses; but software is a small minority: 79 SaaS / app listings of 2,871 over 2014-2026, about ten a year (2026-11-20)"
+      - "Matching all listings is noise: 196 Amazon FBA sellers matched marketplace-seller-analytics because their summaries mention Amazon selling - they are customers of the niche, not players. Only software listings are counted per niche, and only 9 of 98 niches with keywords get a match"
+      - "Too thin to replace the 3x Flippa term in the deals score; shown in passports only"
+    plan: "Done (2026-11-20): s0_empireflippers -> software and digital listings into the universe, software matches per niche in deals.csv and passports (count, sold, median profit, median multiple). Next: the median SaaS multiple as the exit-price anchor of the ceiling stage"
 
   - id: quiet_light
     name: Quiet Light Brokerage

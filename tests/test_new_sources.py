@@ -170,13 +170,32 @@ def test_merge_and_deals_use_new_sources(tmp_path):
          "goal_usd": "1000", "pledged_usd": "25000", "backers": "400", "launched": "2026-05-01", "deadline": "2026-06-01", "country": "US", "url": "u4"},
         {"id": "2", "name": "Tiny", "blurb": "tattoo stickers", "category": "Art", "subcategory": "Tattoo", "state": "failed",
          "goal_usd": "1000", "pledged_usd": "10", "backers": "2", "launched": "2026-05-01", "deadline": "2026-06-01", "country": "US", "url": "u5"}])
+    ef = {"listing_number": "", "public_title": "", "summary": "", "listing_status": "Sold", "monetizations": "", "niches": "Business",
+          "customer_type": "", "country": "US", "monthly_net_profit": "", "monthly_gross_revenue": "", "listing_price": "160000",
+          "listing_multiple": "", "multiple_type": "SDE", "first_made_money_at": "", "first_listed_at": "2024-03-18T00:00:00Z",
+          "days_on_marketplace": "", "updated_at": "", "mrr": "", "churn_percent": "", "kind": "", "url": "u6"}
+    write_csv(ws.raw("ef_listings.csv"), [
+        {**ef, "listing_number": "1", "public_title": "$9K Per Month SaaS Business", "summary": "Invoicing software for agencies",
+         "monetizations": "SaaS", "monthly_net_profit": "4000", "listing_multiple": "30", "kind": "software", "customer_type": "B2B"},
+        {**ef, "listing_number": "2", "public_title": "$5K Per Month SaaS Business", "summary": "Invoicing plugin", "listing_status": "For Sale",
+         "monetizations": "SaaS", "monthly_net_profit": "2000", "listing_multiple": "40", "kind": "software"},
+        {**ef, "listing_number": "3", "public_title": "$90K Per Month Amazon FBA Business", "summary": "Invoices handled by an accountant; invoicing",
+         "monetizations": "Amazon FBA", "monthly_net_profit": "9000", "listing_multiple": "35", "kind": "other"},
+        {**ef, "listing_number": "4", "public_title": "$3K Per Month Info Product Business", "summary": "A course on invoicing",
+         "monetizations": "Info Product", "monthly_net_profit": "1500", "listing_multiple": "28", "kind": "digital"}])
     s0_merge.run(ws, argparse.Namespace())
     uni = list(csv.DictReader(open(ws.out("universe.csv"), encoding="utf-8")))
-    assert sorted(r["source"] for r in uni) == ["betalist", "betalist", "kickstarter:Art", "productradar"]   # failed project left out
+    assert sorted(r["source"] for r in uni) == ["betalist", "betalist", "ef:digital", "ef:software", "ef:software", "kickstarter:Art", "productradar"]
+    # the failed Kickstarter project and the Amazon FBA listing are left out
+    assert next(r for r in uni if r["source"] == "ef:software")["side"] == "b2b"
     assert next(r for r in uni if r["source"] == "productradar")["geo"] == "ru"
     s5_deals.run(ws, argparse.Namespace())
     deals = {r["niche_id"]: r for r in csv.DictReader(open(ws.out("deals.csv"), encoding="utf-8"))}
     assert deals["invoicing"]["betalist_12m"] == "1"            # the 2025 launch is outside 12 months
     assert deals["invoicing"]["productradar_12m"] == "1"        # matched through the Russian coverage phrase
     assert (deals["tattoo"]["kickstarter_12m"], deals["tattoo"]["kickstarter_success_12m"], deals["tattoo"]["kickstarter_pledged_12m"]) == ("2", "1", "25000")
-    assert deals["invoicing"]["flippa_listings"] == "0"          # the existing columns are still written
+    # Empire Flippers: software listings only (the FBA and info-product listings also say "invoicing")
+    assert (deals["invoicing"]["ef_software"], deals["invoicing"]["ef_software_sold"]) == ("2", "1")
+    assert (deals["invoicing"]["ef_median_profit"], deals["invoicing"]["ef_median_multiple"]) == ("3000", "35")
+    assert deals["tattoo"]["ef_software"] == "0" and deals["tattoo"]["ef_median_profit"] == ""
+    assert "flippa_listings" not in deals["invoicing"]

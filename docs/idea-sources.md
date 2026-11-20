@@ -67,7 +67,7 @@ Paid or closed, with the replacement that was found:
 
 ## Freshness: what can become a series
 
-Daily or realtime without keys: Hacker News (archive since 2007, so a series exists immediately), the Product Hunt Atom feed, Launching Next RSS, Remote OK (latest 100, needs daily accumulation), Empire Flippers (listing dates and days on marketplace give a series). Monthly snapshots that accumulate into a series: Kickstarter dumps (history since 2014), BetaList, Product Radar, VC portfolios, Flippa. Quarterly: YC batches, NVCA. This complements the App Store and Google Play snapshot stages: next to "supply over time" you get "entries and exits over time".
+Daily or realtime without keys: Hacker News (archive since 2007, so a series exists immediately), the Product Hunt Atom feed, Launching Next RSS, Remote OK (latest 100, needs daily accumulation), Empire Flippers (listing dates and days on marketplace give a series). Monthly snapshots that accumulate into a series: Kickstarter dumps (history since 2014), BetaList, Product Radar, VC portfolios. Quarterly: YC batches, NVCA. This complements the App Store and Google Play snapshot stages: next to "supply over time" you get "entries and exits over time".
 
 ## What was deliberately judged not worth doing
 
@@ -82,6 +82,8 @@ Daily or realtime without keys: Hacker News (archive since 2007, so a series exi
 - Closed from the probing network (403, 429, 406, 000): Crunchbase site, Dealroom, PitchBook (including RSS), SEC full-text search (geo), Kickstarter live, Indiegogo, Wellfound company pages, Work at a Startup, BizBuySell, BusinessesForSale, Avito, Biboss, Tiny Acquisitions, PatentsView (connection), EPO OPS (fair use), Growjo, Tracxn.
 - Changed paths (404 / 500): Bessemer, Kleiner, Point Nine, Initialized, Calm Fund, Altera Invest, Boomstarter, Planeta (307).
 
+Re-checked 2026-11-17/20: the Product Hunt leaderboards and Flippa now answer with a Cloudflare challenge (403); Product Hunt moved to its GraphQL API with a token, Flippa was dropped. The Empire Flippers API is still open (2,871 listings).
+
 The generated registry follows.
 
 ---
@@ -90,8 +92,8 @@ The generated registry follows.
 
 Generated from [`idea-sources.yaml`](idea-sources.yaml) by `scripts/render_idea_sources.py`. Edit only the YAML.
 
-**51 sources, 79 access methods:** ✅ in_pipeline - 24, 🛠 planned - 9, ✋ manual - 5, ⛔ blocked - 10, 💰 paid - 3.  
-Priorities: P1 - 7, P2 - 19, P3 - 17, none - 8.
+**51 sources, 79 access methods:** ✅ in_pipeline - 24, 🛠 planned - 8, ✋ manual - 5, ⛔ blocked - 11, 💰 paid - 3.  
+Priorities: P1 - 6, P2 - 19, P3 - 17, none - 9.
 
 Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implemented) · ✋ by hand / browser only · ⛔ closed from the probing network · 💰 paid only. **Probe:** the HTTP code of a keyless curl probe (date). **Role:** discovery = entities for the universe, evaluation = a metric for a niche, voice = buyer voice, trend = dynamics over time.
 
@@ -99,7 +101,6 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 
 | P | Source | Group | Stage | Stage groups | What it would give |
 |---|---|---|---|---|---|
-| P1 | Empire Flippers (API) | m_and_a | not implemented | s0, s5, s6 | 29 requests -> a CSV of listings; in the deals stage count ef_listings, ef_sold_12m, ef_median_profit, ef_multiple per niche; in the ceiling stage the median SaaS multiple is an anchor for the exit price |
 | P2 | Wellfound (AngelList Talent) | hiring | not implemented | s8, s0 | Walk /role/l/<role>/<location> for 10 roles x 5 locations monthly -> JSON from the HTML -> a company table with high_concept; match to niches. Low priority: HN hiring gives the same more cheaply |
 | P2 | Launching Next | launch | not implemented | s0 | Collect the RSS daily into a cache (accumulate), merge into the universe once a month; use as a third 'launch density' counter (PH + BetaList + LN) |
 | P2 | Quiet Light Brokerage | m_and_a | not implemented | s5, s6 | The same fetcher as Empire Flippers: page -> CSV; multiples by type feed the ceiling stage |
@@ -113,7 +114,7 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 
 | Source | Group | Geo | Role | Freshness | Best access | Probe | Status | P | Stage groups |
 |---|---|---|---|---|---|---|---|---|---|
-| **Product Hunt** (`product_hunt`) | launch | global | discovery, evaluation | daily | html_ssr · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
+| **Product Hunt** (`product_hunt`) | launch | global | discovery, evaluation | daily | atom · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
 | **Product Radar (RU)** (`product_radar`) | launch | ru | discovery | daily | html_ssr · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
 | **BetaList** (`betalist`) | launch | global | discovery | daily | html_ssr · none · $0 | 200 (2026-11-17) | ✅ in_pipeline | P1 | s0, s5 |
 | **Launching Next** (`launching_next`) | launch | global | discovery | daily | rss · none · $0 | 200 (2026-09-20) | 🛠 planned | P2 | s0 |
@@ -143,8 +144,8 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **Lens.org** (`lens_org`) | patents | global | evaluation | weekly | api · a token (free for non-commercial use, by request) · $0 | 401 (2026-09-20) | ⛔ blocked | none | s5 |
 | **EPO OPS (Espacenet)** (`epo_ops`) | patents | global | evaluation | weekly | api · registration, an OAuth key; 4 GB/week free · $0 | 403 (2026-09-20) | ⛔ blocked | none | s5 |
 | **FIPS / Rospatent / Yandex.Patents (RU)** (`fips_rospatent`) | patents | ru | evaluation | weekly | html_form · none · $0 | 200 (2026-09-20) | ✋ manual | P3 | s5 |
-| **Flippa (SaaS listings)** (`flippa`) | m_and_a | global | discovery, evaluation | daily | html_ssr · none · $0 | 200 (2026-09-15) | ✅ in_pipeline | P2 | s0, s5 |
-| **Empire Flippers (API)** (`empire_flippers`) | m_and_a | global | discovery, evaluation | daily | api · none · $0 | 200 (2026-09-20) | 🛠 planned | P1 | s0, s5, s6 |
+| **Flippa (SaaS listings)** (`flippa`) | m_and_a | global | discovery, evaluation | daily | html_ssr · none · $0 | 403 (2026-11-17) | ⛔ blocked | none | s0, s5 |
+| **Empire Flippers (API)** (`empire_flippers`) | m_and_a | global | discovery, evaluation | daily | api · none · $0 | 200 (2026-11-20) | ✅ in_pipeline | P2 | s0, s5, s6 |
 | **Quiet Light Brokerage** (`quiet_light`) | m_and_a | global | evaluation | weekly | html_ssr · none · $0 | 200 (2026-09-20) | 🛠 planned | P2 | s5, s6 |
 | **Acquire.com (MicroAcquire)** (`acquire_com`) | m_and_a | global | discovery, evaluation | daily | html · a buyer account (free, but with verification); listings are visible after login · $0 | 404 (2026-09-20) | ✋ manual | P3 | s0, s5 |
 | **FE International / Microns / Tiny Acquisitions / SideProjectors** (`fe_microns_tiny`) | m_and_a | global | discovery | daily | html · none · $0 | 200 (2026-09-20) | ✋ manual | P3 | s0 |
@@ -182,17 +183,18 @@ Feeds: `data/out/universe.csv (source=ph:*, rising)`; `data/out/deals.csv: ph_la
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| html_ssr | https://www.producthunt.com/leaderboard/{monthly\|weekly}/{y}/{m}/all | none | $0 | ~1.5 s between pages; 612 KB per page; JSON inside the HTML (regex on __typename:Post) | 200 2026-09-20 - works, same as on 2026-09-15; monthly and weekly leaderboards |
+| graphql | https://api.producthunt.com/v2/api/graphql  posts(featured: true, order: VOTES, postedAfter, postedBefore, first: 20) | developer token PRODUCTHUNT_TOKEN (free, register an application at producthunt.com/v2/oauth/applications) | $0 | query complexity <= 6,250 / 15 min; s0_producthunt waits for the reset on a rate-limit answer; the API terms restrict commercial use without permission from Product Hunt | 200 2026-11-20 - first run of s0_producthunt: 1,056 unique featured posts over 12 months (votes 213-1,496, all with topics); one rate-limit wait of ~8 min |
+| html_ssr | https://www.producthunt.com/leaderboard/{monthly\|weekly}/{y}/{m}/all | none | $0 | Cloudflare JavaScript challenge; a browser User-Agent does not help, only a real browser would | 403 2026-11-17 - 'Just a moment...' on every page; 200 on 2026-09-20 |
 | atom | https://www.producthunt.com/feed  (?category=<topic-slug>) | none | $0 | 50 latest posts; has title, tagline, published, link; no votes and no topics | 200 2026-09-20 - 44 KB, 50 entries, the freshest - a daily pulse |
-| graphql | https://api.producthunt.com/v2/api/graphql | developer token (free, register an application at producthunt.com/v2/oauth/applications) | $0 | query complexity <= 6,250 / 15 min; posts(topic, postedAfter) + votesCount, commentsCount, makers, topics | 401 2026-09-20 - invalid_oauth_token without a token - expected; with a token it gives an exact slice by topic and date |
 | html_ssr | https://www.producthunt.com/topics/<slug> | none | $0 | topic page: number of followers and products of the topic - the size of the category audience | 200 2026-09-20 - 606 KB SSR |
 
 Traps:
 - Votes are bought or inflated; the signal is the number of launches and repeats, not votes
 - Biased toward AI wrappers and dev tools; SMB B2B verticals are poorly represented
 - Up to 4 topics per post, labelled by the authors - matching to a niche needs regexes (deal_keywords.yaml)
+- Since November 2026 the web pages answer automated clients with a Cloudflare challenge (leaderboards checked; the feed and topic pages are likely the same): use the API
 
-Plan: Add the Atom feed as a daily pulse (a weekly delta of what launched per topic) and GraphQL for an exact per-topic slice once a token is available
+Plan: Done (2026-11-20): s0_producthunt reads the GraphQL API (top 60 featured posts a month and top 20 a week, 12 months). Next: a per-topic slice (posts(topic: ...)) for shortlisted niches
 
 #### ✅ Product Radar (RU) (`product_radar`) - P2
 
@@ -763,44 +765,44 @@ Plan: By hand for 3-5 chosen Russian niches: the number of software registration
 
 ### m_and_a - Business sales - deals, multiples, real revenue of small players (proven, transactions)
 
-#### ✅ Flippa (SaaS listings) (`flippa`) - P2
+#### ⛔ Flippa (SaaS listings) (`flippa`) - none
 
-https://flippa.com · geo global · role discovery, evaluation · freshness daily · stage groups s0, s5 · stage `s0_flippa`
+https://flippa.com · geo global · role discovery, evaluation · freshness daily · stage groups s0, s5 · stage not implemented
 
 Signals:
 - SaaS for sale with revenue / profit / price -> flippa_listings, flippa_with_revenue, max / median MRR per niche
 
-Feeds: `data/out/universe.csv (source=flippa, transactions)`; `data/out/deals.csv: flippa_*`
-
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| html_ssr | https://flippa.com/search?filter[property_type]=saas&page[number]=N | none | $0 | SSR JSON in the HTML, 15 pages (382 listings on 2026-09-15) | 200 2026-09-15 - works |
+| html_ssr | https://flippa.com/search?filter[property_type]=saas&page[number]=N | none | $0 | Cloudflare JavaScript challenge; no official API | 403 2026-11-17 - 'Just a moment...'; 200 with SSR JSON (382 listings) on 2026-09-15 |
 
 Traps:
 - The low segment (MRR $100-5k), many 'built in a month, selling'; revenue is self-reported
+- Was the 3x marketplace term of the deals score; dropped on 2026-11-20 together with that term (methodology section 7.2). s0_flippa was removed
 
-Plan: Add the filters property_type=app|ecommerce for B2C niches; a snapshot every month for the listings trend
+Plan: Not worth a headless browser: passing the challenge breaks the terms of the site and breaks often. By hand for the top-5 niches, like Acquire.com
 
-#### 🛠 Empire Flippers (API) (`empire_flippers`) - P1
+#### ✅ Empire Flippers (API) (`empire_flippers`) - P2
 
-https://empireflippers.com/marketplace/ · geo global · role discovery, evaluation · freshness daily · stage groups s0, s5, s6 · stage not implemented
+https://empireflippers.com/marketplace/ · geo global · role discovery, evaluation · freshness daily · stage groups s0, s5, s6 · stage `s0_empireflippers`
 
 Signals:
 - 2,878 listings (including sold) with a verified P&L: average_monthly_net_profit, revenue, listing_price, listing_multiple, monetizations (SaaS / Amazon FBA / eCommerce / Content / Apps), days_on_marketplace, net_profit_trend, risks / opportunities as text
 - multiple and 'days on market' per monetization type -> liquidity and exit price (the revenue ceiling)
 - listing_status For Sale / Sold / Under Offer -> deal speed per niche
 
-Feeds: `data/out/universe.csv (source=ef, transactions)`; `data/out/deals.csv: ef_listings, ef_median_profit, ef_multiple (idea)`
+Feeds: `data/raw/ef_listings.csv`; `data/out/universe.csv (source=ef:software|ef:digital, transactions)`; `data/out/deals.csv: ef_software, ef_software_sold, ef_median_profit, ef_median_multiple (passport, not scored)`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| api | https://api.empireflippers.com/api/v1/listings/list?limit=100&page=N | none | $0 | public JSON without a key; 2,878 listings = 29 pages of 100; the monetizations filter did not work via the query (check the syntax in the docs) - filter locally | 200 2026-09-20 - JSON, pagination.count=2878, P&L fields present; niche / industry are null (the niche is in public_title: '...in the Kitchenware Niche') |
+| api | https://api.empireflippers.com/api/v1/listings/list?limit=100&page=N | none | $0 | public JSON without a key; 29 pages of 100, ~34 KB per listing with monthly metrics (s0_empireflippers caches trimmed pages); the monetizations filter did not work via the query - filter locally | 200 2026-11-20 - count=2871 (2,688 sold, 162 for sale, 21 pending); fields include monetizations[], niches[] tags, customer_type, listing_multiple, first_listed_at |
 
 Traps:
-- EF verifies the numbers - the best free source of real profit of small businesses; but SaaS is a minority (most are Amazon FBA / content / e-commerce)
-- The niche is only in the title as text; match with the deal_keywords.yaml regexes over public_title + summary
+- EF verifies the numbers - the best free source of real profit of small businesses; but software is a small minority: 79 SaaS / app listings of 2,871 over 2014-2026, about ten a year (2026-11-20)
+- Matching all listings is noise: 196 Amazon FBA sellers matched marketplace-seller-analytics because their summaries mention Amazon selling - they are customers of the niche, not players. Only software listings are counted per niche, and only 9 of 98 niches with keywords get a match
+- Too thin to replace the 3x Flippa term in the deals score; shown in passports only
 
-Plan: 29 requests -> a CSV of listings; in the deals stage count ef_listings, ef_sold_12m, ef_median_profit, ef_multiple per niche; in the ceiling stage the median SaaS multiple is an anchor for the exit price
+Plan: Done (2026-11-20): s0_empireflippers -> software and digital listings into the universe, software matches per niche in deals.csv and passports (count, sold, median profit, median multiple). Next: the median SaaS multiple as the exit-price anchor of the ceiling stage
 
 #### 🛠 Quiet Light Brokerage (`quiet_light`) - P2
 

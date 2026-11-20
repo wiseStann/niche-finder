@@ -19,8 +19,8 @@ Run-order logic: S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S8 -> S9 -> S10 -> S6 -> S7
 |---|---|---|---|---|
 | `s0_yc` | accelerator company JSON (yc-oss open API) | `raw/yc_*.json`, `raw/yc_companies.csv` (recent batches; out-of-scope industries dropped: medicine, biotech, hardware, regulated finance, crypto, defence, government) | none | free |
 | `s0_appstore_top` | iTunes RSS top-grossing feeds by genre (US + other storefronts; games and medicine excluded) | `raw/appstore_top.csv` | none | free, ~1 request per genre/storefront |
-| `s0_producthunt` | Product Hunt monthly leaderboard pages (server-rendered, no token), last 12 months | `raw/ph_top.csv` | none | free, polite pacing |
-| `s0_flippa` | Flippa open SaaS listings (JSON embedded in HTML) | `raw/flippa_saas.csv` (listings with revenue) | none (curl as fallback) | free |
+| `s0_producthunt` | Product Hunt GraphQL API v2: featured posts by votes, top `--top-month` (60) per month for 12 months and top `--top-week` (20) per week for 52 weeks (the web pages are behind a Cloudflare challenge) | `raw/ph_top.csv` (period, name, slug, tagline, votes, topics) | `PRODUCTHUNT_TOKEN` (free developer token) | free; complexity limit 6,250 per 15 min, the stage waits for the reset; cached per page |
+| `s0_empireflippers` | Empire Flippers public JSON API, all listings (for sale and sold), 100 per page | `raw/ef_listings.csv` (P&L, price, multiple, status, monetizations, `kind` = software / digital / other) | none | free; ~29 requests, cache per month of the run |
 | `s0_tinyseed` | bootstrapped-fund portfolio page(s) | `raw/tinyseed_portfolio.csv` | none | free |
 | `s0_gplay_top` | Google Play top charts, every non-game category x {US grossing, second-market grossing, second-market free} | `raw/gplay_top.csv` | node (`google-play-scraper`) | free; ~1 request/s, minutes |
 | `s0_wordpress` | WordPress.org plugin API (`plugins/info/1.2`), 250 plugins per page, ordered by popularity | `raw/wordpress_plugins.csv` (active installs, ratings, tags) | none | free |

@@ -5,7 +5,8 @@ one schema: entity, source, source_type, geo, side, category, one_liner, signal,
 
 Sources and their source_type: YC, Product Hunt, BetaList and Product Radar (geo ru) = rising; TinySeed, App Store
 top-grossing, Google Play top-grossing, WordPress plugins (>= 5000 active installs), Shopify apps and successful
-Kickstarter projects with >= 200 backers (paid in advance) = proven; Flippa = transactions; Google Play top-free = usage.
+Kickstarter projects with >= 200 backers (paid in advance) = proven; Empire Flippers software and digital listings
+(verified P&L, for sale and sold) = transactions; Google Play top-free = usage.
 Google Play lists are cut at rank 150.
 
 Optional user-provided imports (no fetcher exists; put the CSV in data/raw/ and it is merged when present):
@@ -65,12 +66,16 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             "category": "", "one_liner": r["excerpt"], "signal": "", "url": r["website"], "niche_id": "",
         })
 
-    # Flippa: transactions
-    for r in read("flippa_saas.csv"):
+    # Empire Flippers: transactions with a verified P&L; software and digital listings only (s0_empireflippers `kind`)
+    for r in read("ef_listings.csv"):
+        if r["kind"] not in ("software", "digital"):
+            continue
         rows.append({
-            "entity": r["basic_name"] or r["title"][:60], "source": "flippa", "source_type": "transactions", "geo": "global", "side": "",
-            "category": r["basic_name"] if r["basic_name"].startswith("SaaS") else "", "one_liner": r["summary"],
-            "signal": f"rev_mo=${r['revenue_average']}; price=${r['price']}", "url": r["listing_url"], "niche_id": "",
+            "entity": r["public_title"][:80], "source": f"ef:{r['kind']}", "source_type": "transactions", "geo": "global",
+            "side": {"B2B": "b2b", "B2C": "b2c"}.get(r["customer_type"], ""),
+            "category": f"{r['monetizations']} / {r['niches']}"[:80], "one_liner": r["summary"][:160],
+            "signal": f"profit_mo=${r['monthly_net_profit']}; price=${r['listing_price']}; {r['listing_status']} {r['first_listed_at'][:7]}",
+            "url": r["url"], "niche_id": "",
         })
 
     # App Store: proven B2C (US + RU)

@@ -39,7 +39,7 @@ The pipeline then answers, for every niche:
 |---|---|
 | **Do people search for it, and is that growing?** | Google Ads volume, CPC and 4 years of history (DataForSEO), Google Trends with brand anchors, autocomplete |
 | **Is supply fragmented, or does one player own it?** | App Store ratings, Google Play installs, Capterra and Shopify App Store reviews: leader's share, number of real players |
-| **Do customers pay?** | In-app purchase prices, B2B list prices, top-grossing charts, businesses for sale with revenue (Flippa, TinySeed, YC, Product Hunt) |
+| **Do customers pay?** | In-app purchase prices, B2B list prices, top-grossing charts, businesses sold with a verified P&L (Empire Flippers), TinySeed, YC, Product Hunt |
 | **Is there demand outside search?** | YouTube interest, subreddit activity, Hacker News launches and questions, startup job postings, how fast new apps gain ratings, whether new entrants survive |
 | **What do buyers complain about?** | Reddit posts and comments classified by an LLM: who is looking for a tool, who is switching from what to what, price objections, with quotes |
 | **Can it reach my income goal?** | Paying customers needed for your target net income, and what share of the niche that is |
@@ -110,7 +110,7 @@ Every stage is a separate command. Every external response is cached in the work
 
 | Group | What it does |
 |---|---|
-| `s0` | Universe of existing products: App Store top-grossing, Google Play, Product Hunt, YC, Flippa, TinySeed, WordPress.org, Shopify App Store, BetaList, Product Radar (Russian launches), Kickstarter |
+| `s0` | Universe of existing products: App Store top-grossing, Google Play, Product Hunt, YC, Empire Flippers, TinySeed, WordPress.org, Shopify App Store, BetaList, Product Radar (Russian launches), Kickstarter |
 | `s1` | Niche catalog report; coverage: how much of the universe your niches explain |
 | `s2` | Query validation with autocomplete (Wordstat for Russia) |
 | `s3` | Search demand quick filter and an automatic shortlist |
@@ -178,8 +178,9 @@ Every key is optional. A stage whose key is missing is skipped with a message sa
 | `LLM_API_KEY` (+ `LLM_BASE_URL`, `LLM_MODEL`) | Reddit classification (S10); any OpenAI-compatible endpoint | With DeepSeek, about $0.5 for 8,000 posts and comments |
 | `YANDEX_API_KEY` | Wordstat (Russian module) | Free quota of 100 requests per hour |
 | `YOUTUBE_API_KEY` | Short-video metrics for the info cohort (`info_youtube`) | Free quota of 10,000 units per day (about 90 one-phrase topics) |
+| `PRODUCTHUNT_TOKEN` | Product Hunt launches through the official API (`s0_producthunt`) | Free developer token; a complexity limit per 15 minutes |
 
-Everything else is free: iTunes Search and RSS, Google Play (through Node), Google Trends (through `trendspy`), autocomplete, WordPress.org, Shopify App Store, Capterra and GetApp pages, the Arctic Shift Reddit archive, YC, Product Hunt, Flippa, TinySeed, BetaList, Product Radar, Kickstarter (Web Robots dumps), Hacker News (Algolia API).
+Everything else is free: iTunes Search and RSS, Google Play (through Node), Google Trends (through `trendspy`), autocomplete, WordPress.org, Shopify App Store, Capterra and GetApp pages, the Arctic Shift Reddit archive, YC, Empire Flippers (JSON API), TinySeed, BetaList, Product Radar, Kickstarter (Web Robots dumps), Hacker News (Algolia API).
 
 Optional tools: Node.js 18+ for Google Play stages (`nf setup node`), and `curl` for sites that refuse Python clients.
 
@@ -220,12 +221,12 @@ Set `as_of: YYYY-MM-DD` in `nf.yaml` to reproduce an earlier run from cache.
 
 ## Responsible use and known limits
 
-Some stages read public web pages: Capterra, GetApp, Flippa, Product Hunt, the Shopify App Store, Google Play, BetaList and Product Radar. Requests are cached, spaced out and identified. Check each site's terms before you run those stages, and keep your request volume modest. You are responsible for how you use the data. This repository does not redistribute scraped data.
+Some stages read public web pages: Capterra, GetApp, the Shopify App Store, Google Play, BetaList and Product Radar. Requests are cached, spaced out and identified. Check each site's terms before you run those stages, and keep your request volume modest. You are responsible for how you use the data. This repository does not redistribute scraped data.
 
 Sites change. Here is what is reachable today:
 
-- **Product Hunt** answers automated clients with a Cloudflare challenge. `s0_producthunt` stops after three refusals and explains how to supply `data/raw/ph_top.csv` by hand.
-- **Flippa** listings no longer embed structured data. Titles come from URL slugs, and traffic fields are empty.
+- **Product Hunt** web pages answer automated clients with a Cloudflare challenge, so `s0_producthunt` uses the official API with a free token. The API terms restrict commercial use without permission from Product Hunt.
+- **Flippa** answers with a Cloudflare challenge too and has no API, so its stage was removed. Empire Flippers (open JSON API) replaces it in the universe and the passports, but not in the score; see methodology section 7.2.
 - **G2** blocks scraping, and **Smart Ranking** has no fetcher. Both can be imported from your own CSV; see the `s0_merge` docstring.
 
 ## Contributing

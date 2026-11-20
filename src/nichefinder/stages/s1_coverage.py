@@ -4,7 +4,7 @@ Matches phrases from config/coverage_keywords.yaml plus the competitor names in 
 at word boundaries) against "entity + one_liner + category" of every row in data/out/universe.csv.
 Outputs data/out/coverage.csv (universe rows with the matched niche ids in niche_id, joined by |) and
 reports/S1-coverage.md: coverage by source, the most frequent words among uncovered entities, uncovered top-grossing
-apps per genre, uncovered YC / Product Hunt / Flippa / TinySeed / BetaList / Product Radar / Kickstarter entities
+apps per genre, uncovered YC / Product Hunt / Empire Flippers / TinySeed / BetaList / Product Radar / Kickstarter entities
 (Kickstarter grouped by category, largest pledges first), and uncovered category taxonomy entries or
 regional-ranking companies when those optional sources were imported. These lists point at niches you may have missed.
 
@@ -110,8 +110,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         items = g[src]
         L.append(f"**{src}** ({len(items)}): " + "; ".join(f"{r['entity'][:40]}" for r in items[:40]) + ("…" if len(items) > 40 else ""))
         L.append("")
-    # uncovered YC / PH / Flippa / TinySeed, and the optional launch / crowdfunding sources
-    for src_prefix, title in (("yc", "YC"), ("ph", "Product Hunt"), ("flippa", "Flippa (listings with revenue)"), ("tinyseed", "TinySeed"),
+    # uncovered YC / PH / Empire Flippers / TinySeed, and the optional launch / crowdfunding sources
+    for src_prefix, title in (("yc", "YC"), ("ph", "Product Hunt"), ("ef", "Empire Flippers (software and digital businesses with a verified P&L)"), ("tinyseed", "TinySeed"),
                               ("betalist", "BetaList (pre-launch)"), ("productradar", "Product Radar (Russian-language launches)"),
                               ("kickstarter", "Kickstarter (successful, >= 200 backers; paid in advance)")):
         items = [r for r in unmatched if r["source"].split(":")[0] == src_prefix]

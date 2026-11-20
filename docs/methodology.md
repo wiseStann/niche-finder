@@ -119,9 +119,11 @@ The funnel in one table (details in [stages.md](stages.md)):
 
 **Measures:** nothing yet; it enumerates existing products in categories where someone pays. Output is `universe.csv` (entity, source, source type, geo, side, category, one-liner, signal, URL), typically thousands of rows from about ten sources.
 
-**Sources (public or keyless):** accelerator batches (yc-oss JSON), Product Hunt monthly leaderboards, bootstrapped-fund portfolios, Flippa SaaS listings with revenue, App Store top-grossing charts (iTunes RSS, by genre, US and other storefronts), Google Play top charts (Node scraper), WordPress.org plugin API (active installs), Shopify App Store category walk, BetaList (pre-launch startups, newest first), Product Radar (Russian-language launches by month, `ru` market), Kickstarter (Web Robots monthly dumps: projects, outcomes and money pledged).
+**Sources (public or keyless):** accelerator batches (yc-oss JSON), Product Hunt top featured launches (official GraphQL API, free token), bootstrapped-fund portfolios, Empire Flippers businesses with a verified P&L (software and digital listings, for sale and sold), App Store top-grossing charts (iTunes RSS, by genre, US and other storefronts), Google Play top charts (Node scraper), WordPress.org plugin API (active installs), Shopify App Store category walk, BetaList (pre-launch startups, newest first), Product Radar (Russian-language launches by month, `ru` market), Kickstarter (Web Robots monthly dumps: projects, outcomes and money pledged).
 
 BetaList and Product Radar show where founders are heading (rising), not proven demand; Kickstarter shows demand paid in advance, but only for physical products, games, books and design. The three are counted per niche by `s5_deals` and shown in passports, outside the score. The Kickstarter crawl under-samples failed projects, so its success rates are inflated: compare categories with each other, not with Kickstarter's own statistics.
+
+Empire Flippers software listings (SaaS and apps, verified P&L, all years) are matched per niche the same way and shown in passports with the median profit and multiple, also outside the score: about ten software listings a year is too few to score (section 7.2). Its Amazon, e-commerce and content listings stay out of the universe, because their descriptions match seller-tool niches although those businesses are customers of the niche, not players in it.
 
 **Why:** to start from "products that already earn" rather than from an imagined list of ideas. Games and medicine are excluded at the door.
 
@@ -328,8 +330,10 @@ The score is computed on the shortlist cohort. **Percentiles are computed within
 | Demand | 30 | `20 x pct(log10(demand_eff + 1))` + `10 x CPC-band factor` |
 | Growth | 20 | `10 x pct(yoy)` + `5 x pct(momentum)` + `5 x pct(cagr_3y)` |
 | Fragmentation | 25 | `10 x (1 - hhi_brand)` + `5 x pct(competition_index)` + `5 x pct(players)` + `5 x (1 - top3_share)` |
-| Deals | 15 | `15 x pct(3 x marketplace_with_revenue + 2 x fund_portfolio + launches_12m + accelerator + topgrossing_us)` |
+| Deals | 15 | `15 x pct(2 x fund_portfolio + launches_12m + accelerator + topgrossing_us)` |
 | Switching | 10 | `4 x self_serve` + `3 x monthly` + `1 x import_from` (neutral 0.5) + `2 x (2 - lock_in) / 2` |
+
+**Deals change, 2026-11-20.** The deals block had a `3 x marketplace_with_revenue` term fed by Flippa SaaS listings with revenue. Flippa now answers automated clients with a Cloudflare challenge (HTTP 403 since 2026-11-17) and has no API. The only open replacement, Empire Flippers, has 79 software listings among 2,871 over 2014-2026; matched by keywords they touch 9 of 98 niches, and matching all of its listings counts Amazon sellers as players in seller-tool niches. The term was dropped rather than refilled with noise; Empire Flippers is shown in passports. For runs where Flippa was already empty the deals points do not change (a term that is zero for every niche does not move a percentile); deals points from runs with Flippa data are not comparable with later runs.
 
 `demand_eff` is `demand_us` or, when contamination is detected, `demand_2023` (section 6). When the supply proxy is `NA`/`NA:proxy`, the `players` and `top3` points are replaced with neutral half-credit (2.5 + 2.5) and the niche is flagged `S5:manual`.
 

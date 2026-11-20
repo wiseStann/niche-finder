@@ -181,13 +181,17 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         # deals
         if d:
             L += ["## Deals, launches, monetization (S0 corpora)", "",
-                  f"Flippa (recent SaaS listings): {d.get('flippa_listings', 0)} matches, with revenue {d.get('flippa_with_revenue', 0)}"
-                  + (f", max MRR ${n(d.get('flippa_max_mrr'))}" if d.get("flippa_max_mrr") else "") + f" · Product Hunt (12-month tops): {d.get('ph_launches_12m', 0)} · Y Combinator: {d.get('yc_companies', 0)} · TinySeed: {d.get('tinyseed', 0)} · "
+                  f"Product Hunt (12-month tops): {d.get('ph_launches_12m', 0)} · Y Combinator: {d.get('yc_companies', 0)} · TinySeed: {d.get('tinyseed', 0)} · "
                   f"App Store top-grossing: US {d.get('topgrossing_us', 0)}, RU {d.get('topgrossing_ru', 0)}.", ""]
+            if d.get("ef_software") not in (None, "", "0"):
+                L += [f"Empire Flippers, software businesses with a verified P&L, all years (not in the score): {d['ef_software']} listings, "
+                      f"{d.get('ef_software_sold') or 0} sold, median net profit ${n(d.get('ef_median_profit'))}/month, "
+                      f"median price {d.get('ef_median_multiple') or '—'}x monthly profit.", ""]
             if any(d.get(k) not in (None, "") for k in ("betalist_12m", "productradar_12m", "kickstarter_12m")):
                 L += [f"Launches of the last 12 months (not in the score): BetaList pre-launch {d.get('betalist_12m') or 0} · Product Radar (RU) {d.get('productradar_12m') or 0} · "
                       f"Kickstarter {d.get('kickstarter_12m') or 0} launched, {d.get('kickstarter_success_12m') or 0} funded, ${n(d.get('kickstarter_pledged_12m') or 0)} pledged.", ""]
-            ex = [f"{r['source']}: {r['name']}" for src in ("flippa", "ph", "yc", "tinyseed") for r in dm.get((nid, src), [])][:8]
+            ex = [f"{r['source']}: {r['name']}" for src in ("ph", "yc", "tinyseed") for r in dm.get((nid, src), [])][:8]
+            ex += [f"ef: {r['name']} ({r['extra']})" for r in dm.get((nid, "ef"), [])][:3]
             ex += [f"{r['source']}: {r['name']}" for src in ("betalist", "productradar") for r in dm.get((nid, src), [])][:4]
             ex += [f"kickstarter: {r['name']} ({r['extra']})" for r in dm.get((nid, "kickstarter"), [])][:3]
             if ex:
@@ -292,7 +296,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             L += ["", "_Assumptions - `config/ceiling.yaml`; order of magnitude, read shares as ±2×._", ""]
         # score
         L += ["## Score", "", f"Total **{s['score']}** = demand {s['s_demand']}/30 + growth {s['s_growth']}/20 + fragmentation {s['s_frag']}/25 + deals {s['s_deals']}/15 + switching {s['s_switch']}/10, × trend (KP {s['trend_kp']}, Trends {s['trend_gt']}).", "",
-              "_Data: DataForSEO (Google Ads), Google Trends, iTunes Search API, Capterra/GetApp, Shopify App Store, Flippa/Product Hunt/YC/TinySeed (S0). Manual judgments - `config/overrides.yaml`._", ""]
+              "_Data: DataForSEO (Google Ads), Google Trends, iTunes Search API, Capterra/GetApp, Shopify App Store, Product Hunt/YC/TinySeed/Empire Flippers (S0). Manual judgments - `config/overrides.yaml`._", ""]
         open(ws.report(f"passports/{nid}.md"), "w", encoding="utf-8").write("\n".join(L))
 
     # summary

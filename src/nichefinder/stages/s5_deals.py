@@ -1,15 +1,17 @@
 """Deals, launches and monetization signals: match the S0 corpora to shortlisted niches by regex.
 
-Corpora (data/raw, written by the S0 stages): Flippa SaaS listings for sale (with revenue), Product Hunt launches,
-YC companies, TinySeed portfolio, App Store top-grossing apps (us/ru), BetaList pre-launch startups, Product Radar
-(Russian-language launches), Kickstarter projects. A missing corpus is skipped with a message.
+Corpora (data/raw, written by the S0 stages): Product Hunt launches, YC companies, TinySeed portfolio, App Store
+top-grossing apps (us/ru), BetaList pre-launch startups, Product Radar (Russian-language launches), Kickstarter projects,
+Empire Flippers listings with a verified P&L (software listings only, all years, for sale and sold). A missing corpus is
+skipped with a message.
 Niches are matched by the regexes in config/deal_keywords.yaml (a string, or {re, not} to drop neighbouring categories);
 shortlisted niches without an entry fall back to the phrases of config/coverage_keywords.yaml (niches.text_matchers).
 Product Radar text is Russian, so it is matched with the coverage phrases as well as the (English) regexes.
-BetaList, Product Radar and Kickstarter are counted over the last 12 months of ws.today.
+BetaList, Product Radar and Kickstarter are counted over the last 12 months of ws.today; Empire Flippers over all years,
+because it has about ten software listings a year.
 
-The score's deals component (s6_score) reads only the Flippa, Product Hunt, YC, TinySeed and top-grossing columns;
-the BetaList, Product Radar and Kickstarter columns are shown in the passports and do not change the score.
+The score's deals component (s6_score) reads only the Product Hunt, YC, TinySeed and top-grossing columns; the BetaList,
+Product Radar, Kickstarter and Empire Flippers columns are shown in the passports and do not change the score.
 Outputs: data/out/deals.csv (aggregate per niche) and data/out/deals_matches.csv (what exactly matched, for review).
 """
 from __future__ import annotations
@@ -17,11 +19,12 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import statistics
 
 from nichefinder import niches
 from nichefinder.workspace import Workspace
 
-SUMMARY = "Deal and launch signals per niche: Flippa, Product Hunt, YC, TinySeed, top-grossing apps, BetaList, Product Radar, Kickstarter"
+SUMMARY = "Deal and launch signals per niche: Product Hunt, YC, TinySeed, top-grossing apps, BetaList, Product Radar, Kickstarter, Empire Flippers"
 KEYS: tuple[str, ...] = ()
 NEEDS: tuple[str, ...] = ()
 
@@ -43,20 +46,19 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
 
     mx = niches.text_matchers(ws)
     mx_ru = niches.text_matchers(ws, with_coverage=True)
-    flippa, ph, yc, ts, top = load("flippa_saas.csv"), load("ph_top.csv"), load("yc_companies.csv"), load("tinyseed_portfolio.csv"), load("appstore_top.csv")
+    ph, yc, ts, top = load("ph_top.csv"), load("yc_companies.csv"), load("tinyseed_portfolio.csv"), load("appstore_top.csv")
+    ef = [x for x in load("ef_listings.csv") if x["kind"] == "software"]
     since = (ws.today - dt.timedelta(days=365)).isoformat()
     today = ws.today.isoformat()
     bl = [x for x in load("betalist.csv") if since <= x["date"] <= today]
     pr = [x for x in load("productradar.csv") if since[:7] < x["month"] <= today[:7]]
     ks = [x for x in load("kickstarter_projects.csv") if since <= x["launched"] <= today]
-    if not (flippa or ph or yc or ts or top or bl or pr or ks):
+    if not (ph or yc or ts or top or bl or pr or ks or ef):
         print("no S0 corpora found in data/raw - nothing written")
         return
     out, matches = [], []
     for nid, hit in mx.items():
         hit_ru = mx_ru[nid]
-        f = [x for x in flippa if hit(f"{x['title']} {x['summary']}")]
-        f_rev = [x for x in f if num(x["revenue_average"]) > 0]
         p = [x for x in ph if hit(f"{x['name']} {x['tagline']}")]
         y = [x for x in yc if hit(f"{x['name']} {x['one_liner']}") and x.get("excluded") != "1"]
         t = [x for x in ts if hit(f"{x['name']} {x['excerpt']}")]
@@ -66,27 +68,34 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         r = [x for x in pr if hit_ru(f"{x['name']} {x['description']} {x['categories']}")]
         k = [x for x in ks if hit(f"{x['name']} {x['blurb']}")]
         k_ok = [x for x in k if x["state"] == "successful"]
-        rev = sorted((num(x["revenue_average"]) for x in f_rev), reverse=True)
+        e = [x for x in ef if hit(f"{x['public_title']} {x['summary']} {x['niches'].replace('|', ' ')}")]
+        e_profit = [num(x["monthly_net_profit"]) for x in e if x["monthly_net_profit"] != ""]
+        e_mult = [num(x["listing_multiple"]) for x in e if num(x["listing_multiple"]) > 0]
         out.append({
-            "niche_id": nid, "flippa_listings": len(f), "flippa_with_revenue": len(f_rev),
-            "flippa_max_mrr": int(rev[0]) if rev else "", "flippa_median_mrr": int(rev[len(rev) // 2]) if rev else "",
-            "ph_launches_12m": len(p), "yc_companies": len(y), "tinyseed": len(t),
+            "niche_id": nid, "ph_launches_12m": len(p), "yc_companies": len(y), "tinyseed": len(t),
             "topgrossing_us": len({x["app_id"] for x in g_us}), "topgrossing_ru": len({x["app_id"] for x in g_ru}),
             "betalist_12m": len(b), "productradar_12m": len(r),
             "kickstarter_12m": len(k), "kickstarter_success_12m": len(k_ok),
             "kickstarter_pledged_12m": int(sum(num(x["pledged_usd"]) for x in k_ok)),
+            "ef_software": len(e), "ef_software_sold": sum(1 for x in e if x["listing_status"] in ("Sold", "Pending Sold")),
+            "ef_median_profit": int(statistics.median(e_profit)) if e_profit else "",
+            "ef_median_multiple": round(statistics.median(e_mult)) if e_mult else "",
         })
-        for src, items, key in (("flippa", f, "title"), ("ph", p, "name"), ("yc", y, "name"), ("tinyseed", t, "name"), ("topgross_us", g_us, "name"),
+        for src, items, key in (("ph", p, "name"), ("yc", y, "name"), ("tinyseed", t, "name"), ("topgross_us", g_us, "name"),
                                 ("topgross_ru", g_ru, "name"), ("betalist", b, "name"), ("productradar", r, "name"),
-                                ("kickstarter", sorted(k, key=lambda x: -num(x["pledged_usd"])), "name")):
+                                ("kickstarter", sorted(k, key=lambda x: -num(x["pledged_usd"])), "name"),
+                                ("ef", sorted(e, key=lambda x: x["first_listed_at"], reverse=True), "public_title")):
             for x in items:
-                extra = (x.get("revenue_average") or x.get("tagline") or x.get("one_liner") or x.get("genre") or x.get("description") or "")
+                extra = (x.get("tagline") or x.get("one_liner") or x.get("genre") or x.get("description") or "")
                 if src == "kickstarter":
                     extra = f"{x['state']}, ${num(x['pledged_usd']):,.0f}, {x['backers']} backers"
+                elif src == "ef":
+                    extra = f"{x['listing_status']} {x['first_listed_at'][:7]}, ${num(x['monthly_net_profit']):,.0f}/mo profit, {x['listing_multiple']}x"
                 matches.append({"niche_id": nid, "source": src, "name": x[key][:80], "extra": extra[:80]})
         o = out[-1]
-        print(f"{nid:34} flippa={o['flippa_listings']:2} (rev {o['flippa_with_revenue']}, max MRR {o['flippa_max_mrr']}) ph={o['ph_launches_12m']:2} yc={o['yc_companies']:2} ts={o['tinyseed']} "
-              f"topgross us={o['topgrossing_us']:2} ru={o['topgrossing_ru']:2} betalist={o['betalist_12m']:2} pradar={o['productradar_12m']:2} kickstarter={o['kickstarter_12m']:2} (ok {o['kickstarter_success_12m']})")
+        print(f"{nid:34} ph={o['ph_launches_12m']:2} yc={o['yc_companies']:2} ts={o['tinyseed']} "
+              f"topgross us={o['topgrossing_us']:2} ru={o['topgrossing_ru']:2} betalist={o['betalist_12m']:2} pradar={o['productradar_12m']:2} kickstarter={o['kickstarter_12m']:2} (ok {o['kickstarter_success_12m']}) "
+              f"ef={o['ef_software']} (sold {o['ef_software_sold']})")
     if not out:
         print("no niches with deal keywords - nothing written")
         return

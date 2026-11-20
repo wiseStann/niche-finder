@@ -6,7 +6,8 @@ Score = demand 30 + growth 20 + fragmentation 25 + deals 15 + switching 10, time
 - fragmentation: 10 * (1 - brand HHI) + 5 * competition-index percentile
   + 5 * players percentile + 5 * (1 - top-3 share) (players / top-3 come from App Store, Capterra or Shopify;
   when the supply proxy is weak (NA) the last two are neutral 50%);
-- deals: 15 * percentile of flippa_with_revenue*3 + tinyseed*2 + ph_12m + yc + topgrossing_us;
+- deals: 15 * percentile of tinyseed*2 + ph_12m + yc + topgrossing_us (the marketplace term was dropped on 2026-11-20:
+  Flippa blocks automated clients and Empire Flippers has too few software listings; methodology section 7.2);
 - switching: 4 * self_serve + 3 * monthly + 1 * 0.5 (import, unmeasured) + 2 * (2 - lock_in) / 2.
 Percentiles are taken within a segment (B2C + prosumer / B2B), not across the whole cohort. Trend: +5% / -5% for UP / DOWN
 by Keyword Planner and again by Google Trends.
@@ -93,7 +94,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         r["_yoy"], r["_mom"], r["_cagr"] = f(q.get("us_yoy")), f(q.get("us_momentum")), f(q.get("us_cagr_3y"))
         r["_comp"] = f(r["comp_idx"])
         r["_players"] = f(r["supply_players"])
-        r["_deals"] = 3 * f(r["flippa_rev"], 0) + 2 * f(r["tinyseed"], 0) + f(r["ph_12m"], 0) + f(r["yc"], 0) + f(r["topgross_us"], 0)
+        r["_deals"] = 2 * f(r["tinyseed"], 0) + f(r["ph_12m"], 0) + f(r["yc"], 0) + f(r["topgross_us"], 0)
     # Percentiles within the segment (B2C+prosumer / B2B): volumes, player counts and deals are not comparable across segments
     # by construction (B2C queries run ~10x larger, App Store top-grossing exists only for B2C).
     keys = ("_dem", "_yoy", "_mom", "_cagr", "_comp", "_players", "_deals")

@@ -67,7 +67,7 @@ Paid or closed, with the replacement that was found:
 
 ## Freshness: what can become a series
 
-Daily or realtime without keys: Hacker News (archive since 2007, so a series exists immediately), the Product Hunt Atom feed, Launching Next RSS, Remote OK (latest 100, needs daily accumulation), Empire Flippers (listing dates and days on marketplace give a series). Monthly snapshots that accumulate into a series: Kickstarter dumps (history since 2014), BetaList, Product Radar, VC portfolios, Flippa. Quarterly: YC batches, NVCA. This complements the App Store and Google Play snapshot stages: next to "supply over time" you get "entries and exits over time".
+Daily or realtime without keys: Hacker News (archive since 2007, so a series exists immediately), the Product Hunt Atom feed, Launching Next RSS, Remote OK (latest 100, needs daily accumulation), Empire Flippers (listing dates and days on marketplace give a series). Monthly snapshots that accumulate into a series: Kickstarter dumps (history since 2014), BetaList, Product Radar, VC portfolios. Quarterly: YC batches, NVCA. This complements the App Store and Google Play snapshot stages: next to "supply over time" you get "entries and exits over time".
 
 ## What was deliberately judged not worth doing
 
@@ -81,5 +81,7 @@ Daily or realtime without keys: Hacker News (archive since 2007, so a series exi
 - Key needed (401): Product Hunt GraphQL (free), Crunchbase API (paid), USPTO Open Data Portal (free), Lens (free for non-commercial), Rospatent API (by request).
 - Closed from the probing network (403, 429, 406, 000): Crunchbase site, Dealroom, PitchBook (including RSS), SEC full-text search (geo), Kickstarter live, Indiegogo, Wellfound company pages, Work at a Startup, BizBuySell, BusinessesForSale, Avito, Biboss, Tiny Acquisitions, PatentsView (connection), EPO OPS (fair use), Growjo, Tracxn.
 - Changed paths (404 / 500): Bessemer, Kleiner, Point Nine, Initialized, Calm Fund, Altera Invest, Boomstarter, Planeta (307).
+
+Re-checked 2026-11-17/20: the Product Hunt leaderboards and Flippa now answer with a Cloudflare challenge (403); Product Hunt moved to its GraphQL API with a token, Flippa was dropped. The Empire Flippers API is still open (2,871 listings).
 
 The generated registry follows.

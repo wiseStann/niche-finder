@@ -11,7 +11,7 @@
 #   tier            A = measure now; B = candidate, include on demand; C = control niche (known outcome, used to calibrate filters)
 #   control         (control niches only) expected outcome: red = should be rejected as too crowded,
 #                   platform = should be rejected for platform risk, green = should pass
-#   sources         where the niche was found: yc | ph | tinyseed | flippa | appstore-us | appstore-ru | smartranking | g2 | report
+#   sources         where the niche was found: yc | ph | tinyseed | flippa (until 2026-11) | ef | appstore-us | appstore-ru | smartranking | g2 | report
 #   evidence        facts that justify the niche (products, ranks, revenue, growth)
 #   competitors     known products; names with a market hint look like "Name (RU)"
 #   expertise_flag  0 | 1; 1 = needs domain expertise or licensing to build

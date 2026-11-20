@@ -21,6 +21,12 @@ GROUPS: dict[str, dict] = {
         "what": "Yandex Wordstat search volume and dynamics (Russian market module).",
         "where": "https://yandex.cloud/en/docs/search-api/",
     },
+    "producthunt": {
+        "keys": ("PRODUCTHUNT_TOKEN",),
+        "what": "Product Hunt GraphQL API v2: the top featured launches of the last 12 months (s0_producthunt). Free; "
+                "the web pages are behind an anti-bot challenge.",
+        "where": "https://www.producthunt.com/v2/oauth/applications (create an application, copy its developer token)",
+    },
     "youtube": {
         "keys": ("YOUTUBE_API_KEY",),
         "what": "YouTube Data API v3: short-video search and statistics for info topics (info_youtube). Free quota of "

@@ -1,5 +1,5 @@
-# Case-insensitive regexes that match S0 entities (Flippa listings, Product Hunt launches, YC companies, TinySeed
-# portfolio, top-grossing App Store apps) to niches. Signal "deals / launches / monetization" (s5_deals).
+# Case-insensitive regexes that match S0 entities (Product Hunt launches, YC companies, TinySeed portfolio,
+# top-grossing App Store apps, Empire Flippers software listings) to niches. Signal "deals / launches / monetization" (s5_deals).
 # A value is either a regex string or {re: ..., not: ...}; `not` drops matches that belong to a neighbouring category.
 # Niches without an entry here fall back to the phrases in config/coverage_keywords.yaml.
 faith-devotional-apps: "\\b(bible|devotional|prayer app|quran|catholic|christian app|scripture)\\b"

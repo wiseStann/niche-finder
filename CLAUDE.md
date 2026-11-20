@@ -78,7 +78,7 @@ To add a data source, write a new stage module and add it to the registry. Vendo
 - `keys.py`: keys come from the environment or `<workspace>/.env`, and the environment wins. `keys.GROUPS` drives the `nf doctor` hints.
 - `niches.py`: loads and validates niches and queries, and gives access to the shortlist and overrides. `niches.text_matchers(ws)` is the one place that ties free text to niches: the `deal_keywords.yaml` regexes, with a fallback to coverage phrases for shortlisted niches. `with_coverage=True` adds the Russian coverage phrases for Russian text. `s5_deals`, `s8_hn_mentions` and `s8_hn_hiring` all use it.
 - `http.download(url, path)`: streams large dumps (Kickstarter, ~120 MB) through a `.part` file; an existing file counts as the cache.
-- Sources whose list pages shift over time (BetaList, Product Radar, HN search) put the run month (`ws.today:%Y-%m`) into the cache key, so a re-run in the same month is free and the next month fetches fresh data.
+- Sources whose list pages shift over time (BetaList, Product Radar, HN search, Empire Flippers) put the run month (`ws.today:%Y-%m`) into the cache key, so a re-run in the same month is free and the next month fetches fresh data.
 
 ### Data model (workspace inputs)
 

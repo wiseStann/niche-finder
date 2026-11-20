@@ -35,7 +35,7 @@ STAGES: list[Stage] = [
     Stage("s0_yc", "s0"),
     Stage("s0_appstore_top", "s0"),
     Stage("s0_producthunt", "s0"),
-    Stage("s0_flippa", "s0"),
+    Stage("s0_empireflippers", "s0"),
     Stage("s0_tinyseed", "s0"),
     Stage("s0_gplay_top", "s0"),
     Stage("s0_wordpress", "s0"),
