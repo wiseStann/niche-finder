@@ -18,7 +18,7 @@ import time
 import traceback
 from pathlib import Path
 
-from nichefinder import __version__, keys, niches, tools
+from nichefinder import __version__, info, keys, niches, tools
 from nichefinder.stages import GROUPS, STAGES, resolve
 from nichefinder.workspace import Workspace, WorkspaceError
 
@@ -63,6 +63,10 @@ def cmd_validate(args) -> None:
     errors, warns, stats = niches.validate(ws)
     print(f"niches: {stats.pop('niches')}, with queries: {stats.pop('with_queries')}")
     print("queries:", ", ".join(f"{k}={v}" for k, v in sorted(stats.items())))
+    info_errors, info_warns = info.validate(ws)
+    print(f"info topics: {len(info.load(ws)[1])}")
+    errors += info_errors
+    warns += info_warns
     if warns:
         print(f"\nWARNINGS ({len(warns)}):")
         for w in warns:

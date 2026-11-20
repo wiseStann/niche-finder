@@ -10,7 +10,7 @@ Each stage is a module in this package with:
 
 Groups: s0 universe · s1 niches · s2 queries · s3 search demand · s4 trend depth · s5 supply depth ·
 s8 off-search demand · s9 supply over time · s10 buyer voice (Reddit) · s6 score and passports ·
-s7 HTML leaderboard · ru Russian B2B module.
+s7 HTML leaderboard · info micro info products (short video -> Telegram, own score) · ru Russian B2B module.
 """
 from __future__ import annotations
 
@@ -96,6 +96,10 @@ STAGES: list[Stage] = [
     Stage("s6_ceiling", "s6"),
     Stage("s6_passports", "s6"),
     Stage("s7_html", "s7"),
+    # Info cohort: short video -> Telegram channel -> micro product (config/info_topics.yaml; its own score)
+    Stage("info_suggest", "info"),
+    Stage("info_youtube", "info"),
+    Stage("info_score", "info"),
     # Russian B2B module (software registry, public procurement, Bitrix24 Market, hh.ru, Wordstat)
     Stage("ru_reestr", "ru", market="ru"),
     Stage("ru_zakupki", "ru", market="ru"),

@@ -4,14 +4,14 @@ Every stage registered in `src/nichefinder/stages/__init__.py`, in execution ord
 
 Conventions
 
-- **Keys** are environment variables (`.env`): `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD`, `YANDEX_API_KEY`, `LLM_API_KEY` (+ `LLM_BASE_URL`, `LLM_MODEL`). A stage whose keys are missing is skipped. "none" = keyless.
+- **Keys** are environment variables (`.env`): `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD`, `YANDEX_API_KEY`, `YOUTUBE_API_KEY`, `LLM_API_KEY` (+ `LLM_BASE_URL`, `LLM_MODEL`). A stage whose keys are missing is skipped. "none" = keyless.
 - **Tools**: `node` (Google Play scrapers), `trendspy` (Google Trends), `curl` (HTTP fallback for sites that reject Python clients).
 - **Cost**: money or quota. Every network response is cached, so re-runs are free.
 - Market `ru` stages run only when `nf.yaml` lists the `ru` market.
 - `manual` stages (not in `nf run all`) are run on a schedule you choose.
 - Order: `s9_entrants` and a first `s6_score` pass run right after S5, because the S8 and S10 reports show each niche's score and verdict; `s6_rescore` scores again once S8–S10 outputs exist. The tables below are grouped by stage family, not by run order — `nf list` shows the exact order.
 
-Run-order logic: S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S8 -> S9 -> S10 -> S6 -> S7 (the score reads S4, S5, S8, S9 outputs, which is why S6 comes after S10 in the registry). The Russian module (`ru_*`) runs last.
+Run-order logic: S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S8 -> S9 -> S10 -> S6 -> S7 (the score reads S4, S5, S8, S9 outputs, which is why S6 comes after S10 in the registry). The info cohort (`info_*`) runs after S7, then the Russian module (`ru_*`) runs last.
 
 ## S0 - Universe
 
@@ -116,6 +116,16 @@ Run-order logic: S0 -> S1 -> S2 -> S3 -> S4 -> S5 -> S8 -> S9 -> S10 -> S6 -> S7
 | `s6_ceiling` | `score_final.csv`, `supply_deep.csv`, `appstore_velocity.csv`, `capterra_categories_stats.csv`, `shopify_metrics.csv`, `offsearch.csv`, `config/ceiling.yaml`, `config/overrides.yaml` (`fit`, `size_override`), `nf.yaml: goal`, `default_fit` | `out/path_to_goal.csv` (price, ARPU, payers needed, niche payers estimate and proxy, required share, position, ticket tier, fit, grade A/B/B-/C), `reports/S6-path-to-goal.md` | none | free, offline |
 | `s6_passports` | all `out/*.csv` above, `niches.yaml` | `reports/passports/<niche>.md`, `reports/S6-passports.md` (leaderboard, gates, cut niches) | none | free |
 | `s7_html` | passports, `score_final.csv`, `path_to_goal.csv` | `reports/leaderboard.html`: self-contained HTML leaderboard (filters, sort, expandable passports, path-to-goal columns) | none | free |
+
+## Info cohort (`info`): short video -> Telegram -> micro product
+
+Independent of the software score; topics live in `config/info_topics.yaml`, weights in `config/score_info.yaml` (methodology: "Info" in section 5 and 7.6). Without topics or seeds the stages do nothing.
+
+| Stage | Inputs | Outputs | Keys / tools | Cost |
+|---|---|---|---|---|
+| `info_suggest` | `info_topics.yaml` `_settings.seeds` (or `--seed`), `lang`, `region` | `out/info_suggest.csv` (seed, phrase, hits = expansions that returned it, best position, already a topic phrase) | none | free; ~30 autocomplete requests per seed |
+| `info_youtube` | `info_topics.yaml` topics (`q`, optional `must`), `score_info.yaml` `measure` | `out/info_youtube.csv` (per topic: Shorts kept, views median/p90, breakout share, small-channel share, top-3 channel share, Telegram and offer shares, recent/older), `out/info_youtube_videos.csv` (per video) | `YOUTUBE_API_KEY` | free quota of 10,000 units/day: ~100 units per phrase + 2-4 for statistics; `--budget` caps a run, a run stopped by the quota resumes from cache |
+| `info_score` | `out/info_youtube*.csv`, both configs, `nf.yaml` `verdict.green_min_score` | `out/info_score.csv`, `reports/info.md` (ranking, gates, flags, example videos per topic; a DRAFT banner while the weights are not fixed) | none | free, offline |
 
 ## Russian B2B module (`ru`)
 

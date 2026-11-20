@@ -113,6 +113,7 @@ The funnel in one table (details in [stages.md](stages.md)):
 | S8 off-search demand | Is there demand where Google cannot see it? | free |
 | S9 supply over time | Who is growing now, and do new entrants survive? | free |
 | S10 buyer voice | What do buyers say about existing products? | LLM tokens |
+| info cohort | For micro info products sold through short video: does the topic draw views, can a small channel break through, do creators already sell through Telegram? | free (YouTube quota) |
 
 ### S0 - Universe
 
@@ -238,6 +239,20 @@ Why outside search? B2B demand barely exists in search ("meeting summary" can ha
 
 Described in section 9.
 
+### Info - Short-video topics (micro info products)
+
+A separate cohort for a different business model: a micro info product (a guide, checklist, template or mini course, a few hundred to a few thousand roubles) sold through short video (Shorts, Reels, TikTok) that funnels viewers into a Telegram channel. Search demand is the wrong signal here: a viewer of short video does not search for a solution, the content finds them. The cohort lives in `config/info_topics.yaml` (topic = who x task x product plus 1-3 YouTube search phrases), not in `niches.yaml`, and has its own score (7.6); it never mixes with the software cohorts.
+
+- `info_suggest` expands broad seed areas through YouTube autocomplete (`seed`, `seed a`, `seed b`, ...) into phrases people actually type into YouTube. The output is a human checkpoint: the researcher groups phrases into topics.
+- `info_youtube` takes, per phrase, the 50 most viewed videos under 4 minutes of the last 12 months (YouTube Data API), keeps Shorts (up to 3 minutes), Cyrillic titles for the Russian market and, optionally, videos matching the topic's `must` regex, and measures the top of the topic's attention pool: median and 90th-percentile views, the share of videos that outgrew their channel (views >= 10x subscribers), the share made by channels under 10,000 subscribers, how many of the top videos the three most frequent channels made, the share of channels that point to Telegram, the share of videos that name an offer (guide, checklist, course...), and how much of the top is recent.
+- `info_score` scores, gates and reports (`reports/info.md`, with example videos per topic).
+
+Why the most viewed and not YouTube's relevance order: on test topics the relevance order returned a median of 1-2k views (fresh videos nobody has watched yet) and 43 of 49 videos from the last half-year, so the recent/older split measured YouTube's freshness boost rather than the topic. The most viewed top separated topics clearly: 28 of 49 top videos from small channels on one topic, 2 of 47 on another. Its cost is drift: a broad phrase pulls in viral videos that only mention its words, which `must` filters.
+
+Why concentration is counted in videos, not views: in a top-50 by views a single viral video takes about half of all views (0.47-0.51 on test topics), so a views share says only whether there was a mega-hit. The share of top videos made by three channels separated the same topics (0.14-0.19 vs 0.87).
+
+Not measured: Reels and TikTok (no open API; TikTok is frozen in Russia), and views are not buyers. Shorts stand in for short video in general. Telegram itself (channel counts, mentions over time, paid posts marked with erid) is the next source; it needs a paid TGStat API plan.
+
 ---
 
 ## 6. Known traps and how they are caught
@@ -345,6 +360,22 @@ Passing needs at least 2 of 4. Feasibility is a manual input in the overrides fi
 ### 7.5 Russian module
 
 The Russian-language branch is scored separately (dollars and roubles of CPC are not comparable, and Wordstat volumes use broad match): Russian demand = `max(anchor, max category phrase) + sum(brand volumes)`; growth from 36-month Wordstat dynamics (`yoy > +15 %` up, `< -15 %` down); concentration from the Russian App Store (manually cleaned) and Yandex brand shares. The B2B sub-module (software registry, public procurement, marketplace of a dominant SMB platform, job postings, Wordstat) uses its own pre-registered score: demand 35, growth 20, fragmentation 25, money 20, with a rule-based verdict (red when the top brand holds more than 70 % of brand searches at a total of at least 5,000; yellow at 50-70 % or below the cohort median; otherwise green). Its measurement traps (full-text search catching attachments; registry search by name missing brand-named products; fuzzy marketplace search) are listed in the module's `config/ru_b2b_traps.yaml`.
+
+### 7.6 Info cohort score (draft)
+
+Weights in `config/score_info.yaml`; `status: draft` until the researcher fixes them, and the report says so. Percentiles are **mid-rank** within the topics of the run (share below plus half of the ties): shares are often 0 for many topics, and with "share <= v" six zero topics out of ten would each get 0.6 for having nothing.
+
+| Component | Points | Metric |
+|---|---|---|
+| Attention | 20 + 10 | percentile of median views of the top Shorts; percentile of 90th-percentile views |
+| Newcomers | 15 + 10 | percentile of the breakout share (views >= 10x subscribers, >= 10k views); percentile of the share of top videos from channels under 10k subscribers |
+| Monetization | 15 + 10 | percentile of the share of channels pointing to Telegram; percentile of the share of videos naming an offer |
+| Spread | 10 | 10 x (1 - share of top videos made by the three most frequent channels), absolute |
+| Trend | 10 | percentile of (recent half + 1) / (older half + 1) of the top videos |
+
+Gates (red): I0 fewer than 15 Shorts in the window after the filters (too thin to measure); I1 median views below 1,000 (nobody watches). Flags without effect: `I:top3` (three channels made at least 60 % of the top), `I:fading` (recent half below half of the older one), `I:no-tg`. Verdict: red on a failed gate, green at `verdict.green_min_score` (70), yellow otherwise.
+
+Newcomers and monetization carry half of the score on purpose: for a beginner blogger the question is not how big a topic is but whether a channel with no audience gets views in it and whether its audience is already being sold to. The gates are deliberately lenient; the draft is meant to be fixed after the first look at real distributions and before the first ranking is read as a decision.
 
 ---
 
@@ -472,6 +503,7 @@ The rule was tightened once: a first version required only "in motion" (seeking 
 | **Anything after the clean window.** Recent growth in tool queries cannot be confirmed from search; app-store snapshots and cohorts are the only fresh signals | Re-run snapshots a month later; do not trust recent year-over-year in Keyword Planner |
 | **B2B in search.** Search barely shows B2B demand | B2B verdicts rest more on directories, reviews and brand-anchored trends than on volume |
 | **Legal, tax and payment feasibility** for a specific founder | Outside scope |
+| **Info cohort: views are not buyers.** Short-video metrics show attention and whether creators sell, not conversion or revenue; Reels and TikTok are not measured at all | Validate an info topic by publishing: a series of shorts and a lead magnet in a Telegram channel, then count subscribers and sales |
 
 The honest reading of the output: "a niche that passes is a *candidate worth interviewing about*", not "a niche worth building in".
 

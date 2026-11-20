@@ -1,0 +1,47 @@
+# Score of the `info` cohort (short video -> Telegram channel -> micro product). Used by info_youtube (the `measure`
+# block) and info_score (everything else). Rationale: docs/methodology.md section 7.6.
+#
+# status: draft until the weights are fixed. Fix them BEFORE looking at the first real ranking (set `status: fixed`
+# and `fixed_on`); after that every change needs a written reason in `changes`, never to rescue a favourite topic.
+status: draft
+fixed_on:
+changes: []
+
+# Score = 100 points over the top-50 most viewed Shorts of each topic in the window. Percentiles are mid-rank within
+# the cohort (all measured topics of the run), so the score ranks topics against each other; it says nothing about
+# the absolute size of an audience.
+weights:
+  views_median: 20      # attention: percentile of the median views of the top Shorts on the topic
+  views_p90: 10         # attention: percentile of the 90th-percentile views (how big a hit gets)
+  breakout_share: 15    # newcomers: percentile of the share of videos with views >= breakout_ratio x channel subscribers
+  small_share: 10       # newcomers: percentile of the share of top videos from channels under small_channel_subs
+  tg_channels: 15       # monetization: percentile of the share of channels that link or point to Telegram
+  offers: 10            # monetization: percentile of the share of videos that mention a guide, checklist, course...
+  spread: 10            # absolute: 10 x (1 - share of the top videos made by the 3 most frequent channels)
+  recent: 10            # trend: percentile of top videos from the recent half of the window vs the older half
+
+# Gates (red when failed). Too little to measure, or nobody watches.
+gates:
+  min_videos: 15        # I0: short videos in the window after the filters below
+  min_views_median: 1000  # I1: median views of those videos
+
+# Informational flags (do not change the score or the verdict).
+flags:
+  top3_share: 0.6       # I:top3 - three channels made most of the top videos (they own the topic)
+  recent_ratio_low: 0.5 # I:fading - half as many uploads in the recent half of the window
+
+# Verdict: red if a gate fails; green when the score reaches verdict.green_min_score in nf.yaml (70); yellow otherwise.
+
+# What info_youtube counts. Changing these changes the metrics, so the same rules apply as for the weights.
+measure:
+  # viewCount = the 50 most viewed videos of the window (the top of the attention pool). relevance mixes in fresh
+  # videos with a few hundred views and leans to the last months; see the info_youtube docstring.
+  order: viewCount
+  shorts_max_seconds: 180     # YouTube Shorts are up to 3 minutes; the API filter "short" is under 4 minutes
+  breakout_ratio: 10          # views >= 10 x subscribers ...
+  breakout_min_views: 10000   # ... and at least this many views
+  small_channel_subs: 10000   # "newcomer" channels
+  # A Telegram funnel: a t.me link or a mention of Telegram in the video description or in the channel description.
+  tg_pattern: '(?:t\.me|telegram\.me|telegram\.dog)/|телеграм|telegram|\bтг\b|\btg\b'
+  # An offer: the title or the description names a micro product or a lead magnet.
+  offer_pattern: 'гайд|чек-?лист|курс|марафон|консультац|разбор|шаблон|методичк|бесплатн|скачать|интенсив|вебинар|guide|checklist|course|template|ebook|workshop|webinar|coaching'

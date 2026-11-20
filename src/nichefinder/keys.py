@@ -21,6 +21,12 @@ GROUPS: dict[str, dict] = {
         "what": "Yandex Wordstat search volume and dynamics (Russian market module).",
         "where": "https://yandex.cloud/en/docs/search-api/",
     },
+    "youtube": {
+        "keys": ("YOUTUBE_API_KEY",),
+        "what": "YouTube Data API v3: short-video search and statistics for info topics (info_youtube). Free quota of "
+                "10,000 units per day.",
+        "where": "https://console.cloud.google.com/apis/library/youtube.googleapis.com (create an API key under Credentials)",
+    },
 }
 
 

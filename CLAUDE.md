@@ -35,7 +35,7 @@ CI (`.github/workflows/ci.yml`) runs pytest on Linux/Windows/macOS × Python 3.1
 
 - `.venv/` at the repo root: Python 3.12, package installed in editable mode with `[trends,dev]`.
 - `workspace/` at the repo root was created with `nf init workspace`. It is gitignored, including its `.env`. `google-play-scraper` is installed in `workspace/node_modules`. Run `nf` from inside `workspace/` or pass `-w workspace`.
-- `workspace/.env` holds the DataForSEO, LLM and Yandex keys, so `nf run all` runs every stage. DataForSEO is prepaid: `s3_dataforseo` prints the expected cost and the balance before it pulls. `workspace/nf.yaml` has `markets: [us, ww, ru]`, so the Russian module (`ru_*`, `s6_ru`, `s8_hh`, Wordstat) is on.
+- `workspace/.env` holds the DataForSEO, LLM, Yandex and YouTube Data API keys, so `nf run all` runs every stage. DataForSEO is prepaid: `s3_dataforseo` prints the expected cost and the balance before it pulls. `workspace/nf.yaml` has `markets: [us, ww, ru]`, so the Russian module (`ru_*`, `s6_ru`, `s8_hh`, Wordstat) is on.
 - Wordstat allows about 100 requests per hour, so an uncached `s2_wordstat` or `s4_wordstat_dynamics` run takes hours. Run them in the background; a restart resumes from the cache.
 - The Windows console is cp1252: a script that prints Cyrillic needs `PYTHONIOENCODING=utf-8`, or `sys.stdout.reconfigure(encoding="utf-8")` under `python -I`, which ignores that variable.
 
@@ -60,6 +60,8 @@ Stages talk to each other only through workspace files: `data/raw/*.csv` (S0 dum
 - `metrics_quick.csv` (S3) → `config/shortlist.yaml`. `s3_report` writes the shortlist only when the file is missing, or with `--rewrite-shortlist`. It is a human checkpoint. Tiers: `tier_a` passed the gates, `tier_b` was cut only by the top-1 brand gate, `tier_c` holds the control niches S3 has not settled (they are scored in the same cohort for calibration).
 - The deep stages S4, S5, S8 and S9 measure only shortlisted niches.
 - `supply_deep.csv` (S5) → `score_final.csv` (S6) → passports and the leaderboard.
+
+The `info` group (`info_suggest` → `info_youtube` → `info_score`) is a separate cohort for micro info products sold through short video and a Telegram channel. Its topics live in `config/info_topics.yaml`, not in `niches.yaml`, and it has its own score in `config/score_info.yaml` (methodology §5 "Info" and §7.6). It never mixes with the software score. Without topics or seeds its stages print a note and do nothing. `info_youtube` spends YouTube quota: 10,000 units a day, and a search costs 100. `--budget` caps a run, and a run stopped by the quota resumes from the cache the next day. The API key goes in the `X-Goog-Api-Key` header, never in a URL (`sources/youtube.py`). The weights stay `status: draft` until the owner fixes them, and `reports/info.md` shows a DRAFT banner until then.
 
 In `s6_score`, required inputs fail with a hint ("run the S5 stages first") and optional inputs (S8 `offsearch.csv`, S9 `entrant_survival.csv`) are read as empty when missing.
 
@@ -89,6 +91,7 @@ To add a data source, write a new stage module and add it to the registry. Vendo
   - A category or problem query listed in two niches is warned about, because its volume counts in both; keep it in the most specific niche. Word order is ignored, as in Wordstat broad match. A shared brand query is fine: brand volume feeds only the concentration metrics.
   - Russian queries are broad match in Wordstat, so check the nested phrases (`nested_json` in `wordstat_ru.csv`) before trusting a number. Replace a query whose volume belongs to another topic and leave a trailing comment with the reason; `trap_anchor` / `trap_brands` in `config/overrides_ru.yaml` only patch `s6_ru`.
 - `config/score.yaml`: weights and CPC bands.
+- `config/info_topics.yaml` (info cohort): `_settings` (`lang`, `region`, `window_months`, `seeds`) and `topics` (`id`, `q`: 1-3 YouTube phrases, optional `must` regex, `who`, `task`, `product`). `config/score_info.yaml` holds the info weights, gates and the `measure` block (sample order, Shorts length, breakout and Telegram/offer regexes).
 - `config/overrides.yaml`: human judgments per niche (platform risk, lock-in, feasibility, supply estimates, founder `fit`, a manual `verdict`).
 - Other `config/*.yaml` files: per-source maps and exclusions.
 

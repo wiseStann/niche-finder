@@ -1,7 +1,9 @@
-"""Free search suggestions: Google (Firefox endpoint) and Yandex (suggest-ff). Cache: data/cache/suggest/.
+"""Free search suggestions: Google (Firefox endpoint), YouTube (the same endpoint with ds=yt) and Yandex
+(suggest-ff). Cache: data/cache/suggest/.
 
     from nichefinder.sources import suggest
     res = suggest.google(ws, "tattoo studio software")     # {"q": ..., "suggestions": [...]}  or {"_error": "..."}
+    res = suggest.youtube(ws, "avito", hl="ru", gl="ru")
     res = suggest.yandex(ws, "программа для салона")
 
 Errors are returned (not raised) and are not cached, so a later run retries them.
@@ -44,6 +46,16 @@ def google(ws: Workspace, q: str, hl: str = "en", gl: str = "us") -> dict:
         data = json.loads(_fetch(url))
         return {"q": q, "suggestions": data[1] if len(data) > 1 else []}
     return _cached(ws, f"google_{hl}_{gl}", q, fn)
+
+
+def youtube(ws: Workspace, q: str, hl: str = "ru", gl: str = "ru") -> dict:
+    """What people type into YouTube search (the Google endpoint with ds=yt)."""
+    def fn(q):
+        url = (f"https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&hl={hl}&gl={gl}"
+               f"&q={urllib.parse.quote(q)}")
+        data = json.loads(_fetch(url))
+        return {"q": q, "suggestions": data[1] if len(data) > 1 else []}
+    return _cached(ws, f"youtube_{hl}_{gl}", q, fn)
 
 
 def yandex(ws: Workspace, q: str) -> dict:

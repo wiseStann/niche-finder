@@ -1,0 +1,25 @@
+# Info-product topics: the `info` cohort (short video -> Telegram channel -> micro product).
+# One topic = one niche (who x task x product) measured by what people watch in YouTube Shorts, not by what they
+# search for. Stages: info_suggest (topic ideas from the seeds), info_youtube (measurement), info_score (score + report).
+# Thresholds and weights: config/score_info.yaml. Method: docs/methodology.md, "Info" and section 7.6.
+
+_settings:
+  lang: ru              # YouTube relevanceLanguage and autocomplete language; with ru only Cyrillic titles are kept
+  region: RU            # YouTube regionCode and autocomplete country
+  window_months: 12     # videos published in this window, counted from the first day of the run month
+  # Broad areas for info_suggest: each seed is expanded through YouTube autocomplete ("seed", "seed a", "seed b", ...)
+  # into data/out/info_suggest.csv. Pick the phrases that name a concrete task and turn them into topics below.
+  seeds: []
+
+# Each phrase costs one YouTube search (100 of the 10,000 daily units), so 1-2 phrases per topic is the norm and
+# 45-90 topics fit into one day's quota. The first phrase is the anchor. Phrases name the subject people watch
+# ("how to sell on avito"), not the product ("avito course"). The search takes the most viewed videos, so a broad
+# phrase can pull in viral videos that only mention its words: `must` (optional, case-insensitive regex) keeps only
+# videos whose title or description matches it. Check the examples in reports/info.md before trusting a number.
+topics: []
+#  - id: avito-listings
+#    q: [как продавать на авито, объявление на авито]
+#    must: авито|avito
+#    who: private sellers and small shops on Avito
+#    task: write listings that get calls
+#    product: checklist + 10 listing templates, 490 RUB; funnel through a Telegram channel

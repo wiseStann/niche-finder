@@ -121,9 +121,10 @@ Every stage is a separate command. Every external response is cached in the work
 | `s10` | Buyer voice from Reddit |
 | `s6` | Score, gates, verdicts, path to goal, passports |
 | `s7` | HTML leaderboard |
+| `info` | Separate cohort for micro info products sold through short video and Telegram: YouTube autocomplete ideas, Shorts metrics (views, room for newcomers, Telegram funnels, offers), its own score and report |
 | `ru` | Optional Russian B2B module: software registry, public procurement, Bitrix24 Market, hh.ru, Wordstat |
 
-Inputs, outputs, keys and cost of each of the 60 stages: [docs/stages.md](docs/stages.md).
+Inputs, outputs, keys and cost of each of the 63 stages: [docs/stages.md](docs/stages.md).
 
 ## What you get
 
@@ -176,6 +177,7 @@ Every key is optional. A stage whose key is missing is skipped with a message sa
 | `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` | Search volume, CPC and 48-month history (S3) | Pay-as-you-go; about $0.09 per request of up to 1,000 keywords per location |
 | `LLM_API_KEY` (+ `LLM_BASE_URL`, `LLM_MODEL`) | Reddit classification (S10); any OpenAI-compatible endpoint | With DeepSeek, about $0.5 for 8,000 posts and comments |
 | `YANDEX_API_KEY` | Wordstat (Russian module) | Free quota of 100 requests per hour |
+| `YOUTUBE_API_KEY` | Short-video metrics for the info cohort (`info_youtube`) | Free quota of 10,000 units per day (about 90 one-phrase topics) |
 
 Everything else is free: iTunes Search and RSS, Google Play (through Node), Google Trends (through `trendspy`), autocomplete, WordPress.org, Shopify App Store, Capterra and GetApp pages, the Arctic Shift Reddit archive, YC, Product Hunt, Flippa, TinySeed, BetaList, Product Radar, Kickstarter (Web Robots dumps), Hacker News (Algolia API).
 
