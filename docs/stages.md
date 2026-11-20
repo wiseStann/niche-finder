@@ -127,7 +127,7 @@ Independent of the software score; topics live in `config/info_topics.yaml`, wei
 | Stage | Inputs | Outputs | Keys / tools | Cost |
 |---|---|---|---|---|
 | `info_suggest` | `info_topics.yaml` `_settings.seeds` (or `--seed`), `lang`, `region` | `out/info_suggest.csv` (seed, phrase, hits = expansions that returned it, best position, already a topic phrase) | none | free; ~30 autocomplete requests per seed |
-| `info_youtube` | `info_topics.yaml` topics (`q`, optional `must`), `score_info.yaml` `measure` | `out/info_youtube.csv` (per topic: Shorts kept, views median/p90, breakout share, small-channel share, top-3 channel share, Telegram and offer shares, recent/older), `out/info_youtube_videos.csv` (per video) | `YOUTUBE_API_KEY` | free quota of 10,000 units/day: ~100 units per phrase + 2-4 for statistics; `--budget` caps a run, a run stopped by the quota resumes from cache |
+| `info_youtube` | `info_topics.yaml` topics (`q`: one subject phrase of 1-3 words; optional `must` / `must_not` regexes), `score_info.yaml` `measure` | `out/info_youtube.csv` (per topic: Shorts kept, views median/p90, breakout share, small-channel share, top-3 channel share, Telegram and offer shares, recent/older), `out/info_youtube_videos.csv` (per video) | `YOUTUBE_API_KEY` | free quota of 10,000 units/day: ~100 units per phrase + 2-4 for statistics; `--budget` caps a run, a run stopped by the quota resumes from cache |
 | `info_score` | `out/info_youtube*.csv`, both configs, `nf.yaml` `verdict.green_min_score` | `out/info_score.csv`, `reports/info.md` (ranking, gates, flags, example videos per topic; a DRAFT banner while the weights are not fixed) | none | free, offline |
 
 ## Russian B2B module (`ru`)

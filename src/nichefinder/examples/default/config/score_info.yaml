@@ -22,7 +22,7 @@ weights:
 
 # Gates (red when failed). Too little to measure, or nobody watches.
 gates:
-  min_videos: 15        # I0: short videos in the window after the filters below
+  min_videos: 10        # I0: short videos in the window after the filters below
   min_views_median: 1000  # I1: median views of those videos
 
 # Informational flags (do not change the score or the verdict).

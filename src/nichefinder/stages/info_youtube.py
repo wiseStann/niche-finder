@@ -3,8 +3,9 @@
 For every phrase of a topic: one search page of the 50 most viewed videos (measure.order, default viewCount) under
 4 minutes published in the window (relevanceLanguage and regionCode from config/info_topics.yaml), then video and
 channel statistics. Kept: videos up to measure.shorts_max_seconds long (Shorts), with lang ru only Cyrillic titles,
-and with a topic `must` regex only videos whose title or description matches it. Per topic, over the kept videos
-(the top of the topic's attention pool):
+with a topic `must` regex only videos whose title or description matches it in words (hashtags do not count), and
+with `must_not` none that match it anywhere, hashtags included. Per topic, over the kept videos (the top of the
+topic's attention pool):
 
 - n_videos, n_channels; views_median, views_p90 (attention);
 - breakout_share: videos with views >= breakout_ratio x channel subscribers and >= breakout_min_views, among videos
@@ -21,7 +22,11 @@ and with a topic `must` regex only videos whose title or description matches it.
 Why the most viewed and not the relevance order: relevance mixes in fresh videos with a few hundred views (median
 1-2k on test topics) and leans so hard to the last months that the recent/older split measures YouTube's freshness
 boost, not the topic; the most viewed top separates topics clearly (2 of 47 vs 28 of 49 videos from small
-channels). The cost: a broad phrase can pull in viral videos that only mention its words; `must` filters them.
+channels). The cost: a broad phrase can pull in viral videos that only mention its words; `must` and `must_not`
+filter them. Hashtags do not count for `must` because Shorts stuff them for reach: on the first run comedy sketches
+tagged #self-esteem set the median of the self-esteem topic to 1.7M views. Phrase length matters as much: a how-to tail shrinks the pool, so on the first 30-topic run phrases
+ending in "what to do" had medians of 1-2k views against 30-180k for subject phrases. One anchor per topic that
+names the subject in 1-3 words keeps topics comparable (info.validate warns about longer phrases).
 The sample is a ranking, not a census: the numbers compare topics with each other. Since 2025 YouTube counts every
 Shorts replay as a view, so compare Shorts only with Shorts.
 
@@ -52,7 +57,8 @@ MEASURE = {
     "small_channel_subs": 10000, "tg_pattern": r"(?:t\.me|telegram\.me|telegram\.dog)/|telegram|\btg\b",
     "offer_pattern": r"guide|checklist|course|template|ebook|workshop|webinar|coaching",
 }
-CYRILLIC = re.compile("[Ѐ-ӿ]")
+CYRILLIC = re.compile("[\u0400-\u04FF]")
+HASHTAG = re.compile(r"#\w+")
 DURATION = re.compile(r"P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$")
 TOPIC_COLS = ["topic_id", "status", "phrases", "n_found", "n_videos", "n_channels", "views_median", "views_p90",
               "subs_median", "breakout_share", "small_share", "top3_share", "tg_channel_share",
@@ -91,11 +97,12 @@ def _int(v) -> int | None:
 
 
 def video_rows(topic_id: str, videos: list[dict], channels: list[dict], measure: dict, lang: str,
-               must: str = "") -> list[dict]:
+               must: str = "", must_not: str = "") -> list[dict]:
     """Kept videos of one topic with their channel and the per-video flags."""
     tg = re.compile(measure["tg_pattern"], re.I)
     offer = re.compile(measure["offer_pattern"], re.I)
     need = re.compile(must, re.I) if must else None
+    drop = re.compile(must_not, re.I) if must_not else None
     ch = {c["id"]: c for c in channels}
     rows = []
     for v in videos:
@@ -108,7 +115,9 @@ def video_rows(topic_id: str, videos: list[dict], channels: list[dict], measure:
             continue
         if lang == "ru" and not CYRILLIC.search(title):
             continue
-        if need and not need.search(title + "\n" + desc):
+        if need and not need.search(HASHTAG.sub(" ", title + "\n" + desc)):
+            continue
+        if drop and drop.search(title + "\n" + desc):
             continue
         c = ch.get(sn.get("channelId"), {})
         cst = c.get("statistics") or {}
@@ -203,7 +212,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             rows.append({**row, "status": "quota"})
             print(f"  !! {tid}: {e}", flush=True)
             continue
-        kept = video_rows(tid, videos, chans, measure, lang, t.get("must") or "")
+        kept = video_rows(tid, videos, chans, measure, lang, t.get("must") or "", t.get("must_not") or "")
         m = metrics(kept, measure, mid)
         rows.append({**row, "status": "ok" if kept else "empty", "n_found": len(ids), **m})
         vrows += kept

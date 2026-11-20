@@ -30,7 +30,7 @@ NEEDS: tuple[str, ...] = ()
 
 WEIGHTS = {"views_median": 20, "views_p90": 10, "breakout_share": 15, "small_share": 10, "tg_channels": 15,
            "offers": 10, "spread": 10, "recent": 10}
-GATES = {"min_videos": 15, "min_views_median": 1000}
+GATES = {"min_videos": 10, "min_views_median": 1000}
 FLAGS = {"top3_share": 0.6, "recent_ratio_low": 0.5}
 COLS = ["rank", "topic_id", "verdict", "score", "gates", "flags", "attention", "newcomers", "monetization", "spread",
         "trend", "n_videos", "views_median", "views_p90", "breakout_share", "small_share", "tg_channel_share",

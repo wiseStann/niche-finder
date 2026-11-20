@@ -10,8 +10,9 @@ video, not by what they search for. Topics live in config/info_topics.yaml:
       seeds: [...]             # broad areas that info_suggest expands through YouTube autocomplete
     topics:
       - id: avito-listings     # slug, used everywhere as topic_id
-        q: [...]               # 1-3 YouTube search phrases; each costs one search (100 quota units)
+        q: [...]               # YouTube search phrases, usually one: the subject in 1-3 words (100 quota units each)
         must: ...              # optional regex: keep only videos whose title or description matches it
+        must_not: ...          # optional regex: drop videos whose title or description matches it
         who: ...
         task: ...
         product: ...           # the micro product and its price, e.g. "checklist, 490 RUB"
@@ -29,6 +30,7 @@ SCORE_FILE = "score_info.yaml"
 DEFAULTS = {"lang": "ru", "region": "RU", "window_months": 12, "seeds": []}
 SLUG = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 MAX_PHRASES = 3
+MAX_WORDS = 4      # longer phrases shrink the pool: "X what to do" measured 1-2k median views against 30-180k for "X"
 
 
 def load(ws: Workspace) -> tuple[dict, list[dict]]:
@@ -62,11 +64,15 @@ def validate(ws: Workspace) -> tuple[list[str], list[str]]:
             errors.append(f"{tid}: no search phrases (q)")
         if len(qs) > MAX_PHRASES:
             warns.append(f"{tid}: {len(qs)} phrases; each costs a YouTube search (100 units), {MAX_PHRASES} is plenty")
-        if t.get("must"):
-            try:
-                re.compile(str(t["must"]))
-            except re.error as e:
-                errors.append(f"{tid}: must is not a valid regex: {e}")
+        for k in ("must", "must_not"):
+            if t.get(k):
+                try:
+                    re.compile(str(t[k]))
+                except re.error as e:
+                    errors.append(f"{tid}: {k} is not a valid regex: {e}")
+        long = [q for q in qs if len(q.split()) > MAX_WORDS]
+        if long:
+            warns.append(f"{tid}: long phrase '{long[0]}'; a how-to tail shrinks the pool, name the subject in 1-3 words")
         for k in ("who", "task", "product"):
             if not t.get(k):
                 warns.append(f"{tid}: no {k}")

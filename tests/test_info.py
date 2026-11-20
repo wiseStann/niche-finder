@@ -108,13 +108,14 @@ def test_youtube_client_daily_quota_error(tmp_path, monkeypatch):
 
 def test_info_youtube_metrics(tmp_path, monkeypatch):
     ws = make_ws(tmp_path, [{"id": "avito", "q": ["авито"], "who": "w", "task": "t", "product": "p"},
-                            {"id": "hacks", "q": ["авито лайфхак"], "must": "ЛАЙФХАК"}])
+                            {"id": "hacks", "q": ["авито лайфхак"], "must": "ЛАЙФХАК"},
+                            {"id": "no-sales", "q": ["авито"], "must_not": "продаж|продава"}])
     monkeypatch.setenv("YOUTUBE_API_KEY", "k")
     api = FakeApi()
     monkeypatch.setattr(http, "request", api)
     info_youtube.run(ws, argparse.Namespace(budget=1000, only=""))
     assert {p["order"] for m, p, _ in api.calls if m == "search"} == {"viewCount"}
-    row, hacks = list(csv.DictReader(open(ws.out("info_youtube.csv"), encoding="utf-8")))
+    row, hacks, no_sales = list(csv.DictReader(open(ws.out("info_youtube.csv"), encoding="utf-8")))
     assert row["status"] == "ok" and row["n_found"] == "6"
     assert row["n_videos"] == "4" and row["n_channels"] == "3"                   # v3 long, v4 not Cyrillic
     assert float(row["views_median"]) == 10_000 and row["views_p90"] == "200000"
@@ -125,6 +126,7 @@ def test_info_youtube_metrics(tmp_path, monkeypatch):
     assert row["top3_share"] == "1.0"
     assert (row["recent"], row["older"], row["recent_ratio"]) == ("2", "2", "1.0")
     assert hacks["n_videos"] == "1"                                             # must: only v2 names it
+    assert no_sales["n_videos"] == "2"                                          # must_not drops v1 and v5
     vids = list(csv.DictReader(open(ws.out("info_youtube_videos.csv"), encoding="utf-8")))
     assert {v["video_id"] for v in vids if v["topic_id"] == "avito"} == {"v1", "v2", "v5", "v6"}
 
@@ -182,11 +184,15 @@ def test_info_validate(tmp_path):
     ws = make_ws(tmp_path, [{"id": "a", "q": ["x"], "who": "w", "task": "t", "product": "p"},
                             {"id": "a", "q": []}, {"id": "Bad Id", "q": ["y"]},
                             {"id": "many", "q": ["1", "2", "3", "4"], "who": "w", "task": "t", "product": "p"},
-                            {"id": "bad-must", "q": ["z"], "must": "(unclosed"}])
+                            {"id": "bad-must", "q": ["z"], "must": "(unclosed", "must_not": "[unclosed"},
+                            {"id": "wordy", "q": ["выгорание на работе что делать"], "who": "w", "task": "t",
+                             "product": "p"}])
     errors, warns = info.validate(ws)
     assert any("duplicate" in e for e in errors) and any("no search phrases" in e for e in errors)
-    assert any("slug" in e for e in errors) and any("bad-must: must" in e for e in errors)
+    assert any("slug" in e for e in errors) and any("bad-must: must is" in e for e in errors)
+    assert any("bad-must: must_not is" in e for e in errors)
     assert any("many: 4 phrases" in w for w in warns)
+    assert any(w.startswith("wordy: long phrase") for w in warns) and not any(w.startswith("a: long") for w in warns)
 
 
 def test_stages_without_topics_do_nothing(tmp_path):
@@ -195,3 +201,12 @@ def test_stages_without_topics_do_nothing(tmp_path):
     info_youtube.run(ws, argparse.Namespace(budget=10, only=""))
     info_score.run(ws, argparse.Namespace())
     assert not ws.out("info_youtube.csv").exists() and not ws.out("info_score.csv").exists()
+
+
+def test_must_ignores_hashtags_must_not_does_not():
+    measure = {**info_youtube.MEASURE}
+    vids = [video("w", 30, 50_000, "A", "Как поднять самооценку", "2026-05-01"),
+            video("t", 30, 9_000_000, "A", "Собеседование пошло не по плану #самооценка", "2026-05-01"),
+            video("x", 30, 70_000, "A", "Самооценка и уверенность", "2026-05-01", "#прикол")]
+    kept = info_youtube.video_rows("s", vids, list(CHANNELS.values()), measure, "ru", must="самооцен", must_not="прикол")
+    assert [r["video_id"] for r in kept] == ["w"]          # t: only a hashtag; x: excluded by a hashtag
