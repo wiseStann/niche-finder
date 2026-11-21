@@ -7,7 +7,15 @@
 # and `fixed_on`); after that every change needs a written reason in `changes`, never to rescue a favourite niche.
 status: draft
 fixed_on:
-changes: []
+changes:
+  - date: 2026-11-21
+    what: "gap counts an unmet need only in a review rated low_rating or lower; fewer than min_low_reviews such reviews -> unmeasured"
+    why: >-
+      Draft trial (11 niches): the control ctrl-task-manager, an expected saturated market, had the highest unmet share
+      of the B2B cohort (32 %). 34 of its 42 missing-feature reviews were five-star wishlists (Startpack asks every reviewer
+      for cons; 90 % of Startpack reviews are five-star), and all 31 switches were arrivals from Trello, Jira or Asana,
+      a sign that substitutes exist. Dropping feature wishes alone did not help (price + switching: still first in B2B, 15 %);
+      counting only reviews of 3 stars or lower gives the control 2 %. The floors were not changed.
 
 fetch:
   window_months: 12       # reviews older than this, counted back from the run date, are dropped
@@ -28,14 +36,19 @@ sample:
 # Written reviews lean negative (the unhappy user is the one who writes), so the rule compares niches with each other:
 # a share must be in the top third of the cohort (mid-rank percentile) AND above an absolute floor. Cohorts are per segment
 # (B2C + prosumer, B2B), because the sources differ: app stores for B2C, mostly Startpack for B2B, which leans positive.
+# The gap share counts an unmet need (missing feature, price, switching) only in an unhappy review (low_rating or lower),
+# over all reviews about the app: a wish in a five-star review is a wishlist, a switch in one is an arrival from a rival.
 verdict:
   min_app_reviews: 80     # quiet: fewer classified reviews about the app itself
   min_apps: 2             # quiet: fewer apps with substantive reviews in the sample
   min_cohort: 6           # with fewer measured niches in a segment percentiles mean nothing: the floors alone decide
-  gap_pct: 0.67           # gap: unmet-need share (missing feature + price + switching) in the top third...
+  low_rating: 3           # an unhappy review: rated this many stars or fewer
+  min_low_reviews: 30     # unmeasured: fewer unhappy reviews about the app; the gap cannot be read (not "content"), and
+                          # the niche is left out of the gap percentiles. Startpack reviews are 90 % five-star
+  gap_pct: 0.67           # gap: unmet needs in unhappy reviews, as a share of all reviews about the app, in the top third...
   gap_floor: 0.15         # ...and at least this share
   quality_pct: 0.67       # quality: complaints about bugs, UX, ads and support in the top third...
   quality_floor: 0.30     # ...and at least this share
-  content_praise: 0.50    # content: praise at least this share, and neither of the above
+  content_praise: 0.50    # content: praise at least this share, the gap readable, and neither gap nor quality
   top_app_warn: 0.60      # a caution in the reason (not a gate) when one product gives more of the sample than this:
                           # Startpack reviews come in vendor campaigns, so one product can be most of a B2B niche's voice

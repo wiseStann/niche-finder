@@ -162,9 +162,11 @@ def test_classify_shares_over_reviews_about_the_app(tmp_path, monkeypatch):
     assert sum(a["n"] for a in themes["apps"].values()) == 4 and themes["about"]["service"] == 1
 
 
-def llm_row(nid, about_app=120, apps=3, unmet=0.1, quality=0.2, praise=0.3):
+def llm_row(nid, about_app=120, apps=3, unmet=0.1, quality=0.2, praise=0.3, unmet_low=None, low=60):
+    """A ru_reviews_llm.csv row plus the unhappy-review fields the report adds; the gap share defaults to `unmet`."""
     return {"niche_id": nid, "about_app": about_app, "apps": apps, "unmet_share": unmet, "quality_share": quality, "praise_share": praise,
-            "missing_feature_share": unmet, "pricing_share": 0, "switching_share": 0}
+            "missing_feature_share": unmet, "pricing_share": 0, "switching_share": 0,
+            "unmet_low_share": unmet if unmet_low is None else unmet_low, "low_reviews": low}
 
 
 def test_verdict_rule_is_relative_with_floors():
@@ -185,6 +187,43 @@ def test_verdict_rule_is_relative_with_floors():
     assert small["gap"]["verdict"] == "🟢 gap" and small["mixed2"]["verdict"] == "🟡 mixed"
 
 
+def test_gap_counts_only_unhappy_reviews_and_few_of_them_is_unmeasured():
+    cfg = fetch.DEFAULTS["verdict"]
+    rows = {r["niche_id"]: r for r in [
+        llm_row("wishlist", unmet=0.40, unmet_low=0.02, praise=0.6),        # feature wishes in five-star reviews
+        llm_row("unhappy", unmet=0.30, unmet_low=0.20),
+        llm_row("few_low", unmet=0.40, unmet_low=0.05, praise=0.8, low=10),
+        llm_row("few_low_bad", unmet=0.40, unmet_low=0.05, quality=0.5, low=10)]}
+    v = report.reviews_verdicts(rows, cfg)
+    assert v["wishlist"]["verdict"] == "🟡 content"
+    assert v["unhappy"]["verdict"] == "🟢 gap" and "in all reviews: 30%" in v["unhappy"]["reason"]
+    assert v["few_low"]["verdict"] == "⚪ unmeasured" and "only 10 of 120 reviews" in v["few_low"]["reason"]   # not "content"
+    assert v["few_low_bad"]["verdict"] == "🟡 quality" and "cannot be read" in v["few_low_bad"]["reason"]
+    assert v["few_low"]["unmet_pct"] == "" and v["unhappy"]["gap_cohort"] == 2
+
+
+def test_gap_percentiles_only_among_niches_where_the_gap_can_be_read():
+    cfg = fetch.DEFAULTS["verdict"]
+    rows = {f"r{i}": llm_row(f"r{i}", unmet_low=0.16 + 0.01 * i) for i in range(6)}      # readable: 0.16 .. 0.21
+    v = report.reviews_verdicts(rows, cfg)
+    assert v["r3"]["verdict"] != "🟢 gap" and v["r5"]["verdict"] == "🟢 gap"
+    rows.update({f"u{i}": llm_row(f"u{i}", unmet_low=0.0, low=5) for i in range(6)})     # unreadable niches must not lift the ranks
+    v = report.reviews_verdicts(rows, cfg)
+    assert v["r3"]["verdict"] != "🟢 gap" and v["r5"]["gap_cohort"] == 6 and v["r5"]["cohort"] == 12
+    assert all(v[f"u{i}"]["verdict"] == "⚪ unmeasured" for i in range(6))
+
+
+def test_unhappy_unmet_from_labeled_items(tmp_path):
+    ws = make_ws(tmp_path)
+    recs = [("app", 1, "missing_feature"), ("app", 3, "pricing"), ("app", 2, "bug"), ("app", 5, "missing_feature"),
+            ("app", 4, "switching"), ("service", 1, "other"), ("app", None, "pricing")]
+    with open(ws.out("ru_reviews_items.jsonl"), "w", encoding="utf-8") as fh:
+        for about, rating, intent in recs:
+            fh.write(json.dumps({"niche_id": "budget", "about": about, "rating": rating, "intent": intent}) + "\n")
+    got = report.unhappy_unmet(ws, 3)["budget"]
+    assert got == {"low_reviews": 3, "unmet_low_share": round(2 / 6, 3)}   # 6 about the app, 3 rated <= 3, 2 of them unmet
+
+
 def test_report_writes_verdicts_and_a_draft_banner(tmp_path):
     ws = make_ws(tmp_path)
     write_csv(ws.out(fetch.APPS), [{"niche_id": "budget", "store": "gplay", "app_id": "a", "app": "App", "developer": "D", "ratings": 100,
@@ -196,12 +235,18 @@ def test_report_writes_verdicts_and_a_draft_banner(tmp_path):
     row = {**llm_row("budget", unmet=0.3), "sampled": 2, "classified": 2, "app_share": 1, "bug_share": 0, "ux_share": 0, "ads_share": 0,
            "support_share": 0, "too_expensive": 0, "worth_it": 0, "wants_free": 0, "cancelled": 0, "themes": 0, "top_theme": "",
            "top_theme_kind": "", "top_theme_count": "", "top_switch": ""}
+    row.pop("unmet_low_share"), row.pop("low_reviews")   # the report counts these from the labeled items
     write_csv(ws.out("ru_reviews_llm.csv"), [row])
+    with open(ws.out("ru_reviews_items.jsonl"), "w", encoding="utf-8") as fh:
+        for i in range(40):
+            fh.write(json.dumps({"niche_id": "budget", "about": "app", "rating": 2 if i < 32 else 5,
+                                 "intent": "missing_feature" if i < 12 else "praise"}) + "\n")
     report.run(ws, argparse.Namespace())
     md = ws.report("S10-ru-reviews.md").read_text(encoding="utf-8")
     assert "DRAFT" in md and "Budget apps" in md and "| 2 (2) | 50% |" in md
     (v,) = csv.DictReader(open(ws.out("ru_reviews_verdict.csv"), encoding="utf-8"))
     assert v["verdict"] == "🟢 gap" and v["status"] == "draft"
+    assert (v["low_reviews"], v["unmet_low_share"]) == ("32", "0.3")
 
 
 # ---- Startpack ----------------------------------------------------------------

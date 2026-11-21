@@ -499,11 +499,14 @@ Reddit hears almost no Russian speakers, yet most shortlisted niches have geo `b
 
 | Verdict | Condition |
 |---|---|
-| **Gap** (green) | unmet-need share >= 15 % and in the top third of the cohort (mid-rank percentile >= 0.67) |
+| **Gap** (green) | unmet needs in reviews rated 3 stars or lower >= 15 % of all reviews about the app, and in the top third of the cohort (mid-rank percentile >= 0.67) |
 | Quality | not a gap; bug/UX/ads/support share >= 30 % and in the top third |
-| Content | praise >= 50 % and neither of the above |
+| Unmeasured | not quality, and fewer than 30 reviews rated 3 stars or lower: the gap cannot be read |
+| Content | praise >= 50 % and neither gap nor quality |
 | Mixed | everything else |
 | Quiet | fewer than 80 labeled reviews about the app, or fewer than 2 apps |
+
+**Why the gap counts only unhappy reviews (changed 2026-11-21, while the thresholds were a draft).** The first rule counted every unmet-need review. In the trial run of 11 niches the control `ctrl-task-manager`, an expected saturated market, had the highest unmet share of the B2B cohort, 32 %. Its reviews showed why. 34 of its 42 missing-feature reviews were five-star wishlists ("no per-user language setting"): Startpack asks every reviewer for cons, and 90 % of its reviews are five-star. All 31 switches were arrivals ("moved from Trello after it left Russia"), a sign that substitutes exist, the opposite of a gap. Dropping feature wishes alone did not help: price and switching still put the control first in B2B (15 %). Counting an unmet need only in a review rated 3 stars or lower gives the control 2 %: a missing feature counts when it makes the user unhappy. The share stays over all reviews about the app, and the floors were not changed. A niche with fewer than 30 unhappy reviews is "unmeasured", not "content": too few unhappy reviews on Startpack say more about the source than about the market. Such niches are left out of the gap percentiles, so they do not lift the others' ranks. In practice the Startpack-heard B2B niches are almost all unmeasured, so for them the reviews layer is qualitative: pain themes as interview material. Not yet done: the direction of a switch (leaving vs arriving) as a separate label, and a check whether an unmet feature is praised in a rival's reviews, which would separate "my product lacks it" from "nobody offers it".
 
 Why relative: written reviews lean negative, since the unhappy user is the one who writes. An absolute complaint threshold like the Reddit rule's 20 % would pass nearly every niche, so a share must stand out against the other niches of the run and clear an absolute floor. Percentiles are taken within a segment, B2C + prosumer or B2B, as in the score: the segments are heard through different sources with different biases (app stores lean negative, Startpack leans positive), and one pooled cohort would rank the sources, not the niches. With fewer than 6 measured niches in a segment percentiles mean nothing and the floors alone decide. The thresholds start as a draft (`status: draft`, a banner in the report) and are fixed before the first real verdicts are read, under the same rules as the score weights.
 

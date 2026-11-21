@@ -46,8 +46,8 @@ DEFAULTS = {
     "fetch": {"window_months": 12, "apps_per_store": 8, "min_ratings": 20, "appstore_pages": 10, "gplay_reviews": 500,
               "startpack_window_months": 36, "startpack_pages": 4, "startpack_min_reviews": 5},
     "sample": {"max_reviews": 240, "min_chars": 40},
-    "verdict": {"min_app_reviews": 80, "min_apps": 2, "min_cohort": 6, "gap_pct": 0.67, "gap_floor": 0.15,
-                "quality_pct": 0.67, "quality_floor": 0.30, "content_praise": 0.50, "top_app_warn": 0.60},
+    "verdict": {"min_app_reviews": 80, "min_apps": 2, "min_cohort": 6, "low_rating": 3, "min_low_reviews": 30, "gap_pct": 0.67,
+                "gap_floor": 0.15, "quality_pct": 0.67, "quality_floor": 0.30, "content_praise": 0.50, "top_app_warn": 0.60},
 }
 RSS = "https://itunes.apple.com/ru/rss/customerreviews/page={page}/id={app_id}/sortby=mostrecent/json"
 STORE_NAME = {"appstore": "App Store", "gplay": "Google Play", "startpack": "Startpack"}
