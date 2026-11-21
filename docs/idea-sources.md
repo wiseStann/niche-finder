@@ -92,8 +92,8 @@ The generated registry follows.
 
 Generated from [`idea-sources.yaml`](idea-sources.yaml) by `scripts/render_idea_sources.py`. Edit only the YAML.
 
-**51 sources, 79 access methods:** ✅ in_pipeline - 24, 🛠 planned - 8, ✋ manual - 5, ⛔ blocked - 11, 💰 paid - 3.  
-Priorities: P1 - 6, P2 - 19, P3 - 17, none - 9.
+**53 sources, 83 access methods:** ✅ in_pipeline - 24, 🛠 planned - 8, ✋ manual - 6, ⛔ blocked - 11, 💰 paid - 4.  
+Priorities: P1 - 6, P2 - 19, P3 - 18, none - 10.
 
 Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implemented) · ✋ by hand / browser only · ⛔ closed from the probing network · 💰 paid only. **Probe:** the HTTP code of a keyless curl probe (date). **Role:** discovery = entities for the universe, evaluation = a metric for a niche, voice = buyer voice, trend = dynamics over time.
 
@@ -128,6 +128,8 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **Hacker News (Algolia API)** (`hacker_news`) | community | global | discovery, voice, trend | realtime | api · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P1 | s8 |
 | **Reddit (Arctic Shift + subredditstats)** (`reddit`) | community | global | voice, trend | daily | api · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s8, s10 |
 | **Otvety Mail.ru (Q&A)** (`otvet_mail_ru`) | community | ru | voice | daily | api · none · $0 | 200 (2026-11-20) | 🛠 planned | P3 | s10 |
+| **X (Twitter) API v2** (`x_twitter`) | community | global | voice, trend | realtime | api · bearer token of an X developer app; prepaid credits in the Developer Console · $0.010 per request (Counts: All), $0.005 per request (Counts: Recent) | 401 (2026-11-21) | 💰 paid | none | s4, s10 |
+| **Threads (Meta Threads API)** (`threads`) | community | both | voice | realtime | manual · a Threads account (Instagram login); in Russia only through a VPN · $0 | 200 (2026-11-21) | ✋ manual | P3 | s10 |
 | **vc.ru (Osnova)** (`vc_ru`) | community | ru | voice | daily | api · none · $0 | 200 (2026-11-20) | 🛠 planned | P3 | s10 |
 | **Kickstarter (Web Robots dumps)** (`kickstarter`) | crowdfunding | global | discovery, evaluation | monthly | bulk_dump · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
 | **Indiegogo** (`indiegogo`) | crowdfunding | global | discovery | daily | html · none · $0 | 403 (2026-09-20) | ⛔ blocked | none | s0 |
@@ -459,6 +461,46 @@ Traps:
 - Yandex Q is read-only since June 2023: an archive, no fresh voice
 
 Plan: Not worth a stage for now: Russian B2C voice is covered by app reviews (thousands per niche), and Otvety is nearly empty for B2B. Revisit only as a qualitative block (questions, recommended products) for B2C or info-product topics
+
+#### 💰 X (Twitter) API v2 (`x_twitter`) - none
+
+https://x.com · geo global · role voice, trend · freshness realtime · stage groups s4, s10 · stage not implemented
+
+Signals:
+- Counts: All - the number of posts that match a query per day or hour over the full archive (since 2006) -> a possible third trend source next to Google Trends and YouTube (s4)
+- 'is there a tool for / can anyone recommend X' posts -> buyer voice (s10)
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://api.x.com/2/tweets/counts/all?query=...&granularity=day (Counts: Recent = /counts/recent, last 7 days) | bearer token of an X developer app; prepaid credits in the Developer Console | $0.010 per request (Counts: All), $0.005 per request (Counts: Recent) | pay-per-use since 2026-02-06, no monthly fee; how many days one page of counts covers was not checked, so the cost of a multi-year series per query is unknown | 401 2026-11-21 - keyless: 'Unauthorized' |
+| api | https://api.x.com/2/tweets/search/recent?query=... (search/all = full archive) | bearer token of an X developer app; prepaid credits | $0.005 per post read (a page of 100 posts = 100 reads) | 2 or 3 M post reads per monthly billing cycle (the official pages disagree) | 401 2026-11-21 - keyless: 'Unauthorized' |
+
+Traps:
+- Counts count every match of the query operators (exact phrase, lang:, -is:retweet); homonyms cannot be filtered out afterwards by a niche regex (on HN about 9 in 10 title hits were homonyms), and bots and news spikes add noise. Fit only for unambiguous phrases
+- Buyer voice is weaker than Reddit, which is free and has long 'which tool do you use' threads; X posts are short, with much marketing. 500 posts per niche = about $2.5
+- Blocked in Russia since March 2022; the Russian-speaking audience is small and leans to politics and crypto. No use for the RU market or the info cohort
+- Prices from docs.x.com/x-api/getting-started/pricing as read on 2026-11-21; check the Developer Console before paying
+
+Plan: Declined by the owner (2026-11-21). The only part worth a stage would be Counts: All as a third trend source for English software niches: a manual exp stage over the shortlist anchors, admitted to the score only if it agrees with Google Trends on the control niches
+
+#### ✋ Threads (Meta Threads API) (`threads`) - P3
+
+https://www.threads.com · geo both · role voice · freshness realtime · stage groups s10 · stage not implemented
+
+Signals:
+- keyword search of public posts (text, author, date) -> a sample of texts for buyer voice, or for info-topic supply: Russian-speaking authors who lead readers to Telegram
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://graph.threads.net/v1.0/keyword_search?q=...&search_type=TOP\|RECENT&search_mode=KEYWORD\|TAG&since=...&until=...&limit=100 | Threads user access token of a Meta app; public posts only after Meta app review grants threads_keyword_search, before that the search covers only the authenticated user's own posts | $0 | 2,200 queries per user per rolling 24 h, shared across apps (queries with no results do not count); limit <= 100 posts, no pagination cursor documented; since >= 2023-07-05; results carry no like, reply, repost or view counts (only has_replies) and there is no count or volume endpoint; an empty array for keywords Meta deems sensitive | 400 2026-11-21 - keyless: OAuthException 190 'Invalid OAuth 2.0 Access Token' |
+| manual | https://www.threads.com/search?q=... | a Threads account (Instagram login); in Russia only through a VPN | $0 | by hand in a browser; reading results by script was not tried | 200 2026-11-21 - the search page loads (650 KB) |
+
+Traps:
+- The API cannot measure demand or reach: no engagement counts and no volume series, only a sample of texts
+- Meta is designated extremist in Russia and Instagram is blocked there, so the Russian-speaking audience uses a VPN
+- Facts from the Meta developer docs (keyword-search, retrieve-posts) as read on 2026-11-21
+
+Plan: Not a stage for now. First search 5-10 topics from info_topics.yaml by hand in Threads; apply for threads_keyword_search only if that shows a signal YouTube (info_youtube) lacks
 
 #### 🛠 vc.ru (Osnova) (`vc_ru`) - P3
 
