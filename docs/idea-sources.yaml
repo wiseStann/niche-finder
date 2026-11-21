@@ -4,12 +4,13 @@
 #
 # Entry fields:
 #   group     launch | funding | community | crowdfunding | hiring | vc_portfolio | patents | m_and_a | store | search | ru_registry
+#             | gov_stats | web | ads | oss | regulation | info_market
 #   geo       global | ru | both
 #   role      discovery  - new entities for the universe (stage group s0)
 #             evaluation - a metric for a niche (s5 / s8 / s6)
 #             voice      - buyer / builder voice (s10)
 #             trend      - dynamics over time (s4 / s9)
-#   stages    pipeline stage groups the signal goes to (s0 universe, s4 trends, s5 supply depth, s6 score/ceiling,
+#   stages    pipeline stage groups the signal goes to (s0 universe, s4 trends, s5 supply depth, s6 score/ceiling, info cohort,
 #             s8 demand outside search, s9 supply over time, s10 buyer voice)
 #   feeds     the columns / files the source fills (or would fill)
 #   freshness realtime | daily | weekly | monthly | quarterly | static - how fast new data appears
@@ -35,6 +36,12 @@ groups:
   store: "App and plugin stores - supply and concentration (proven)"
   search: "Search demand - volumes, CPC, trend"
   ru_registry: "Russian registries and open government data - Russian B2B branch"
+  gov_stats: "Official business statistics - how many buyers of a kind exist (the who of a B2B niche)"
+  web: "Web footprint - how old competitors' sites are, who went quiet, how much traffic they get"
+  ads: "Ad libraries and ad-account forecasts - acquisition cost and who pays for traffic"
+  oss: "Open source - free substitutes that cap willingness to pay"
+  regulation: "Regulations - compliance deadlines that create demand before it shows in search"
+  info_market: "Paid information products - whether people pay for knowledge on a topic"
 
 sources:
 
@@ -1368,12 +1375,13 @@ sources:
     geo: global
     url: https://dataforseo.com
     role: [evaluation, trend]
-    signals: ["volume, CPC, competition_index, 48 months of history per keyword - the core of s3"]
+    signals: ["volume, CPC, competition_index, 48 months of history per keyword - the core of s3",
+              "s3_switch_intent: '<brand> alternative(s)', 'apps like <brand>', 'cancel <brand>' and the Russian equivalents for every brand query - switching and churn intent relative to brand demand (evidence, not in the score)"]
     stages: [s3, s4]
-    feeds: ["data/out/dfs_*.csv", "data/out/metrics_quick.csv"]
+    feeds: ["data/out/dfs_*.csv", "data/out/metrics_quick.csv", "data/out/switch_intent.csv", "data/out/switch_intent_kw.csv"]
     freshness: monthly
     status: in_pipeline
-    adapter: s3_dataforseo
+    adapter: [s3_dataforseo, s3_switch_intent]
     priority: P1
     access:
       - method: api
@@ -1381,7 +1389,7 @@ sources:
         auth: "DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD"
         cost: "$0.09/call up to 1,000 keywords"
         limits: "a positive balance is required"
-        probe: {date: 2026-09-16, http: 200, note: "works with a positive balance"}
+        probe: {date: 2026-11-21, http: 402, note: "s3_switch_intent: 2 of 6 batches paid and cached, then 'Payment Required' - the balance ran out (top up to finish, about $0.36)"}
     caveats: ["Google Ads does not target Russia; a hump in 'X software' in 2024 and an acceleration of 'X app' in 2025-26 distort year-over-year comparisons (see the base-year setting of the metrics stage)"]
     plan: "-"
 
@@ -1581,3 +1589,861 @@ sources:
         probe: {date: 2026-11-20, http: 200, note: "'programma dlya fitnes kluba': 11 vendor posts from 2024 with 0 comments; long comment threads sit under general posts, not niche ones"}
     caveats: ["Niche-specific posts are vendor content marketing; buyer comments are few"]
     plan: "Not a buyer-voice source; maybe a supply signal (vendor content intensity, indie builders posting launches)"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # SEARCH PAGE, OFFICIAL STATISTICS, WEB HISTORY, ADS (added 2026-11-21)
+  # ══════════════════════════════════════════════════════════════════════════
+
+  - id: dataforseo_serp
+    name: DataForSEO SERP + Labs keyword difficulty
+    group: search
+    geo: global
+    url: https://dataforseo.com/apis/serp-api
+    role: [evaluation]
+    signals: ["who owns Google's first page for category queries: review directories, media listicles, stores, forums, the niche's own brands; AI Overview and local pack presence; keyword difficulty 0-100 - how a newcomer gets found and whether Google answers by itself"]
+    stages: [s5]
+    feeds: ["data/out/serp_ownership.csv", "data/out/serp_items.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s5_serp
+    priority: P1
+    access:
+      - method: api
+        endpoint: "serp/google/organic/live/advanced (top 10, US); dataforseo_labs/google/bulk_keyword_difficulty/live (up to 1,000 keywords per task)"
+        auth: "DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD"
+        cost: "about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48"
+        limits: "a positive balance is required; the stage stops before paying when the balance is below 1.5x the estimate"
+        probe: {date: 2026-11-21, http: 402, note: "not run: balance exhausted; organic SERP items worked earlier (paid blocks did not, methodology S5); parser tested offline on the documented format"}
+    caveats: ["One snapshot of a page that changes daily and is personalised", "Brand match is by name in the domain: renamed or generic domains count as 'other'"]
+    plan: "Top up the balance and run `nf run s5_serp`; then read R:serp-leaders / R:serp-listicles / R:ai-overview in the passports"
+
+  - id: us_census_cbp
+    name: US Census County Business Patterns + Nonemployer Statistics (bulk files)
+    group: gov_stats
+    geo: global
+    url: https://www.census.gov/programs-surveys/cbp.html
+    role: [evaluation]
+    signals: ["establishments with employees per NAICS code (latest year and the year before), how many have under 20 employees, firms without employees (sole proprietors) - the real number of potential buyers for a one-industry B2B niche; passports turn 'payers needed' into a share of the industry"]
+    stages: [s8, s6]
+    feeds: ["data/out/who_counts.csv"]
+    freshness: static
+    status: in_pipeline
+    adapter: s8_who_counts
+    priority: P1
+    access:
+      - method: bulk
+        endpoint: "https://www2.census.gov/programs-surveys/cbp/datasets/<year>/cbp<yy>us.zip; nonemployer-statistics/datasets/<year>/historical-datasets/nonemp<yy>us.zip"
+        auth: none
+        cost: $0
+        limits: "national files of under 1 MB; CBP 2023 is the latest (CBP 2024: 404 on 2026-11-21), Nonemployer 2024"
+        probe: {date: 2026-11-21, http: 200, note: "CBP 2023 (NAICS 2017) and 2022, Nonemployer 2024 (NAICS 2022, 452 codes of mixed depth)"}
+      - method: api
+        endpoint: "https://api.census.gov/data/2023/cbp?get=ESTAB&for=us:*&NAICS2017=..."
+        auth: "a free key is now required"
+        cost: $0
+        limits: "not used: the bulk files carry the same national numbers"
+        probe: {date: 2026-11-21, http: 200, note: "an HTML 'Missing Key' page"}
+    caveats: ["Counts establishments (locations), not firms", "A NAICS code can be wider than the niche: config/who_counts.yaml says whether a number is a ceiling or a floor", "Nonemployer data use NAICS 2022, CBP 2023 uses NAICS 2017 (e-commerce 454110 and software 511210 have no nonemployer row)"]
+    plan: "Done (2026-11-21): 36 niches mapped by hand in config/who_counts.yaml"
+
+  - id: fns_rmsp
+    name: FNS register of small and medium businesses (open data dump)
+    group: ru_registry
+    geo: ru
+    url: https://www.nalog.gov.ru/opendata/7707329152-rsmp/
+    role: [evaluation, trend]
+    signals: ["Russian small and medium businesses per main OKVED code (legal entities / entrepreneurs, micro / small / medium, 'newly created' flag) and the change over 12 months - the size and growth of the who of a Russian B2B niche"]
+    stages: [s8, s6]
+    feeds: ["data/out/ru_msp_okved.csv", "data/out/ru_msp_niches.csv", "data/out/who_counts.csv (ru_* columns)"]
+    freshness: monthly
+    status: in_pipeline
+    adapter: ru_msp_counts
+    priority: P1
+    access:
+      - method: bulk
+        endpoint: "https://file.nalog.ru/opendata/7707329152-rsmp/data-DDMMYYYY-structure-*.zip (monthly since 2016)"
+        auth: none
+        cost: $0
+        limits: "about 2.2 GB of zipped XML per month (~6.9 million records, 7,661 files); ~6 MB/s; counted while reading the zip, the zip is deleted afterwards"
+        probe: {date: 2026-11-21, http: 200, note: "10.11.2026: 6,895,493 records, 2,658 codes"}
+      - method: api
+        endpoint: "https://rmsp.nalog.ru/statistics-proc.json (type=chartokvedstat)"
+        auth: none
+        cost: $0
+        limits: "only the 30 most common codes per region, type and size: not usable for arbitrary niches"
+        probe: {date: 2026-11-21, http: 200, note: "11.7 MB JSON, 537 codes in total"}
+    caveats: ["The self-employed (NPD) are not in the register: trades dominated by them are undercounted", "The main OKVED code is self-declared and often generic", "Non-profit and religious organisations are not SMEs"]
+    plan: "Done (2026-11-21)"
+
+  - id: fns_revexp
+    name: FNS open data - income and expenses from financial statements
+    group: ru_registry
+    geo: ru
+    url: https://www.nalog.gov.ru/opendata/7707329152-revexp/
+    role: [evaluation, trend]
+    signals: ["yearly income and expenses of every organisation that filed statements (legal name, INN) - matched to the right holders of the domestic software register: the money of a niche's vendors and its growth, independent of search"]
+    stages: [s6]
+    feeds: ["data/out/ru_vendor_revenue.csv", "data/out/ru_vendor_revenue_vendors.csv"]
+    freshness: quarterly
+    status: in_pipeline
+    adapter: ru_vendor_revenue
+    priority: P2
+    access:
+      - method: bulk
+        endpoint: "https://file.nalog.ru/opendata/7707329152-revexp/data-YYYYMMDD-structure-20180110.zip"
+        auth: none
+        cost: $0
+        limits: "about 100 MB zip of XML per release; released yearly with revisions"
+        probe: {date: 2026-11-21, http: 200, note: "release 25.10.2026: statements for 2025"}
+    caveats: ["Income is the whole company's, not the product's: large groups are marked 'diversified' and left out of sums", "Matching by normalised legal name: shared names are 'ambiguous'; individual entrepreneurs file no statements"]
+    plan: "Done (2026-11-21); an INN in the register output would remove the name matching"
+
+  - id: gir_bo
+    name: GIR BO - state resource of financial statements (bo.nalog.ru)
+    group: ru_registry
+    geo: ru
+    url: https://bo.nalog.ru
+    role: [evaluation]
+    signals: ["full statements (revenue line 2110, profit) per company by INN"]
+    stages: [s6]
+    feeds: []
+    freshness: quarterly
+    status: blocked
+    adapter: null
+    priority: none
+    access:
+      - method: html
+        endpoint: "https://bo.nalog.ru/advanced-search/organizations/search?query=..."
+        auth: none
+        cost: $0
+        limits: "every path, the JS bundle included, returns the same 620-byte application shell to a script"
+        probe: {date: 2026-11-21, http: 200, note: "shell only; not worked around - fns_revexp gives income and expenses openly"}
+    caveats: ["Use fns_revexp instead"]
+    plan: "-"
+
+  - id: wayback_machine
+    name: Wayback Machine CDX API
+    group: web
+    geo: global
+    url: https://web.archive.org
+    role: [trend]
+    signals: ["first capture (site age), last live capture and months with captures for the websites of the niche's top apps - how entrenched the leaders are, how many newcomers appeared on the web, how many competitors went quiet; no second snapshot needed"]
+    stages: [s9]
+    feeds: ["data/out/wayback.csv", "data/out/wayback_domains.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s9_wayback
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://web.archive.org/cdx/search/cdx?url=<domain>&output=json&fl=timestamp,statuscode&collapse=timestamp:6"
+        auth: none
+        cost: $0
+        limits: "slow and sometimes times out (a domain then stays unmeasured); 1 request/s; cached per month"
+        probe: {date: 2026-11-21, http: 200, note: "hallow.com: first capture 1998 (an earlier owner of the domain)"}
+    caveats: ["A domain's history can predate the current business", "Rarely crawled small sites look 'quiet'", "Developer sites come from the iTunes sellerUrl field: web-only competitors are not covered"]
+    plan: "Done (2026-11-21); price-page history (price raises) is the next step"
+
+  - id: similarweb
+    name: Similarweb
+    group: web
+    geo: global
+    url: https://www.similarweb.com
+    role: [evaluation]
+    signals: ["competitors' visits and traffic mix (search, paid, referral, social) - which channel acquires their customers"]
+    stages: [s5]
+    feeds: []
+    freshness: monthly
+    status: paid
+    adapter: null
+    priority: P3
+    access:
+      - method: api
+        endpoint: "https://api.similarweb.com/v1/website/<domain>/total-traffic-and-engagement/visits"
+        auth: "paid API key (a Similarweb MCP connector is also offered in Claude Code, unauthorised here)"
+        cost: "subscription"
+        limits: "-"
+        probe: {date: 2026-11-21, http: 401, note: "invalid API key"}
+    caveats: ["Estimates are weak for small sites, which are most of a fragmented niche"]
+    plan: "Only if a subscription appears"
+
+  - id: meta_ad_library
+    name: Meta Ad Library
+    group: ads
+    geo: global
+    url: https://www.facebook.com/ads/library/
+    role: [evaluation]
+    signals: ["active ads per advertiser and how long each runs - an advertiser who keeps one ad for months is profitable on paid traffic: acquisition pays back in the niche"]
+    stages: [s5]
+    feeds: []
+    freshness: daily
+    status: manual
+    adapter: null
+    priority: P2
+    access:
+      - method: html
+        endpoint: "https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&q=..."
+        auth: none
+        cost: $0
+        limits: "a JavaScript challenge for scripts"
+        probe: {date: 2026-11-21, http: 403, note: "challenge page"}
+      - method: api
+        endpoint: "graph.facebook.com/<v>/ads_archive"
+        auth: "identity-verified Meta developer token"
+        cost: $0
+        limits: "non-political ads only for ads delivered in the EU (DSA)"
+        probe: {date: 2026-11-21, http: 403, note: "not probed with a token"}
+    caveats: ["US coverage of commercial ads exists only in the web interface"]
+    plan: "By hand for the final 3-5 niches: count advertisers and ads older than 60 days"
+
+  - id: google_ads_transparency
+    name: Google Ads Transparency Center
+    group: ads
+    geo: global
+    url: https://adstransparency.google.com
+    role: [evaluation]
+    signals: ["advertisers and their ads per query / domain - the fifth fragmentation point that the SERP paid blocks never gave"]
+    stages: [s5]
+    feeds: []
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: html
+        endpoint: "https://adstransparency.google.com/?region=US"
+        auth: none
+        cost: $0
+        limits: "a JavaScript application; data comes from internal RPC calls"
+        probe: {date: 2026-11-21, http: 200, note: "2.6 MB application page"}
+      - method: api
+        endpoint: "DataForSEO SERP API: google/ads_advertisers and google/ads_search"
+        auth: "DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD"
+        cost: "per task, paid"
+        limits: "-"
+        probe: {date: 2026-11-21, http: 402, note: "not probed: balance exhausted"}
+    caveats: ["Advertiser counts favour niches with high CPC"]
+    plan: "After a top-up: probe the DataForSEO ads endpoints, then add advertisers per niche to s5_serp"
+
+  - id: yandex_direct_forecast
+    name: Yandex Direct budget forecast (API v4 Live)
+    group: ads
+    geo: ru
+    url: https://yandex.ru/dev/direct/
+    role: [evaluation]
+    signals: ["Yandex CPC and clicks per Wordstat phrase - the price of a click on the search engine Russians use (the Russian pool's CPC now comes from Google Keyword Planner)"]
+    stages: [s3, s6]
+    feeds: []
+    freshness: monthly
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://api.direct.yandex.ru/live/v4/json/ (CreateNewForecast / GetForecast)"
+        auth: "OAuth token of a Direct account and an approved application"
+        cost: $0
+        limits: "forecast units per day"
+        probe: {date: 2026-11-21, http: 200, note: "error 512 'method must be POST': the endpoint answers; no token to go further"}
+    caveats: ["Needs a Yandex Direct account"]
+    plan: "Add a YANDEX_DIRECT_TOKEN key and a stage that fills a Russian CPC column"
+
+  - id: vk_api
+    name: VK API (groups and walls)
+    group: community
+    geo: ru
+    url: https://dev.vk.com/
+    role: [voice, evaluation]
+    signals: ["groups.search with members_count - size of professional communities (salon owners, auto shops); wall posts and comments - Russian buyer voice where Russian SMB actually talks"]
+    stages: [s8, s10]
+    feeds: []
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://api.vk.com/method/groups.search?q=...&v=5.199"
+        auth: "a user access token (free, a VK ID application)"
+        cost: $0
+        limits: "3 requests/s"
+        probe: {date: 2026-11-21, http: 200, note: "error 15 'Access denied: token required'"}
+    caveats: ["Group names are noisy; member counts include bots"]
+    plan: "Add a VK_TOKEN key and a stage beside s8_subreddit_stats"
+
+  - id: upwork
+    name: Upwork
+    group: hiring
+    geo: global
+    url: https://www.upwork.com
+    role: [evaluation]
+    signals: ["job posts with budgets: people paying a person for the task"]
+    stages: [s8]
+    feeds: []
+    freshness: daily
+    status: blocked
+    adapter: null
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://www.upwork.com/nx/search/jobs/?q=..."
+        auth: none
+        cost: $0
+        limits: "Cloudflare; the GraphQL API needs an approved application"
+        probe: {date: 2026-11-21, http: 403, note: "blocked"}
+    caveats: ["-"]
+    plan: "-"
+
+  - id: fiverr
+    name: Fiverr
+    group: hiring
+    geo: global
+    url: https://www.fiverr.com
+    role: [evaluation]
+    signals: ["gigs and their review counts per task - orders for a service a product could replace"]
+    stages: [s8]
+    feeds: []
+    freshness: daily
+    status: blocked
+    adapter: null
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://www.fiverr.com/search/gigs?query=..."
+        auth: none
+        cost: $0
+        limits: "anti-bot challenge"
+        probe: {date: 2026-11-21, http: 403, note: "blocked"}
+    caveats: ["-"]
+    plan: "-"
+
+  - id: etsy
+    name: Etsy (digital downloads)
+    group: info_market
+    geo: global
+    url: https://www.etsy.com
+    role: [evaluation]
+    signals: ["digital listings (planners, templates, guides) and shop sales counts - paid demand for a topic's information products"]
+    stages: [s8]
+    feeds: []
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://www.etsy.com/search?q=..."
+        auth: none
+        cost: $0
+        limits: "anti-bot challenge"
+        probe: {date: 2026-11-21, http: 403, note: "blocked"}
+      - method: api
+        endpoint: "https://openapi.etsy.com/v3/application/listings/active?keywords=..."
+        auth: "a free API key (developer application)"
+        cost: $0
+        limits: "10 requests/s"
+        probe: {date: 2026-11-21, http: 403, note: "not probed with a key"}
+    caveats: ["English-speaking buyers"]
+    plan: "Add an ETSY_API_KEY and extend info_paid"
+
+  - id: tiktok_creative_center
+    name: TikTok Creative Center
+    group: community
+    geo: global
+    url: https://ads.tiktok.com/business/creativecenter/
+    role: [trend]
+    signals: ["trending hashtags, keyword insights and top ads - the short-video side the info cohort does not measure"]
+    stages: [s4]
+    feeds: []
+    freshness: daily
+    status: blocked
+    adapter: null
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/pc/en"
+        auth: none
+        cost: $0
+        limits: "a 21 KB application shell; data comes from signed internal calls"
+        probe: {date: 2026-11-21, http: 200, note: "shell only"}
+    caveats: ["-"]
+    plan: "By hand for shortlisted info topics"
+
+  - id: pikabu
+    name: Pikabu
+    group: community
+    geo: ru
+    url: https://pikabu.ru
+    role: [voice]
+    signals: ["Russian posts and comments (the closest thing to Reddit in Russian): pains and recommendations in consumer niches"]
+    stages: [s10]
+    feeds: []
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://pikabu.ru/search?q=..."
+        auth: none
+        cost: $0
+        limits: "windows-1251 pages, server-rendered"
+        probe: {date: 2026-11-21, http: 200, note: "search works"}
+    caveats: ["Entertainment-heavy: needs the same tiered sampling as Reddit"]
+    plan: "Reuse the YouTube-comments classifier if Russian voice stays thin"
+
+  - id: youtube_comments
+    name: YouTube comments (YouTube Data API v3)
+    group: community
+    geo: both
+    url: https://www.youtube.com
+    role: [voice]
+    signals: ["s10: pains, unmet needs, price objections, 'which app?' requests and how-to questions in the comments under each niche's how-to and review videos; products named. Russian by default (the Russian B2C voice Reddit lacks), --lang en for US English"]
+    stages: [s10]
+    feeds: ["data/out/yt_comments_docs*.jsonl", "data/out/yt_comments_videos*.csv", "data/out/yt_comments_fetch*.csv", "data/out/yt_comments_items*.jsonl", "data/out/yt_comments_llm*.csv", "data/out/yt_comments_voice*.csv", "data/out/yt_comments_themes*.json", "reports/S10-yt-comments*.md"]
+    freshness: daily
+    status: in_pipeline
+    adapter: [s10_yt_comments_fetch, s10_yt_comments_classify, s10_yt_comments_report]
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://www.googleapis.com/youtube/v3/search (q, relevanceLanguage, regionCode, publishedAfter) -> videos (statistics) -> commentThreads (part=snippet, order=relevance, textFormat=plainText, maxResults=100)"
+        auth: "API key (YOUTUBE_API_KEY) in the X-Goog-Api-Key header"
+        cost: $0
+        limits: "10,000 units/day shared with info_youtube: search 100 units, videos 1 per 50 ids, commentThreads 1 per page of 100; a separate 'Search Queries per day' cap (about 100 calls) stops new searches while cached searches and comment pages still work; comments turned off -> 403 commentsDisabled"
+        probe: {date: 2026-11-21, http: 200, note: "7 searches: 7 niches, 31 videos, 4,892 Russian comments for 768 units; the 8th search got 429 'Search Queries per day' (the day's searches were mostly spent by info_youtube)"}
+    caveats: ["Commenters are viewers of popular videos, not a buyer sample: a review draws complaints, a tutorial draws questions, so the verdict compares niches with each other", "Comments under how-to videos mostly carry the voice of the task (training, cooking, budgeting), not of the products: a signal for info products more than for a software gap", "B2B buyers rarely comment on YouTube: B2B niches are often quiet", "LLM labels and themes are not hand-validated"]
+    plan: "Fetch the remaining 40 niches over the next days (about 25 a day at --budget 3000), re-run the classify after the LLM top-up, then fix the thresholds"
+
+  - id: trustmrr
+    name: TrustMRR
+    group: m_and_a
+    geo: global
+    url: https://trustmrr.com
+    role: [discovery, evaluation]
+    signals:
+      - "startups whose revenue is read from the payment provider's API (Stripe, Lemon Squeezy, Paddle, RevenueCat...): revenue of the last 30 days, MRR, total, 30-day growth, category, founded date"
+      - "about a fifth listed for sale with an asking price and a revenue multiple -> what small software businesses sell for"
+      - "matched paying startups per niche -> proof that a niche pays at the indie end"
+    stages: [s0, s5]
+    feeds: ["data/raw/trustmrr.csv", "data/out/deals.csv: trustmrr_n, trustmrr_mrr_sum, trustmrr_mrr_median, trustmrr_rev30_sum, trustmrr_for_sale (passport, not scored)", "data/out/deals_matches.csv (source=trustmrr)"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s0_trustmrr
+    priority: P2
+    access:
+      - method: html_ssr
+        endpoint: "https://trustmrr.com/ and /category/<slug> (31 categories): startup objects in the Next.js RSC payload (self.__next_f.push)"
+        auth: none
+        cost: $0
+        limits: "home ~1.8 MB with ~470 top earners; a category page holds its 30 top earners, the rest only through client pagination; llms.txt asks automated clients not to scrape for full access, so s0_trustmrr reads only these first pages"
+        probe: {date: 2026-11-21, http: 200, note: "first run of s0_trustmrr (public mode): 35 requests, 985 startups (860 with revenue in 30 days, 417 with MRR >= $1k, 256 for sale)"}
+      - method: api
+        endpoint: "https://trustmrr.com/api/ai/discovery (25 recently added + 25 fastest growing) ; https://trustmrr.com/api/ai (25 recently listed for sale + 25 best deals)"
+        auth: none
+        cost: $0
+        limits: "fixed cached snapshots, no search or pagination; money in dollars"
+        probe: {date: 2026-11-21, http: 200, note: "50 + 50 startups with founded date, category, target audience, asking price"}
+      - method: api
+        endpoint: "https://trustmrr.com/api/v1/startups?sort=revenue-desc&limit=10&page=N&minRevenue=<cents>"
+        auth: "Bearer TRUSTMRR_API_KEY (tmrr_..., free with an account; the acceptable-use policy forbids cloning businesses and bulk republication)"
+        cost: $0
+        limits: "10 per page, 10 requests/min on a standard key (60 premium); money in USD cents; s0_trustmrr --mode api"
+        probe: {date: 2026-11-21, http: 401, note: "'Missing or invalid API key' without a key; the public directory shows 13,078 startups; api mode written from the docs, not run yet"}
+    caveats:
+      - "Self-selected indie-hacker audience: AI, SaaS, developer and marketing tools over-represented, offline and enterprise B2B almost absent"
+      - "The keyless snapshot is the top ~1,000 earners: a match proves a niche pays, a zero proves nothing"
+      - "About 7% stealth listings ('Hidden Business'), matched on the description only; regex matches need review in deals_matches.csv"
+    plan: "Done (2026-11-21): s0_trustmrr (public snapshot; API mode with TRUSTMRR_API_KEY) and TrustMRR columns in deals.csv / passports (not scored). Next: a free key for the full list (revenue >= $100); TrustMRR into universe.csv as source_type=proven"
+
+  - id: federal_register
+    name: Federal Register (API)
+    group: regulation
+    geo: global
+    url: https://www.federalregister.gov/developers/documentation/api/v1
+    role: [discovery]
+    signals: ["US final and proposed rules of the last 12 months: title, abstract, action, dates, agencies, effective date, significant flag -> new recurring compliance tasks for small businesses (who must do what by when) before the demand shows in search"]
+    stages: [s0]
+    feeds: ["data/out/regulation_prefilter.csv", "data/out/regulation_candidates.csv", "reports/S0-regulation.md"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s0_regulation
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://www.federalregister.gov/api/v1/documents.json?per_page=1000&conditions[type][]=RULE|PRORULE&conditions[publication_date][gte|lte]=...&fields[]=..."
+        auth: none
+        cost: $0
+        limits: "1,000 per page, next_page_url with a cursor; ~5 requests a year of history"
+        probe: {date: 2026-11-21, http: 200, note: "2,931 final + 1,771 proposed rules in 12 months; 794 pass the prefilter (60% of final rules are airworthiness directives, safety zones, air plans)"}
+    caveats: ["The LLM reads the abstract, not the rule text", "2025-2026 rules often remove obligations", "Discovery for a human: never scored or written to niches.yaml"]
+    plan: "Done (2026-11-21): s0_regulation; LLM classification waits for an LLM balance top-up (DeepSeek 402 on 2026-11-21)"
+
+  - id: regulation_gov_ru
+    name: regulation.gov.ru (federal portal of draft regulations, open-data API)
+    group: regulation
+    geo: ru
+    url: https://regulation.gov.ru
+    role: [discovery]
+    signals: ["Russian draft regulations of the last 12 months: kind, department, ORV procedure and impact degree, affected persons, problem, mandatory-requirements flag, planned entry into force -> compliance tasks for Russian small businesses before adoption"]
+    stages: [s0]
+    feeds: ["data/out/regulation_prefilter.csv", "data/out/regulation_candidates.csv", "reports/S0-regulation.md"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s0_regulation
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://regulation.gov.ru/api/npalist?limit=500&offset=N&sort=desc (XML; fields, search, id)"
+        auth: none
+        cost: $0
+        limits: "limit <= 500 (limit=1000 answers 200 with an error text); no date filter, walk newest first; directly reachable, NF_PROXY_RU timed out"
+        probe: {date: 2026-11-21, http: 200, note: "total 130,351 projects; 8,880 in 12 months (18 pages); 2,806 pass the prefilter; most list rows carry only a title"}
+      - method: api
+        endpoint: "https://regulation.gov.ru/api/public/PublicProjects/Print/<id> (JSON passport); /api/public/Rss/ (RSS)"
+        auth: none
+        cost: $0
+        limits: "one request per draft, some answers take tens of seconds; the passport also holds officials' contacts (not read)"
+        probe: {date: 2026-11-21, http: 200, note: "150 passports read: keywords, economic activity, 'mandatory requirements (KND)', affected persons, planned entry into force"}
+      - method: api
+        endpoint: "http://publication.pravo.gov.ru/api/Documents?PageSize=10&Index=1&block=government (adopted acts)"
+        auth: none
+        cost: $0
+        limits: "PageSize must be one of the allowed values (5 -> 400); titles only ('on amendments to resolution No. N'), no abstract"
+        probe: {date: 2026-11-21, http: 200, note: "58,872 government acts; not used, too little text for a classifier"}
+    caveats: ["Drafts may never be adopted", "The ORV impact degree is the strongest prefilter signal (1,220 ORV drafts a year)", "Discovery for a human: never scored or written to niches.yaml"]
+    plan: "Done (2026-11-21): s0_regulation; LLM classification waits for an LLM balance top-up"
+
+  - id: stepik
+    name: Stepik (online courses)
+    group: info_market
+    geo: ru
+    url: https://stepik.org
+    role: [evaluation]
+    signals:
+      - "info cohort: relevant paid courses per topic, learners in them, reviews, median price, paid courses published in 24 months - do people pay for knowledge on the subject"
+    stages: [info]
+    feeds: ["data/out/info_paid.csv: sp_*", "data/out/info_paid_items.csv (source=stepik)"]
+    freshness: daily
+    status: in_pipeline
+    adapter: info_paid
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://stepik.org/api/search-results?query=...&type=course&page=N"
+        auth: none
+        cost: $0
+        limits: "20 courses a page, at most 200 results; page 11 -> 404, and a page past the real end can answer 404 while has_next is true; ranks by popularity more than relevance (under 'английский язык' page 1 is Python courses), so every page is read and titles are filtered; language= and is_paid= are ignored"
+        probe: {date: 2026-11-21, http: 200, note: "'английский язык': count 200, 21 English-language-learning titles over 10 pages; 'вязание спицами': no knitting course in the top 200"}
+      - method: api
+        endpoint: "https://stepik.org/api/courses?ids[]=..&ids[]=.. ; /api/course-review-summaries?ids[]=.."
+        auth: none
+        cost: $0
+        limits: "20 ids a call; learners_count, is_paid, price, currency_code, display_price, language, became_published_at, review_summary"
+        probe: {date: 2026-11-21, http: 200, note: "course 92015: 11,091 learners, 4,100 RUB, 388 reviews (avg 4.99)"}
+    caveats:
+      - "Mostly IT, school-exam and university courses: craft, beauty and lifestyle topics read empty although they sell elsewhere (first run: 1 paid knitting course, 0-2 learners)"
+      - "learners_count includes people who took only a free part of a paid course"
+      - "Connection resets under parallel load on 2026-11-21, through the proxy and directly; retries fix them"
+    plan: "Done (2026-11-21): info_paid (Stepik + Litres), shown in info_score with the flags I:paid-market / I:no-paid; no effect on the score"
+
+  - id: litres
+    name: Litres (ebook store)
+    group: info_market
+    geo: ru
+    url: https://www.litres.ru
+    role: [evaluation]
+    signals:
+      - "info cohort: relevant paid non-fiction ebooks per topic, their rating counts (a sales proxy), median price, books first on sale in 24 months, self-published books (the route open to a single author)"
+    stages: [info]
+    feeds: ["data/out/info_paid.csv: lr_*", "data/out/info_paid_items.csv (source=litres)"]
+    freshness: daily
+    status: in_pipeline
+    adapter: info_paid
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://api.litres.ru/foundation/api/search?q=...&types=text_book&limit=100&offset=N"
+        auth: none
+        cost: $0
+        limits: "limit 100; relevance order; matches every word of the query ('пианино для начинающих' -> 0 books, 'пианино' finds them); covers fiction and offers no genre filter"
+        probe: {date: 2026-11-21, http: 200, note: "'вязание спицами': 905 books, each with full_price, is_free, rated_total_count, available_from, persons (publisher role)"}
+      - method: api
+        endpoint: "https://api.litres.ru/foundation/api/arts/<id>"
+        auth: none
+        cost: $0
+        limits: "one book a call (~0.2 s); the only endpoint with genres (is_main marks the main one); a withdrawn book -> 404"
+        probe: {date: 2026-11-21, http: 200, note: "genres of a matched 'Право ...' novel = romance fantasy (main)"}
+    caveats:
+      - "A topic word is often a novel's title: under 'право' 73 matched books were fiction, so each counted book's main genre is checked"
+      - "Rating counts are lifetime, not a yearly rate; the ratio of ratings to sales is unknown"
+      - "Magazines and school workbooks count as paid info"
+    plan: "Done (2026-11-21): info_paid"
+
+  - id: gumroad
+    name: Gumroad (digital products)
+    group: info_market
+    geo: global
+    url: https://gumroad.com
+    role: [evaluation]
+    signals: ["English info products per keyword: count, price, ratings (no sales counts)"]
+    stages: [info]
+    feeds: []
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: none
+    access:
+      - method: api
+        endpoint: "https://gumroad.com/products/search?query=..."
+        auth: none
+        cost: $0
+        limits: "the discover page's own JSON: total, tags, products with price_cents, currency, ratings {count, average}, native_type; no sales counts"
+        probe: {date: 2026-11-21, http: 200, note: "'notion': total 24,612; 'knitting': 295; Cyrillic query: 0"}
+    caveats: ["No Cyrillic catalogue and no Russian payments: useless for the Russian info cohort"]
+    plan: "Not a stage: revisit only for an English info product, as supply count + ratings per keyword"
+
+  - id: plati_market
+    name: Plati.market / Digiseller (digital goods)
+    group: info_market
+    geo: ru
+    url: https://plati.market
+    role: [evaluation]
+    signals: ["Russian digital goods per keyword with numsold (sales count), price, seller, reviews"]
+    stages: [info]
+    feeds: []
+    freshness: daily
+    status: planned
+    adapter: null
+    priority: none
+    access:
+      - method: api
+        endpoint: "https://plati.io/api/search.ashx?query=...&pagesize=50&pagenum=1&response=json"
+        auth: none
+        cost: $0
+        limits: "items with numsold, count_positiveresponses, price_rur, section_id"
+        probe: {date: 2026-11-21, http: 200, note: "knitting: 0 items; English: test packs, exam answers and essays; neural networks: subscription resale"}
+    caveats: ["The catalogue is game keys, accounts, student work and leaked courses, not topic info products"]
+    plan: "Not worth a stage"
+
+  - id: boosty
+    name: Boosty (paid subscriptions of authors)
+    group: info_market
+    geo: ru
+    url: https://boosty.to
+    role: [evaluation]
+    signals: ["paid author subscriptions by topic: tiers, prices, subscriber counts where shown"]
+    stages: [info]
+    feeds: []
+    freshness: daily
+    status: blocked
+    adapter: null
+    priority: P3
+    access:
+      - method: api
+        endpoint: "https://api.boosty.to/v1/blog/search?query=..."
+        auth: none
+        cost: $0
+        limits: "'search' is read as a blog name: there is no open topic search"
+        probe: {date: 2026-11-21, http: 200, note: "no topic search"}
+    caveats: ["Reachable only blog by blog, e.g. from the Telegram / YouTube links of info authors"]
+    plan: "Read the Boosty links that info_telegram finds behind teaching Shorts, if that proves useful"
+
+  - id: kwork
+    name: Kwork (buyer requests)
+    group: hiring
+    geo: ru
+    url: https://kwork.ru/projects
+    role: [evaluation]
+    signals: ["s8: active buyer requests (title, text, budget RUB, accepted maximum, offers, buyer hire rate) matched to shortlisted niches; LLM label build (custom software for the niche's task) or service (the task done by hand) = paid demand"]
+    stages: [s8]
+    feeds: ["data/out/freelance.csv (kwork_*)", "data/out/freelance_matches.csv", "data/out/freelance_history.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s8_freelance
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://kwork.ru/projects?c=<subcategory> (page 1 of 54 subcategories; window.stateData JSON: wantsListData.wants, exchangeStats)"
+        auth: none
+        cost: $0
+        limits: "robots.txt disallows ?page= / &page= and /search: 12 newest requests per subcategory, ~3/4 of active requests per snapshot; requests stay open ~3 days, daily runs accumulate in the history; ?keyword= search is OR over words (whole words only)"
+        probe: {date: 2026-11-21, http: 200, note: "331 active requests, 248 read; 30-day exchange stats 4,940 requests, 2,671 orders, 51.7M RUB"}
+    caveats:
+      - "A snapshot of open requests, not an archive: counts grow with the number of runs"
+      - "Small budgets (median 3,000 RUB); much of the board is lead generation and content work"
+      - "Coverage stems collide with common words in job posts: config/freelance.yaml match overrides plus the LLM check are needed"
+    plan: "Done (2026-11-21): s8_freelance; LLM labels unverified on the first run (DeepSeek HTTP 402)"
+
+  - id: fl_ru
+    name: FL.ru (projects)
+    group: hiring
+    geo: ru
+    url: https://www.fl.ru/projects/
+    role: [evaluation]
+    signals: ["s8: projects of the last ~2 months (title, cut text, budget, kind, responses) matched to shortlisted niches; build / service = paid demand"]
+    stages: [s8]
+    feeds: ["data/out/freelance.csv (fl_*)", "data/out/freelance_matches.csv", "data/out/freelance_history.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s8_freelance
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://www.fl.ru/projects/page-N/ (30 a page, ~56 pages = 2 months; ends with 404)"
+        auth: none
+        cost: $0
+        limits: "allowed by robots.txt; budget often 'by agreement'; ~40% of posts are vacancies (not counted)"
+        probe: {date: 2026-11-21, http: 200, note: "56 pages, 1,656 projects 2026-09-21..2026-11-21; page-100 = 404"}
+      - method: html
+        endpoint: "https://www.fl.ru/search/projects/?q=<phrase> (window.searchResult JSON, whole archive since 2005, 1.39M projects, AND with word forms)"
+        auth: none
+        cost: $0
+        limits: "works, but robots.txt disallows /search/, */rss/* and /*?kind, so not used; /projects/?search= ignores the parameter"
+        probe: {date: 2026-11-21, http: 200, note: "one-word recipe query -> 1,352 projects; fields cost, currency, offers_count, published_at, kind_label"}
+    caveats: ["List descriptions are cut; a post that describes the task in other words is missed"]
+    plan: "Done (2026-11-21): s8_freelance"
+
+  - id: moysklad_apps
+    name: MoySklad integrations catalog
+    group: ru_registry
+    geo: ru
+    url: https://www.moysklad.ru/integratsii/
+    role: [evaluation]
+    signals: ["apps per niche, distinct developers, paid share, popular flag -> Russian supply inside the retail / warehouse SMB platform"]
+    stages: [s5]
+    feeds: ["data/out/ru_ecosystems.csv", "data/out/ru_ecosystems_apps.csv"]
+    freshness: monthly
+    status: in_pipeline
+    adapter: ru_ecosystems
+    priority: P3
+    access:
+      - method: html
+        endpoint: "https://www.moysklad.ru/sitemap.xml (all /integratsii/apps/<slug>/) + app pages (name, paid/free, developer, upload date, description) + /integratsii/<category>/ page 1"
+        auth: none
+        cost: $0
+        limits: "robots.txt disallows URLs with '?', so category 'show more' pages are not read; apps.moysklad.ru redirects here; no installs or ratings"
+        probe: {date: 2026-11-21, http: 200, note: "589 apps, 33 categories; marketplace sellers 67 apps / 39 developers"}
+    caveats: ["The upload date is an update date (409 of 589 in 2026)", "Retail and warehouse focus: service niches have ~0 apps"]
+    plan: "Done (2026-11-21): ru_ecosystems"
+
+  - id: amocrm_extensions
+    name: amoCRM widgets (public showcase)
+    group: ru_registry
+    geo: ru
+    url: https://www.amocrm.ru/extensions/
+    role: [evaluation]
+    signals: ["widgets per niche in the public amoCRM showcase (groups phone, site, mail, chats, useful, recommended)"]
+    stages: [s5]
+    feeds: ["data/out/ru_ecosystems.csv", "data/out/ru_ecosystems_apps.csv"]
+    freshness: static
+    status: in_pipeline
+    adapter: ru_ecosystems
+    priority: none
+    access:
+      - method: html
+        endpoint: "https://www.amocrm.ru/extensions/ and ?group=<g> (slug + one-line description)"
+        auth: none
+        cost: $0
+        limits: "the old /integrations/ and /marketplace are 404; the live amoMarket market.amocrm.ru needs a login"
+        probe: {date: 2026-11-21, http: 200, note: "101 widgets; market.amocrm.ru 401, /integrations/ 404"}
+    caveats: ["Stale curated subset (images from 2019); no prices, developers or installs"]
+    plan: "Done (2026-11-21): ru_ecosystems; the real amoMarket needs an account"
+
+  - id: yclients_marketplace
+    name: YCLIENTS marketplace
+    group: ru_registry
+    geo: ru
+    url: https://www.yclients.com/marketplace/
+    role: [evaluation]
+    signals: ["integrations for beauty, fitness and service businesses (would feed ru_ecosystems)"]
+    stages: [s5]
+    feeds: []
+    freshness: monthly
+    status: blocked
+    adapter: null
+    priority: none
+    access:
+      - method: api
+        endpoint: "https://www.yclients.com/api/v1/marketplace/applications/country/RU (used by the front end)"
+        auth: partner token
+        cost: $0
+        limits: "robots.txt disallows /api/ and /marketplace_marketing/*; no server-rendered app pages, none in the sitemap"
+        probe: {date: 2026-11-21, http: 404, note: "page 200 is an empty JS shell; API without token 404; the token embedded in the page was not used"}
+    caveats: ["Most relevant catalog for salons and studios, but not readable keylessly"]
+    plan: "Only with a YCLIENTS partner account"
+
+  - id: chrome_web_store
+    name: Chrome Web Store
+    group: store
+    geo: global
+    url: https://chromewebstore.google.com
+    role: [evaluation]
+    signals: ["extensions per niche: weekly users, ratings -> concentration of browser-channel niches (players >= 10k users, top-1 share, HHI)"]
+    stages: [s5]
+    feeds: ["data/out/ecosystems_metrics.csv", "data/out/ecosystems_items.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s5_ecosystems
+    priority: P2
+    access:
+      - method: api
+        endpoint: "POST https://chromewebstore.google.com/_/ChromeWebStoreConsumerFeUi/data/batchexecute?rpcids=zTyKYc (the search page's own data call: query, page size 150, continuation token)"
+        auth: none
+        cost: $0
+        limits: "150 results per page, continuation token, total match count; undocumented internal call, can change without notice"
+        probe: {date: 2026-11-21, http: 200, note: "150 items with id, name, rating, ratings, users"}
+      - method: html_ssr
+        endpoint: "https://chromewebstore.google.com/search/<query>"
+        auth: none
+        cost: $0
+        limits: "first 10 results only (AF_initDataCallback ds:1); the stage's fallback"
+        probe: {date: 2026-11-21, http: 200, note: "~635 KB HTML, 10 results"}
+    caveats: ["Users = weekly active installs, rounded, capped at 10,000,000+; no store price (payments retired 2020); many extensions are free companions of a paid web product"]
+    plan: "Done (2026-11-21): s5_ecosystems, 17 niches in config/ecosystems_map.yaml"
+
+  - id: atlassian_marketplace
+    name: Atlassian Marketplace
+    group: store
+    geo: global
+    url: https://marketplace.atlassian.com
+    role: [evaluation]
+    signals: ["Jira/Confluence apps per niche: active installs, reviews, free vs paid -> concentration for team-tool niches"]
+    stages: [s5]
+    feeds: ["data/out/ecosystems_metrics.csv", "data/out/ecosystems_items.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s5_ecosystems
+    priority: P3
+    access:
+      - method: api
+        endpoint: "https://marketplace.atlassian.com/rest/2/addons?text=<q>&limit=50&offset=N&hosting=cloud[&cost=free]"
+        auth: none
+        cost: $0
+        limits: "open JSON, 50 per page; distribution.totalInstalls (totalUsers = -1), reviews.count/averageStars; no per-app price in the list (cost=free filter)"
+        probe: {date: 2026-11-21, http: 200, note: "works; text search matches any word, so a relevance regex is needed"}
+    caveats: ["One install = one site, not one user; only niches whose buyer lives in Jira/Confluence (one shortlisted niche on 2026-11-21)"]
+    plan: "Done (2026-11-21): s5_ecosystems"
+
+  - id: github_search
+    name: GitHub repository search
+    group: oss
+    geo: global
+    url: https://github.com/search
+    role: [evaluation]
+    signals: ["open-source substitutes per niche: repos with >= 100 / 1,000 stars, maintained (pushed < 12 months) -> flag O:oss-substitute"]
+    stages: [s5]
+    feeds: ["data/out/oss_substitutes.csv", "data/out/oss_repos.csv"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s5_oss
+    priority: P2
+    access:
+      - method: api
+        endpoint: "https://api.github.com/search/repositories?q=\"<phrase>\" in:name,description,topics fork:false&sort=stars&per_page=100"
+        auth: "optional GITHUB_TOKEN (Bearer)"
+        cost: $0
+        limits: "10 search requests/min keyless, 30/min with GITHUB_TOKEN; 1,000 results max per query"
+        probe: {date: 2026-11-21, http: 200, note: "keyless works; 74 niches in 35 minutes without rate-limit hits; 27 flagged O:oss-substitute"}
+    caveats: ["Stars = developer attention, not buyers, and can be bought (compare forks)", "Phrase search misses projects worded differently (Fider for feedback boards)"]
+    plan: "Done (2026-11-21): s5_oss"

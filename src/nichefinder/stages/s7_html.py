@@ -3,7 +3,7 @@
 Output: reports/leaderboard.html - one self-contained file (inline CSS and JS, no external requests, system fonts).
 Inputs: data/out/score_final.csv, supply_deep.csv, niches.yaml, reports/passports/<id>.md (s6_passports);
 optional path_to_goal.csv (s6_ceiling), offsearch.csv (S8), reddit_voice*.csv and ru_reviews_verdict.csv (S10),
-overrides (notes).
+the evidence-only sources through nichefinder.evidence (YouTube comments verdict column, evidence tags), overrides (notes).
 Blocks computed from data: top niches by score, top niches by path-to-goal grade, verdict counts.
 """
 from __future__ import annotations
@@ -15,6 +15,7 @@ import json
 import re
 
 from nichefinder import niches as nf_niches
+from nichefinder.evidence import Evidence
 from nichefinder.workspace import Workspace
 
 SUMMARY = "Self-contained HTML leaderboard with expandable passports"
@@ -97,6 +98,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     rvoice = _rows(ws.out("reddit_voice.csv"), "niche_id")
     rllm = _rows(ws.out("reddit_voice_llm.csv"), "niche_id")
     qverd = _rows(ws.out("ru_reviews_verdict.csv"), "niche_id")
+    ev = Evidence(ws)   # evidence-only sources: YouTube comments verdict and tags, never the score
     try:
         from nichefinder.stages.s10_reddit_report import reddit_verdict
     except ImportError:
@@ -126,6 +128,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             "yt": o.get("yt_verdict", ""), "gp": num(o.get("gp_us_installs")),
             "rv": "", "rvt": "",
             "qv": (qverd.get(nid) or {}).get("verdict", ""), "qvt": (qverd.get(nid) or {}).get("reason", ""),
+            "yv": ev.yt_verdict(nid)[0], "yvt": ev.yt_verdict(nid)[1], "ev": " ".join(ev.tags(nid)),
             "grade": pg.get("grade", ""), "poslow": pg.get("position_low", ""), "sharelow": num(pg.get("share_low")),
             "ticket": pg.get("ticket_tier", ""), "fit": num(pg.get("founder_fit")),
             "ptgt": (f"needs {int(float(pg['payers_low'])):,} payers at ${float(pg['price_month']):.0f}/mo = {float(pg['share_low']):.0%} of the niche ({pg['size_proxy']}); fit {pg['founder_fit']}/3" if pg.get("share_low") else ""),
@@ -192,6 +195,7 @@ tr.row:hover td,tr.row[aria-expanded="true"] td{background:var(--hover)}
 .v{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap}
 .v.green{background:var(--green-bg);color:var(--green)}.v.yellow{background:var(--yellow-bg);color:var(--yellow)}.v.red{background:var(--red-bg);color:var(--red)}
 .tag{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--ink2);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin:1px 2px 1px 0}
+.tag.ev{border-style:dashed;color:var(--ink3)}
 tr.detail td{background:var(--bg);padding:0}
 .pass{padding:16px 22px 22px;max-width:100ch;font-size:14.5px}
 .pass h1{font-size:20px;margin:0 0 6px}
@@ -219,7 +223,7 @@ tr.detail td{background:var(--bg);padding:0}
 <thead><tr>
 <th data-k="score" class="num">Score</th><th data-k="name">Niche</th><th data-k="verdict">Verdict</th><th data-k="grade">Path</th><th data-k="sharelow" class="num">Share for goal</th><th data-k="ticket">Ticket</th><th data-k="fit" class="num">Fit</th><th data-k="side">Type</th>
 <th data-k="demand" class="num">Demand/mo</th><th data-k="demand2023" class="num">2023</th><th data-k="cpc" class="num">CPC</th>
-<th data-k="kp">KP</th><th data-k="gt">Trends</th><th data-k="yt">YouTube</th><th data-k="rv">Reddit</th><th data-k="qv">RU reviews</th><th data-k="players" class="num">Players</th><th data-k="top1" class="num">Top-1</th><th data-k="price">Price</th><th data-k="gp" class="num">Android</th><th>Gates / flags</th>
+<th data-k="kp">KP</th><th data-k="gt">Trends</th><th data-k="yt">YouTube</th><th data-k="rv">Reddit</th><th data-k="qv">RU reviews</th><th data-k="yv">YT voice</th><th data-k="players" class="num">Players</th><th data-k="top1" class="num">Top-1</th><th data-k="price">Price</th><th data-k="gp" class="num">Android</th><th>Gates / flags</th>
 </tr></thead><tbody id="tb"></tbody></table></div>
 <p class="foot">Score = demand 30 + growth 20 + fragmentation 25 + deals 15 + switching 10, times a trend adjustment; percentiles are taken within a segment (B2C + prosumer / B2B). Verdict: red when a gate fails (G3 platform risk, G5 feasibility, S5 supply concentration); otherwise green at score &ge; __MIN__, else yellow; a manual override in config/overrides.yaml wins. Path: A/B/B-/C grade from the share of the niche's payers needed for your goal, the ticket tier and founder fit. Players: apps with &ge; 1k ratings (App Store) or products with &ge; 100 reviews (Capterra / Shopify), excluding horizontal tools. Top-1: leader's share of ratings/reviews. 2023: clean base-year demand. YouTube: interest trend on YouTube search. Android: total installs of relevant Google Play apps. Reddit: buyer-voice verdict (S10). RU reviews: verdict from Russian App Store, Google Play and Startpack reviews of the niche's leading products (S10).</p>
 </div>
@@ -258,12 +262,12 @@ function render(){
   tb.innerHTML=rows.map(r=>{
     const sup=r.manual?'manual':(r.src==='na'?'—':fmt(r.players));
     const top1=r.manual||r.src==='na'?'—':pct(r.top1);
-    const tags=[...(r.gates?r.gates.split(';'):[]),...(r.flags?r.flags.split(';'):[])].filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+    const tags=[...(r.gates?r.gates.split(';'):[]),...(r.flags?r.flags.split(';'):[])].filter(Boolean).map(t=>`<span class="tag">${esc(t)}</span>`).join('')+(r.ev?r.ev.split(' ').filter(Boolean).map(t=>`<span class="tag ev" title="evidence, not in the score">${esc(t)}</span>`).join(''):'');
     return `<tr class="row" data-id="${esc(r.id)}" tabindex="0" aria-expanded="${state.open===r.id}">
 <td class="num">${fmt(r.score,1)}</td><td><span class="name">${esc(r.name)}</span><span class="id">${esc(r.id)} · ${esc(r.tier)} · ${esc(r.geo)}</span></td>
 <td><span class="v ${r.verdict}" title="${esc(r.note)}">${V[r.verdict]}</span></td><td title="${esc(r.ptgt)}">${r.grade&&r.grade!=='—'?`<b style="color:${GR[r.grade]||'var(--ink2)'}">${esc(r.grade)}</b>`:(r.grade==='—'?'excl.':'—')}</td><td class="num" title="${esc(r.poslow)}">${r.sharelow==null?'—':(r.sharelow>2?'>200%':pct(r.sharelow))}</td><td>${esc(r.ticket||'—')}</td><td class="num">${r.fit==null?'—':r.fit}</td><td>${esc(r.side)}</td><td class="num">${fmt(r.demand)}</td><td class="num">${fmt(r.demand2023)}</td><td class="num">${r.cpc==null?'—':'$'+fmt(r.cpc,r.cpc<10?1:0)}</td>
-<td>${esc(r.kp||'—')}</td><td>${r.gt==='NA'?'—':esc(r.gt)}</td><td>${!r.yt||r.yt==='NA'?'—':esc(r.yt)}</td><td title="${esc(r.rvt)}">${esc(r.rv||'—')}</td><td title="${esc(r.qvt)}">${esc(r.qv||'—')}</td><td class="num" title="${esc(r.src)}">${sup}</td><td class="num" title="${esc(r.top1name||'')}">${top1}</td><td>${esc(r.price||'—')}</td><td class="num">${r.gp?(r.gp>=1e6?fmt(r.gp/1e6,1)+' M':fmt(r.gp/1e3,0)+' k'):'—'}</td><td>${tags}</td></tr>`+
-(state.open===r.id?`<tr class="detail"><td colspan="21"><div class="pass">${r.md||'<p>No passport found. Run s6_passports.</p>'}</div></td></tr>`:'');
+<td>${esc(r.kp||'—')}</td><td>${r.gt==='NA'?'—':esc(r.gt)}</td><td>${!r.yt||r.yt==='NA'?'—':esc(r.yt)}</td><td title="${esc(r.rvt)}">${esc(r.rv||'—')}</td><td title="${esc(r.qvt)}">${esc(r.qv||'—')}</td><td title="${esc(r.yvt)}">${esc(r.yv||'—')}</td><td class="num" title="${esc(r.src)}">${sup}</td><td class="num" title="${esc(r.top1name||'')}">${top1}</td><td>${esc(r.price||'—')}</td><td class="num">${r.gp?(r.gp>=1e6?fmt(r.gp/1e6,1)+' M':fmt(r.gp/1e3,0)+' k'):'—'}</td><td>${tags}</td></tr>`+
+(state.open===r.id?`<tr class="detail"><td colspan="22"><div class="pass">${r.md||'<p>No passport found. Run s6_passports.</p>'}</div></td></tr>`:'');
   }).join('');
   document.querySelectorAll('th[data-k]').forEach(th=>{th.removeAttribute('data-dir');if(th.dataset.k===state.k)th.dataset.dir=state.dir;});
 }

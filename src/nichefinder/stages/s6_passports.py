@@ -7,7 +7,9 @@ capterra_categories_stats.csv, shopify_metrics.csv, pricing_b2b.csv, pricing_b2c
 (with BetaList / Product Radar / Kickstarter launches), path_to_goal.csv (s6_ceiling), entrant_survival.csv (S9),
 offsearch.csv (S8, with Hacker News), reddit_voice.csv, reddit_brands.csv,
 reddit_voice_llm.csv, reddit_voice_themes.json, ru_reviews_verdict.csv, ru_reviews_llm.csv, ru_reviews_themes.json (S10),
-ai_substitute.csv (s5_ai_substitute);
+ai_substitute.csv (s5_ai_substitute); the evidence-only sources rendered by nichefinder.evidence (who_counts.csv,
+switch_intent.csv, serp_ownership.csv, ecosystems_metrics.csv, oss_substitutes.csv, wayback.csv, freelance.csv,
+yt_comments_voice.csv, the TrustMRR columns of deals.csv);
 config/overrides.yaml (notes, lens, manual supply estimates).
 """
 from __future__ import annotations
@@ -18,6 +20,7 @@ import json
 import os
 
 from nichefinder import niches as nf_niches
+from nichefinder.evidence import Evidence
 from nichefinder.workspace import Workspace
 
 SUMMARY = "Per-niche passports (Markdown) and the leaderboard summary"
@@ -114,6 +117,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     qv = _rows(out("ru_reviews_verdict.csv"), "niche_id")
     ql = _rows(out("ru_reviews_llm.csv"), "niche_id")
     qt = json.load(open(out("ru_reviews_themes.json"), encoding="utf-8")) if os.path.exists(out("ru_reviews_themes.json")) else {}
+    ev = Evidence(ws)   # evidence-only sources: who counts, switching intent, SERP, ecosystems, OSS, Wayback, freelance, YouTube
     pdir = ws.report("passports")
     pdir.mkdir(parents=True, exist_ok=True)
 
@@ -144,6 +148,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                   + (f"; brand cross-check: {'; '.join(tbrands[(nid, 'en')])} → **{sp.get('trend_gt')}**" if (nid, 'en') in tbrands and sp.get('trend_gt') != t.get('verdict', 'NA') else "")
                   + (" (signal too weak for a B2B query)" if t.get("verdict") == "NA" else "") + ".", ""]
         L += [f"Brand queries: top-1 brand **{sp['brand_top1']}** = {p(sp['brand_top1_share'])} of brand demand (HHI {n(sp['hhi_brand'], '{:.2f}')}); competition_index {n(sp['comp_idx'])}.", ""]
+        L += ev.serp_lines(nid)
         # supply
         L += ["## Supply (independent of search)", ""]
         if a and a.get("na") != "1":
@@ -160,6 +165,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         for c in shop.get(nid, []):
             L += [f"**Shopify App Store `{c['category']}`**{' (primary)' if c['primary'] == '1' else ''}: {c['apps']} apps in the subcategory (crawled, excluding horizontal apps - `config/shopify_generic.yaml`), "
                   f"**{c['players_100']} with ≥ 100 reviews**, {c['players_1k']} with ≥ 1k; top-1 by reviews **{c['top1']}** = {p(c['top1_share'])}, top-3 = {p(c['top3_share'])}, HHI {n(c['hhi'], '{:.2f}')}; with a free plan/install - {p(c['free_share'])}. Top 3: {c['top3']}.", ""]
+        L += ev.supply_lines(nid)
         if m.get("supply_manual"):
             L += [f"**Manual supply estimate** (no proxy category): {m['supply_manual']}", ""]
         L += [f"S5 gate (top-1 ≤ 50% and ≥ 8 players by an independent signal): **{s['gate_s5']}**." + (" \"Second platform\" rule: the iOS leader holds > 50%, but the Google Play US leader holds ≤ 50% with ≥ 8 players above 100k installs - the market is not a monopoly, entry through Android (see \"Demand outside search\")." if s['gate_s5'] == 'PASS:android' else ''), ""]
@@ -180,6 +186,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                 L.append(f"| {r['name']} | {n(r['ratings'])} | {'yes' if r['has_iap']=='1' else 'no'} | {('$'+r['min_monthly']) if r['min_monthly'] else '—'} | {('$'+r['min_yearly']) if r['min_yearly'] else '—'} | {('$'+r['min_weekly']) if r['min_weekly'] else '—'} | {('$'+r['min_lifetime']) if r['min_lifetime'] else '—'} | {r['iap_sample'][:70]} |")
             L += ["", f"{p(sp['b2c_monetized'])} of the top 8 are monetized; median monthly subscription **${n(sp['b2c_median_monthly'], '{:.2f}')}**, yearly ${n(sp['b2c_median_yearly'], '{:.2f}')}.", ""]
         L += [f"Lock-in (manual): {m.get('lock_in', '—')} of 2. Platform risk: **{m.get('platform_risk', '—')}** - {m.get('platform_note', '') or 'none'}.", ""]
+        L += ev.switch_lines(nid)
         ai = ais.get(nid)
         if ai and ai.get("covers") not in ("", None):
             L += [f"AI substitute (LLM probe, evidence for the manual platform risk, not a gate): a free chatbot covers the job **{ai['covers']} of 2** (votes over buyer requests: {ai.get('votes') or '-'}) - {ai['reason']}"
@@ -198,6 +205,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             if any(d.get(k) not in (None, "") for k in ("betalist_12m", "productradar_12m", "kickstarter_12m")):
                 L += [f"Launches of the last 12 months (not in the score): BetaList pre-launch {d.get('betalist_12m') or 0} · Product Radar (RU) {d.get('productradar_12m') or 0} · "
                       f"Kickstarter {d.get('kickstarter_12m') or 0} launched, {d.get('kickstarter_success_12m') or 0} funded, ${n(d.get('kickstarter_pledged_12m') or 0)} pledged.", ""]
+            L += ev.trustmrr_line(nid)
             ex = [f"{r['source']}: {r['name']}" for src in ("ph", "yc", "tinyseed") for r in dm.get((nid, src), [])][:8]
             ex += [f"ef: {r['name']} ({r['extra']})" for r in dm.get((nid, "ef"), [])][:3]
             ex += [f"{r['source']}: {r['name']}" for src in ("betalist", "productradar") for r in dm.get((nid, src), [])][:4]
@@ -228,6 +236,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             if o.get("hn_hiring_12m") not in (None, ""):
                 L.append(f"- **HN \"Who is hiring?\"** (startup job postings that match the niche): {g('hn_hiring_12m')} in the last 12 months, {g('hn_hiring_prev12m')} the year before"
                          + (f"; recent companies: {o['hn_hiring_companies']}" if o.get("hn_hiring_companies") else "") + ".")
+            L += ev.freelance_line(nid)
             L += [f"- Flags: {o['offsearch_flags'] or '—'}", ""]
         v = rv.get(nid)
         if v:
@@ -284,12 +293,14 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             if qsw:
                 L += ["", "Switches \"from → to\": " + "; ".join(f"{k} ({c})" for k, c in qsw[:8]) + "."]
             L.append("")
+        L += ev.yt_lines(nid)
         # feasibility and lens
         fe = m.get("feas") or {}
         L += ["## Feasibility for a small team", "",
               f"Feasibility **{s['feasibility'] or '—'}/4**: indie_exists={fe.get('indie_exists', '—')}, stack_commodity={fe.get('stack_commodity', '—')}, no_regulated_data={fe.get('no_regulated_data', '—')}, self_serve={fe.get('self_serve', '—')}. {m.get('feas_note', '')}", ""]
         if m.get("lens"):
             L += [f"**Fad or business:** {m['lens']}", ""]
+        L += ev.who_lines(nid, ptg.get(nid))
         # path to goal
         pg = ptg.get(nid)
         if pg:

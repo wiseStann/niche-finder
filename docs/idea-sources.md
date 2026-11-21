@@ -92,8 +92,8 @@ The generated registry follows.
 
 Generated from [`idea-sources.yaml`](idea-sources.yaml) by `scripts/render_idea_sources.py`. Edit only the YAML.
 
-**53 sources, 83 access methods:** ✅ in_pipeline - 24, 🛠 planned - 8, ✋ manual - 6, ⛔ blocked - 11, 💰 paid - 4.  
-Priorities: P1 - 6, P2 - 19, P3 - 18, none - 10.
+**86 sources, 129 access methods:** ✅ in_pipeline - 42, 🛠 planned - 15, ✋ manual - 7, ⛔ blocked - 17, 💰 paid - 5.  
+Priorities: P1 - 9, P2 - 33, P3 - 29, none - 15.
 
 Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implemented) · ✋ by hand / browser only · ⛔ closed from the probing network · 💰 paid only. **Probe:** the HTTP code of a keyless curl probe (date). **Role:** discovery = entities for the universe, evaluation = a metric for a niche, voice = buyer voice, trend = dynamics over time.
 
@@ -101,6 +101,9 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 
 | P | Source | Group | Stage | Stage groups | What it would give |
 |---|---|---|---|---|---|
+| P2 | Google Ads Transparency Center | ads | not implemented | s5 | After a top-up: probe the DataForSEO ads endpoints, then add advertisers per niche to s5_serp |
+| P2 | Yandex Direct budget forecast (API v4 Live) | ads | not implemented | s3, s6 | Add a YANDEX_DIRECT_TOKEN key and a stage that fills a Russian CPC column |
+| P2 | VK API (groups and walls) | community | not implemented | s8, s10 | Add a VK_TOKEN key and a stage beside s8_subreddit_stats |
 | P2 | Wellfound (AngelList Talent) | hiring | not implemented | s8, s0 | Walk /role/l/<role>/<location> for 10 roles x 5 locations monthly -> JSON from the HTML -> a company table with high_concept; match to niches. Low priority: HN hiring gives the same more cheaply |
 | P2 | Launching Next | launch | not implemented | s0 | Collect the RSS daily into a cache (accumulate), merge into the universe once a month; use as a third 'launch density' counter (PH + BetaList + LN) |
 | P2 | Quiet Light Brokerage | m_and_a | not implemented | s5, s6 | The same fetcher as Empire Flippers: page -> CSV; multiples by type feed the ceiling stage |
@@ -108,7 +111,11 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | P2 | Portfolios of top funds (a16z, Sequoia, Accel, Index, NEA, Greylock, ...) | vc_portfolio | not implemented | s0, s6 | A stage for the 5 SSR funds (a16z JSON, Index, NEA, Greylock, Accel) -> a CSV (fund, name, one_liner, category, url); a snapshot every quarter; a VC:crowded flag at >= 3 portfolio companies in a niche goes into the passport |
 | P3 | Otvety Mail.ru (Q&A) | community | not implemented | s10 | Not worth a stage for now: Russian B2C voice is covered by app reviews (thousands per niche), and Otvety is nearly empty for B2B. Revisit only as a qualitative block (questions, recommended products) for B2C or info-product topics |
 | P3 | vc.ru (Osnova) | community | not implemented | s10 | Not a buyer-voice source; maybe a supply signal (vendor content intensity, indie builders posting launches) |
+| P3 | Pikabu | community | not implemented | s10 | Reuse the YouTube-comments classifier if Russian voice stays thin |
 | P3 | Remote OK (API) | hiring | not implemented | s8 | A daily accumulator into a cache folder; match monthly |
+| P3 | Etsy (digital downloads) | info_market | not implemented | s8 | Add an ETSY_API_KEY and extend info_paid |
+| none | Gumroad (digital products) | info_market | not implemented | info | Not a stage: revisit only for an English info product, as supply count + ratings per keyword |
+| none | Plati.market / Digiseller (digital goods) | info_market | not implemented | info | Not worth a stage |
 
 ## Summary table
 
@@ -131,6 +138,10 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **X (Twitter) API v2** (`x_twitter`) | community | global | voice, trend | realtime | api · bearer token of an X developer app; prepaid credits in the Developer Console · $0.010 per request (Counts: All), $0.005 per request (Counts: Recent) | 401 (2026-11-21) | 💰 paid | none | s4, s10 |
 | **Threads (Meta Threads API)** (`threads`) | community | both | voice | realtime | manual · a Threads account (Instagram login); in Russia only through a VPN · $0 | 200 (2026-11-21) | ✋ manual | P3 | s10 |
 | **vc.ru (Osnova)** (`vc_ru`) | community | ru | voice | daily | api · none · $0 | 200 (2026-11-20) | 🛠 planned | P3 | s10 |
+| **VK API (groups and walls)** (`vk_api`) | community | ru | voice, evaluation | daily | api · a user access token (free, a VK ID application) · $0 | 200 (2026-11-21) | 🛠 planned | P2 | s8, s10 |
+| **TikTok Creative Center** (`tiktok_creative_center`) | community | global | trend | daily | html · none · $0 | 200 (2026-11-21) | ⛔ blocked | P3 | s4 |
+| **Pikabu** (`pikabu`) | community | ru | voice | daily | html · none · $0 | 200 (2026-11-21) | 🛠 planned | P3 | s10 |
+| **YouTube comments (YouTube Data API v3)** (`youtube_comments`) | community | both | voice | daily | api · API key (YOUTUBE_API_KEY) in the X-Goog-Api-Key header · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s10 |
 | **Kickstarter (Web Robots dumps)** (`kickstarter`) | crowdfunding | global | discovery, evaluation | monthly | bulk_dump · none · $0 | 200 (2026-09-20) | ✅ in_pipeline | P2 | s0, s5 |
 | **Indiegogo** (`indiegogo`) | crowdfunding | global | discovery | daily | html · none · $0 | 403 (2026-09-20) | ⛔ blocked | none | s0 |
 | **Planeta.ru / Boomstarter (RU)** (`ru_crowdfunding`) | crowdfunding | ru | discovery | daily | html · none · $0 | 307 (2026-09-20) | ✋ manual | none | s0 |
@@ -139,6 +150,10 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **Remote OK (API)** (`remoteok`) | hiring | global | evaluation | daily | api · none · $0 | 200 (2026-09-20) | 🛠 planned | P3 | s8 |
 | **YC Work at a Startup** (`yc_jobs`) | hiring | global | evaluation | daily | html · none · $0 | 406 (2026-09-20) | ⛔ blocked | none | s8 |
 | **hh.ru (API, needs a Russian IP)** (`hh_ru`) | hiring | ru | evaluation | daily | api · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s8 |
+| **Upwork** (`upwork`) | hiring | global | evaluation | daily | html · none · $0 | 403 (2026-11-21) | ⛔ blocked | P3 | s8 |
+| **Fiverr** (`fiverr`) | hiring | global | evaluation | daily | html · none · $0 | 403 (2026-11-21) | ⛔ blocked | P3 | s8 |
+| **Kwork (buyer requests)** (`kwork`) | hiring | ru | evaluation | daily | html · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P3 | s8 |
+| **FL.ru (projects)** (`fl_ru`) | hiring | ru | evaluation | daily | html · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P3 | s8 |
 | **Portfolios of top funds (a16z, Sequoia, Accel, Index, NEA, Greylock, ...)** (`vc_portfolios`) | vc_portfolio | global | discovery, evaluation | monthly | html_json · none · $0 | 200 (2026-09-20) | 🛠 planned | P2 | s0, s6 |
 | **Google Patents (XHR)** (`google_patents`) | patents | global | evaluation, trend | weekly | xhr_json · none · $0 | 200 (2026-09-20) | 🛠 planned | P2 | s5, s6 |
 | **USPTO PatentsView API** (`patentsview`) | patents | global | evaluation | quarterly | api · a free API key (a form on patentsview.org) · $0 | 000 (2026-09-20) | ⛔ blocked | P3 | s5 |
@@ -153,20 +168,45 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **FE International / Microns / Tiny Acquisitions / SideProjectors** (`fe_microns_tiny`) | m_and_a | global | discovery | daily | html · none · $0 | 200 (2026-09-20) | ✋ manual | P3 | s0 |
 | **BizBuySell / BusinessesForSale.com** (`bizbuysell`) | m_and_a | global | discovery, evaluation | daily | html · none · $0 | 403 (2026-09-20) | ⛔ blocked | P3 | s6 |
 | **RU 'ready business': Avito / Biboss / Altera Invest / business-asset** (`ru_business_sale`) | m_and_a | ru | discovery, evaluation | daily | html · none · $0 | 429 (2026-09-20) | ⛔ blocked | P3 | s6 |
+| **TrustMRR** (`trustmrr`) | m_and_a | global | discovery, evaluation | daily | html_ssr · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s0, s5 |
 | **App Store (iTunes Search / RSS / pages)** (`appstore`) | store | both | discovery, evaluation, trend, voice | daily | api · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P2 | s0, s5, s8, s9, s10 |
 | **Google Play (google-play-scraper)** (`google_play`) | store | both | discovery, evaluation, trend, voice | daily | scraper · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P2 | s0, s5, s8, s9, s10 |
 | **Shopify App Store** (`shopify_app_store`) | store | global | discovery, evaluation | daily | html_ssr · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P2 | s0, s5 |
 | **WordPress.org plugins** (`wordpress_org`) | store | global | discovery | daily | api · none · $0 | 200 (2026-09-16) | ✅ in_pipeline | P3 | s0 |
 | **Capterra / GetApp (Gartner Digital Markets)** (`capterra_getapp`) | store | global | evaluation | weekly | html_ssr · none · $0 | 200 (2026-09-15) | ✅ in_pipeline | P2 | s5 |
 | **G2** (`g2`) | store | global | evaluation | weekly | html · none · $0 | 403 (2026-09-15) | ⛔ blocked | none | s0 |
-| **DataForSEO (Google Ads search_volume)** (`dataforseo`) | search | global | evaluation, trend | monthly | api · DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD · $0.09/call up to 1,000 keywords | 200 (2026-09-16) | ✅ in_pipeline | P1 | s3, s4 |
+| **Chrome Web Store** (`chrome_web_store`) | store | global | evaluation | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s5 |
+| **Atlassian Marketplace** (`atlassian_marketplace`) | store | global | evaluation | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P3 | s5 |
+| **DataForSEO (Google Ads search_volume)** (`dataforseo`) | search | global | evaluation, trend | monthly | api · DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD · $0.09/call up to 1,000 keywords | 402 (2026-11-21) | ✅ in_pipeline | P1 | s3, s4 |
 | **Yandex Wordstat API v2** (`wordstat`) | search | ru | evaluation, trend | monthly | api · YANDEX_API_KEY · $0 | 200 (2026-09-16) | ✅ in_pipeline | P1 | s2, s3, s4 |
 | **Google Trends (trendspy) + YouTube (gprop=youtube)** (`google_trends`) | search | global | trend | weekly | scraper · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s4, s8 |
 | **Google / Yandex autocomplete** (`suggest`) | search | both | evaluation | daily | api · none · $0 | 200 (2026-09-15) | ✅ in_pipeline | P3 | s2 |
+| **DataForSEO SERP + Labs keyword difficulty** (`dataforseo_serp`) | search | global | evaluation | daily | api · DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD · about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48 | 402 (2026-11-21) | ✅ in_pipeline | P1 | s5 |
 | **Register of Russian software (Ministry of Digital Development)** (`reestr_mincifry`) | ru_registry | ru | evaluation | daily | html_ssr · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s0 |
 | **zakupki.gov.ru (Federal Laws 44-FZ / 223-FZ)** (`zakupki`) | ru_registry | ru | evaluation | daily | html · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s0 |
 | **Bitrix24 Market** (`bitrix24_market`) | ru_registry | ru | evaluation | daily | html · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P3 | s0 |
 | **Startpack** (`startpack`) | ru_registry | ru | voice, evaluation | daily | html · none · $0 | 200 (2026-11-20) | ✅ in_pipeline | P1 | s10 |
+| **FNS register of small and medium businesses (open data dump)** (`fns_rmsp`) | ru_registry | ru | evaluation, trend | monthly | bulk · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P1 | s8, s6 |
+| **FNS open data - income and expenses from financial statements** (`fns_revexp`) | ru_registry | ru | evaluation, trend | quarterly | bulk · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s6 |
+| **GIR BO - state resource of financial statements (bo.nalog.ru)** (`gir_bo`) | ru_registry | ru | evaluation | quarterly | html · none · $0 | 200 (2026-11-21) | ⛔ blocked | none | s6 |
+| **MoySklad integrations catalog** (`moysklad_apps`) | ru_registry | ru | evaluation | monthly | html · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P3 | s5 |
+| **amoCRM widgets (public showcase)** (`amocrm_extensions`) | ru_registry | ru | evaluation | static | html · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | none | s5 |
+| **YCLIENTS marketplace** (`yclients_marketplace`) | ru_registry | ru | evaluation | monthly | api · partner token · $0 | 404 (2026-11-21) | ⛔ blocked | none | s5 |
+| **US Census County Business Patterns + Nonemployer Statistics (bulk files)** (`us_census_cbp`) | gov_stats | global | evaluation | static | bulk · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P1 | s8, s6 |
+| **Wayback Machine CDX API** (`wayback_machine`) | web | global | trend | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s9 |
+| **Similarweb** (`similarweb`) | web | global | evaluation | monthly | api · paid API key (a Similarweb MCP connector is also offered in Claude Code, unauthorised here) · subscription | 401 (2026-11-21) | 💰 paid | P3 | s5 |
+| **Meta Ad Library** (`meta_ad_library`) | ads | global | evaluation | daily | html · none · $0 | 403 (2026-11-21) | ✋ manual | P2 | s5 |
+| **Google Ads Transparency Center** (`google_ads_transparency`) | ads | global | evaluation | daily | html · none · $0 | 200 (2026-11-21) | 🛠 planned | P2 | s5 |
+| **Yandex Direct budget forecast (API v4 Live)** (`yandex_direct_forecast`) | ads | ru | evaluation | monthly | api · OAuth token of a Direct account and an approved application · $0 | 200 (2026-11-21) | 🛠 planned | P2 | s3, s6 |
+| **GitHub repository search** (`github_search`) | oss | global | evaluation | daily | api · optional GITHUB_TOKEN (Bearer) · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s5 |
+| **Federal Register (API)** (`federal_register`) | regulation | global | discovery | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s0 |
+| **regulation.gov.ru (federal portal of draft regulations, open-data API)** (`regulation_gov_ru`) | regulation | ru | discovery | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s0 |
+| **Etsy (digital downloads)** (`etsy`) | info_market | global | evaluation | daily | html · none · $0 | 403 (2026-11-21) | 🛠 planned | P3 | s8 |
+| **Stepik (online courses)** (`stepik`) | info_market | ru | evaluation | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | info |
+| **Litres (ebook store)** (`litres`) | info_market | ru | evaluation | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | info |
+| **Gumroad (digital products)** (`gumroad`) | info_market | global | evaluation | daily | api · none · $0 | 200 (2026-11-21) | 🛠 planned | none | info |
+| **Plati.market / Digiseller (digital goods)** (`plati_market`) | info_market | ru | evaluation | daily | api · none · $0 | 200 (2026-11-21) | 🛠 planned | none | info |
+| **Boosty (paid subscriptions of authors)** (`boosty`) | info_market | ru | evaluation | daily | api · none · $0 | 200 (2026-11-21) | ⛔ blocked | P3 | info |
 
 ## Sources by group
 
@@ -518,6 +558,75 @@ Traps:
 
 Plan: Not a buyer-voice source; maybe a supply signal (vendor content intensity, indie builders posting launches)
 
+#### 🛠 VK API (groups and walls) (`vk_api`) - P2
+
+https://dev.vk.com/ · geo ru · role voice, evaluation · freshness daily · stage groups s8, s10 · stage not implemented
+
+Signals:
+- groups.search with members_count - size of professional communities (salon owners, auto shops); wall posts and comments - Russian buyer voice where Russian SMB actually talks
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://api.vk.com/method/groups.search?q=...&v=5.199 | a user access token (free, a VK ID application) | $0 | 3 requests/s | 200 2026-11-21 - error 15 'Access denied: token required' |
+
+Traps:
+- Group names are noisy; member counts include bots
+
+Plan: Add a VK_TOKEN key and a stage beside s8_subreddit_stats
+
+#### ⛔ TikTok Creative Center (`tiktok_creative_center`) - P3
+
+https://ads.tiktok.com/business/creativecenter/ · geo global · role trend · freshness daily · stage groups s4 · stage not implemented
+
+Signals:
+- trending hashtags, keyword insights and top ads - the short-video side the info cohort does not measure
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://ads.tiktok.com/business/creativecenter/inspiration/popular/hashtag/pc/en | none | $0 | a 21 KB application shell; data comes from signed internal calls | 200 2026-11-21 - shell only |
+
+Traps:
+- -
+
+Plan: By hand for shortlisted info topics
+
+#### 🛠 Pikabu (`pikabu`) - P3
+
+https://pikabu.ru · geo ru · role voice · freshness daily · stage groups s10 · stage not implemented
+
+Signals:
+- Russian posts and comments (the closest thing to Reddit in Russian): pains and recommendations in consumer niches
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://pikabu.ru/search?q=... | none | $0 | windows-1251 pages, server-rendered | 200 2026-11-21 - search works |
+
+Traps:
+- Entertainment-heavy: needs the same tiered sampling as Reddit
+
+Plan: Reuse the YouTube-comments classifier if Russian voice stays thin
+
+#### ✅ YouTube comments (YouTube Data API v3) (`youtube_comments`) - P2
+
+https://www.youtube.com · geo both · role voice · freshness daily · stage groups s10 · stage `s10_yt_comments_fetch`, `s10_yt_comments_classify`, `s10_yt_comments_report`
+
+Signals:
+- s10: pains, unmet needs, price objections, 'which app?' requests and how-to questions in the comments under each niche's how-to and review videos; products named. Russian by default (the Russian B2C voice Reddit lacks), --lang en for US English
+
+Feeds: `data/out/yt_comments_docs*.jsonl`; `data/out/yt_comments_videos*.csv`; `data/out/yt_comments_fetch*.csv`; `data/out/yt_comments_items*.jsonl`; `data/out/yt_comments_llm*.csv`; `data/out/yt_comments_voice*.csv`; `data/out/yt_comments_themes*.json`; `reports/S10-yt-comments*.md`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://www.googleapis.com/youtube/v3/search (q, relevanceLanguage, regionCode, publishedAfter) -> videos (statistics) -> commentThreads (part=snippet, order=relevance, textFormat=plainText, maxResults=100) | API key (YOUTUBE_API_KEY) in the X-Goog-Api-Key header | $0 | 10,000 units/day shared with info_youtube: search 100 units, videos 1 per 50 ids, commentThreads 1 per page of 100; a separate 'Search Queries per day' cap (about 100 calls) stops new searches while cached searches and comment pages still work; comments turned off -> 403 commentsDisabled | 200 2026-11-21 - 7 searches: 7 niches, 31 videos, 4,892 Russian comments for 768 units; the 8th search got 429 'Search Queries per day' (the day's searches were mostly spent by info_youtube) |
+
+Traps:
+- Commenters are viewers of popular videos, not a buyer sample: a review draws complaints, a tutorial draws questions, so the verdict compares niches with each other
+- Comments under how-to videos mostly carry the voice of the task (training, cooking, budgeting), not of the products: a signal for info products more than for a software gap
+- B2B buyers rarely comment on YouTube: B2B niches are often quiet
+- LLM labels and themes are not hand-validated
+
+Plan: Fetch the remaining 40 niches over the next days (about 25 a day at --budget 3000), re-run the classify after the LLM top-up, then fix the thresholds
+
 ### crowdfunding - Crowdfunding - a pre-order as demand before the product (B2C hardware / consumer)
 
 #### ✅ Kickstarter (Web Robots dumps) (`kickstarter`) - P2
@@ -667,6 +776,77 @@ Feeds: `data/out/hh_niche.csv`; `data/out/hh_vacancies.csv`; `data/out/ru_b2b_*.
 | api | https://api.hh.ru/vacancies?text=... | none | $0 | forbidden from foreign IPs; works from a Russian IP (use the ru proxy option of the HTTP helper) | 200 2026-09-17 - through a Russian-IP route |
 
 Plan: -
+
+#### ⛔ Upwork (`upwork`) - P3
+
+https://www.upwork.com · geo global · role evaluation · freshness daily · stage groups s8 · stage not implemented
+
+Signals:
+- job posts with budgets: people paying a person for the task
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://www.upwork.com/nx/search/jobs/?q=... | none | $0 | Cloudflare; the GraphQL API needs an approved application | 403 2026-11-21 - blocked |
+
+Traps:
+- -
+
+Plan: -
+
+#### ⛔ Fiverr (`fiverr`) - P3
+
+https://www.fiverr.com · geo global · role evaluation · freshness daily · stage groups s8 · stage not implemented
+
+Signals:
+- gigs and their review counts per task - orders for a service a product could replace
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://www.fiverr.com/search/gigs?query=... | none | $0 | anti-bot challenge | 403 2026-11-21 - blocked |
+
+Traps:
+- -
+
+Plan: -
+
+#### ✅ Kwork (buyer requests) (`kwork`) - P3
+
+https://kwork.ru/projects · geo ru · role evaluation · freshness daily · stage groups s8 · stage `s8_freelance`
+
+Signals:
+- s8: active buyer requests (title, text, budget RUB, accepted maximum, offers, buyer hire rate) matched to shortlisted niches; LLM label build (custom software for the niche's task) or service (the task done by hand) = paid demand
+
+Feeds: `data/out/freelance.csv (kwork_*)`; `data/out/freelance_matches.csv`; `data/out/freelance_history.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://kwork.ru/projects?c=<subcategory> (page 1 of 54 subcategories; window.stateData JSON: wantsListData.wants, exchangeStats) | none | $0 | robots.txt disallows ?page= / &page= and /search: 12 newest requests per subcategory, ~3/4 of active requests per snapshot; requests stay open ~3 days, daily runs accumulate in the history; ?keyword= search is OR over words (whole words only) | 200 2026-11-21 - 331 active requests, 248 read; 30-day exchange stats 4,940 requests, 2,671 orders, 51.7M RUB |
+
+Traps:
+- A snapshot of open requests, not an archive: counts grow with the number of runs
+- Small budgets (median 3,000 RUB); much of the board is lead generation and content work
+- Coverage stems collide with common words in job posts: config/freelance.yaml match overrides plus the LLM check are needed
+
+Plan: Done (2026-11-21): s8_freelance; LLM labels unverified on the first run (DeepSeek HTTP 402)
+
+#### ✅ FL.ru (projects) (`fl_ru`) - P3
+
+https://www.fl.ru/projects/ · geo ru · role evaluation · freshness daily · stage groups s8 · stage `s8_freelance`
+
+Signals:
+- s8: projects of the last ~2 months (title, cut text, budget, kind, responses) matched to shortlisted niches; build / service = paid demand
+
+Feeds: `data/out/freelance.csv (fl_*)`; `data/out/freelance_matches.csv`; `data/out/freelance_history.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://www.fl.ru/projects/page-N/ (30 a page, ~56 pages = 2 months; ends with 404) | none | $0 | allowed by robots.txt; budget often 'by agreement'; ~40% of posts are vacancies (not counted) | 200 2026-11-21 - 56 pages, 1,656 projects 2026-09-21..2026-11-21; page-100 = 404 |
+| html | https://www.fl.ru/search/projects/?q=<phrase> (window.searchResult JSON, whole archive since 2005, 1.39M projects, AND with word forms) | none | $0 | works, but robots.txt disallows /search/, */rss/* and /*?kind, so not used; /projects/?search= ignores the parameter | 200 2026-11-21 - one-word recipe query -> 1,352 projects; fields cost, currency, offers_count, published_at, kind_label |
+
+Traps:
+- List descriptions are cut; a post that describes the task in other words is missed
+
+Plan: Done (2026-11-21): s8_freelance
 
 ### vc_portfolio - Fund portfolios - a map of what is already funded (rising; a red ocean a year later)
 
@@ -931,6 +1111,30 @@ Traps:
 
 Plan: By hand: Avito in a browser - number of listings and median profit per customer category
 
+#### ✅ TrustMRR (`trustmrr`) - P2
+
+https://trustmrr.com · geo global · role discovery, evaluation · freshness daily · stage groups s0, s5 · stage `s0_trustmrr`
+
+Signals:
+- startups whose revenue is read from the payment provider's API (Stripe, Lemon Squeezy, Paddle, RevenueCat...): revenue of the last 30 days, MRR, total, 30-day growth, category, founded date
+- about a fifth listed for sale with an asking price and a revenue multiple -> what small software businesses sell for
+- matched paying startups per niche -> proof that a niche pays at the indie end
+
+Feeds: `data/raw/trustmrr.csv`; `data/out/deals.csv: trustmrr_n, trustmrr_mrr_sum, trustmrr_mrr_median, trustmrr_rev30_sum, trustmrr_for_sale (passport, not scored)`; `data/out/deals_matches.csv (source=trustmrr)`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html_ssr | https://trustmrr.com/ and /category/<slug> (31 categories): startup objects in the Next.js RSC payload (self.__next_f.push) | none | $0 | home ~1.8 MB with ~470 top earners; a category page holds its 30 top earners, the rest only through client pagination; llms.txt asks automated clients not to scrape for full access, so s0_trustmrr reads only these first pages | 200 2026-11-21 - first run of s0_trustmrr (public mode): 35 requests, 985 startups (860 with revenue in 30 days, 417 with MRR >= $1k, 256 for sale) |
+| api | https://trustmrr.com/api/ai/discovery (25 recently added + 25 fastest growing) ; https://trustmrr.com/api/ai (25 recently listed for sale + 25 best deals) | none | $0 | fixed cached snapshots, no search or pagination; money in dollars | 200 2026-11-21 - 50 + 50 startups with founded date, category, target audience, asking price |
+| api | https://trustmrr.com/api/v1/startups?sort=revenue-desc&limit=10&page=N&minRevenue=<cents> | Bearer TRUSTMRR_API_KEY (tmrr_..., free with an account; the acceptable-use policy forbids cloning businesses and bulk republication) | $0 | 10 per page, 10 requests/min on a standard key (60 premium); money in USD cents; s0_trustmrr --mode api | 401 2026-11-21 - 'Missing or invalid API key' without a key; the public directory shows 13,078 startups; api mode written from the docs, not run yet |
+
+Traps:
+- Self-selected indie-hacker audience: AI, SaaS, developer and marketing tools over-represented, offline and enterprise B2B almost absent
+- The keyless snapshot is the top ~1,000 earners: a match proves a niche pays, a zero proves nothing
+- About 7% stealth listings ('Hidden Business'), matched on the description only; regex matches need review in deals_matches.csv
+
+Plan: Done (2026-11-21): s0_trustmrr (public snapshot; API mode with TRUSTMRR_API_KEY) and TrustMRR columns in deals.csv / passports (not scored). Next: a free key for the full list (revenue >= $100); TrustMRR into universe.csv as source_type=proven
+
 ### store - App and plugin stores - supply and concentration (proven)
 
 #### ✅ App Store (iTunes Search / RSS / pages) (`appstore`) - P2
@@ -1034,20 +1238,58 @@ Feeds: `data/out/universe.csv (source=g2:category)`
 
 Plan: Not worth implementing
 
+#### ✅ Chrome Web Store (`chrome_web_store`) - P2
+
+https://chromewebstore.google.com · geo global · role evaluation · freshness daily · stage groups s5 · stage `s5_ecosystems`
+
+Signals:
+- extensions per niche: weekly users, ratings -> concentration of browser-channel niches (players >= 10k users, top-1 share, HHI)
+
+Feeds: `data/out/ecosystems_metrics.csv`; `data/out/ecosystems_items.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | POST https://chromewebstore.google.com/_/ChromeWebStoreConsumerFeUi/data/batchexecute?rpcids=zTyKYc (the search page's own data call: query, page size 150, continuation token) | none | $0 | 150 results per page, continuation token, total match count; undocumented internal call, can change without notice | 200 2026-11-21 - 150 items with id, name, rating, ratings, users |
+| html_ssr | https://chromewebstore.google.com/search/<query> | none | $0 | first 10 results only (AF_initDataCallback ds:1); the stage's fallback | 200 2026-11-21 - ~635 KB HTML, 10 results |
+
+Traps:
+- Users = weekly active installs, rounded, capped at 10,000,000+; no store price (payments retired 2020); many extensions are free companions of a paid web product
+
+Plan: Done (2026-11-21): s5_ecosystems, 17 niches in config/ecosystems_map.yaml
+
+#### ✅ Atlassian Marketplace (`atlassian_marketplace`) - P3
+
+https://marketplace.atlassian.com · geo global · role evaluation · freshness daily · stage groups s5 · stage `s5_ecosystems`
+
+Signals:
+- Jira/Confluence apps per niche: active installs, reviews, free vs paid -> concentration for team-tool niches
+
+Feeds: `data/out/ecosystems_metrics.csv`; `data/out/ecosystems_items.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://marketplace.atlassian.com/rest/2/addons?text=<q>&limit=50&offset=N&hosting=cloud[&cost=free] | none | $0 | open JSON, 50 per page; distribution.totalInstalls (totalUsers = -1), reviews.count/averageStars; no per-app price in the list (cost=free filter) | 200 2026-11-21 - works; text search matches any word, so a relevance regex is needed |
+
+Traps:
+- One install = one site, not one user; only niches whose buyer lives in Jira/Confluence (one shortlisted niche on 2026-11-21)
+
+Plan: Done (2026-11-21): s5_ecosystems
+
 ### search - Search demand - volumes, CPC, trend
 
 #### ✅ DataForSEO (Google Ads search_volume) (`dataforseo`) - P1
 
-https://dataforseo.com · geo global · role evaluation, trend · freshness monthly · stage groups s3, s4 · stage `s3_dataforseo`
+https://dataforseo.com · geo global · role evaluation, trend · freshness monthly · stage groups s3, s4 · stage `s3_dataforseo`, `s3_switch_intent`
 
 Signals:
 - volume, CPC, competition_index, 48 months of history per keyword - the core of s3
+- s3_switch_intent: '<brand> alternative(s)', 'apps like <brand>', 'cancel <brand>' and the Russian equivalents for every brand query - switching and churn intent relative to brand demand (evidence, not in the score)
 
-Feeds: `data/out/dfs_*.csv`; `data/out/metrics_quick.csv`
+Feeds: `data/out/dfs_*.csv`; `data/out/metrics_quick.csv`; `data/out/switch_intent.csv`; `data/out/switch_intent_kw.csv`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| api | google_ads/search_volume/live | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | $0.09/call up to 1,000 keywords | a positive balance is required | 200 2026-09-16 - works with a positive balance |
+| api | google_ads/search_volume/live | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | $0.09/call up to 1,000 keywords | a positive balance is required | 402 2026-11-21 - s3_switch_intent: 2 of 6 batches paid and cached, then 'Payment Required' - the balance ran out (top up to finish, about $0.36) |
 
 Traps:
 - Google Ads does not target Russia; a hump in 'X software' in 2024 and an acceleration of 'X app' in 2025-26 distort year-over-year comparisons (see the base-year setting of the metrics stage)
@@ -1098,6 +1340,25 @@ Feeds: `data/out/suggest_*.csv`
 | api | suggestqueries.google.com/complete/search?client=firefox&q=... ; suggest.yandex.ru/suggest-ff.cgi?part=... | none | $0 | no key | 200 2026-09-15 - works |
 
 Plan: -
+
+#### ✅ DataForSEO SERP + Labs keyword difficulty (`dataforseo_serp`) - P1
+
+https://dataforseo.com/apis/serp-api · geo global · role evaluation · freshness daily · stage groups s5 · stage `s5_serp`
+
+Signals:
+- who owns Google's first page for category queries: review directories, media listicles, stores, forums, the niche's own brands; AI Overview and local pack presence; keyword difficulty 0-100 - how a newcomer gets found and whether Google answers by itself
+
+Feeds: `data/out/serp_ownership.csv`; `data/out/serp_items.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | serp/google/organic/live/advanced (top 10, US); dataforseo_labs/google/bulk_keyword_difficulty/live (up to 1,000 keywords per task) | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48 | a positive balance is required; the stage stops before paying when the balance is below 1.5x the estimate | 402 2026-11-21 - not run: balance exhausted; organic SERP items worked earlier (paid blocks did not, methodology S5); parser tested offline on the documented format |
+
+Traps:
+- One snapshot of a page that changes daily and is personalised
+- Brand match is by name in the domain: renamed or generic domains count as 'other'
+
+Plan: Top up the balance and run `nf run s5_serp`; then read R:serp-leaders / R:serp-listicles / R:ai-overview in the passports
 
 ### ru_registry - Russian registries and open government data - Russian B2B branch
 
@@ -1169,4 +1430,400 @@ Traps:
 - B2B reviews accumulate slowly: the window is 36 months; in 24 months half of the B2B niches tried had fewer than 80 reviews
 
 Plan: Done (2026-11-20): a third store in s10_ru_reviews_*; percentiles within the B2C and B2B segments
+
+#### ✅ FNS register of small and medium businesses (open data dump) (`fns_rmsp`) - P1
+
+https://www.nalog.gov.ru/opendata/7707329152-rsmp/ · geo ru · role evaluation, trend · freshness monthly · stage groups s8, s6 · stage `ru_msp_counts`
+
+Signals:
+- Russian small and medium businesses per main OKVED code (legal entities / entrepreneurs, micro / small / medium, 'newly created' flag) and the change over 12 months - the size and growth of the who of a Russian B2B niche
+
+Feeds: `data/out/ru_msp_okved.csv`; `data/out/ru_msp_niches.csv`; `data/out/who_counts.csv (ru_* columns)`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| bulk | https://file.nalog.ru/opendata/7707329152-rsmp/data-DDMMYYYY-structure-*.zip (monthly since 2016) | none | $0 | about 2.2 GB of zipped XML per month (~6.9 million records, 7,661 files); ~6 MB/s; counted while reading the zip, the zip is deleted afterwards | 200 2026-11-21 - 10.11.2026: 6,895,493 records, 2,658 codes |
+| api | https://rmsp.nalog.ru/statistics-proc.json (type=chartokvedstat) | none | $0 | only the 30 most common codes per region, type and size: not usable for arbitrary niches | 200 2026-11-21 - 11.7 MB JSON, 537 codes in total |
+
+Traps:
+- The self-employed (NPD) are not in the register: trades dominated by them are undercounted
+- The main OKVED code is self-declared and often generic
+- Non-profit and religious organisations are not SMEs
+
+Plan: Done (2026-11-21)
+
+#### ✅ FNS open data - income and expenses from financial statements (`fns_revexp`) - P2
+
+https://www.nalog.gov.ru/opendata/7707329152-revexp/ · geo ru · role evaluation, trend · freshness quarterly · stage groups s6 · stage `ru_vendor_revenue`
+
+Signals:
+- yearly income and expenses of every organisation that filed statements (legal name, INN) - matched to the right holders of the domestic software register: the money of a niche's vendors and its growth, independent of search
+
+Feeds: `data/out/ru_vendor_revenue.csv`; `data/out/ru_vendor_revenue_vendors.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| bulk | https://file.nalog.ru/opendata/7707329152-revexp/data-YYYYMMDD-structure-20180110.zip | none | $0 | about 100 MB zip of XML per release; released yearly with revisions | 200 2026-11-21 - release 25.10.2026: statements for 2025 |
+
+Traps:
+- Income is the whole company's, not the product's: large groups are marked 'diversified' and left out of sums
+- Matching by normalised legal name: shared names are 'ambiguous'; individual entrepreneurs file no statements
+
+Plan: Done (2026-11-21); an INN in the register output would remove the name matching
+
+#### ⛔ GIR BO - state resource of financial statements (bo.nalog.ru) (`gir_bo`) - none
+
+https://bo.nalog.ru · geo ru · role evaluation · freshness quarterly · stage groups s6 · stage not implemented
+
+Signals:
+- full statements (revenue line 2110, profit) per company by INN
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://bo.nalog.ru/advanced-search/organizations/search?query=... | none | $0 | every path, the JS bundle included, returns the same 620-byte application shell to a script | 200 2026-11-21 - shell only; not worked around - fns_revexp gives income and expenses openly |
+
+Traps:
+- Use fns_revexp instead
+
+Plan: -
+
+#### ✅ MoySklad integrations catalog (`moysklad_apps`) - P3
+
+https://www.moysklad.ru/integratsii/ · geo ru · role evaluation · freshness monthly · stage groups s5 · stage `ru_ecosystems`
+
+Signals:
+- apps per niche, distinct developers, paid share, popular flag -> Russian supply inside the retail / warehouse SMB platform
+
+Feeds: `data/out/ru_ecosystems.csv`; `data/out/ru_ecosystems_apps.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://www.moysklad.ru/sitemap.xml (all /integratsii/apps/<slug>/) + app pages (name, paid/free, developer, upload date, description) + /integratsii/<category>/ page 1 | none | $0 | robots.txt disallows URLs with '?', so category 'show more' pages are not read; apps.moysklad.ru redirects here; no installs or ratings | 200 2026-11-21 - 589 apps, 33 categories; marketplace sellers 67 apps / 39 developers |
+
+Traps:
+- The upload date is an update date (409 of 589 in 2026)
+- Retail and warehouse focus: service niches have ~0 apps
+
+Plan: Done (2026-11-21): ru_ecosystems
+
+#### ✅ amoCRM widgets (public showcase) (`amocrm_extensions`) - none
+
+https://www.amocrm.ru/extensions/ · geo ru · role evaluation · freshness static · stage groups s5 · stage `ru_ecosystems`
+
+Signals:
+- widgets per niche in the public amoCRM showcase (groups phone, site, mail, chats, useful, recommended)
+
+Feeds: `data/out/ru_ecosystems.csv`; `data/out/ru_ecosystems_apps.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://www.amocrm.ru/extensions/ and ?group=<g> (slug + one-line description) | none | $0 | the old /integrations/ and /marketplace are 404; the live amoMarket market.amocrm.ru needs a login | 200 2026-11-21 - 101 widgets; market.amocrm.ru 401, /integrations/ 404 |
+
+Traps:
+- Stale curated subset (images from 2019); no prices, developers or installs
+
+Plan: Done (2026-11-21): ru_ecosystems; the real amoMarket needs an account
+
+#### ⛔ YCLIENTS marketplace (`yclients_marketplace`) - none
+
+https://www.yclients.com/marketplace/ · geo ru · role evaluation · freshness monthly · stage groups s5 · stage not implemented
+
+Signals:
+- integrations for beauty, fitness and service businesses (would feed ru_ecosystems)
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://www.yclients.com/api/v1/marketplace/applications/country/RU (used by the front end) | partner token | $0 | robots.txt disallows /api/ and /marketplace_marketing/*; no server-rendered app pages, none in the sitemap | 404 2026-11-21 - page 200 is an empty JS shell; API without token 404; the token embedded in the page was not used |
+
+Traps:
+- Most relevant catalog for salons and studios, but not readable keylessly
+
+Plan: Only with a YCLIENTS partner account
+
+### gov_stats - Official business statistics - how many buyers of a kind exist (the who of a B2B niche)
+
+#### ✅ US Census County Business Patterns + Nonemployer Statistics (bulk files) (`us_census_cbp`) - P1
+
+https://www.census.gov/programs-surveys/cbp.html · geo global · role evaluation · freshness static · stage groups s8, s6 · stage `s8_who_counts`
+
+Signals:
+- establishments with employees per NAICS code (latest year and the year before), how many have under 20 employees, firms without employees (sole proprietors) - the real number of potential buyers for a one-industry B2B niche; passports turn 'payers needed' into a share of the industry
+
+Feeds: `data/out/who_counts.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| bulk | https://www2.census.gov/programs-surveys/cbp/datasets/<year>/cbp<yy>us.zip; nonemployer-statistics/datasets/<year>/historical-datasets/nonemp<yy>us.zip | none | $0 | national files of under 1 MB; CBP 2023 is the latest (CBP 2024: 404 on 2026-11-21), Nonemployer 2024 | 200 2026-11-21 - CBP 2023 (NAICS 2017) and 2022, Nonemployer 2024 (NAICS 2022, 452 codes of mixed depth) |
+| api | https://api.census.gov/data/2023/cbp?get=ESTAB&for=us:*&NAICS2017=... | a free key is now required | $0 | not used: the bulk files carry the same national numbers | 200 2026-11-21 - an HTML 'Missing Key' page |
+
+Traps:
+- Counts establishments (locations), not firms
+- A NAICS code can be wider than the niche: config/who_counts.yaml says whether a number is a ceiling or a floor
+- Nonemployer data use NAICS 2022, CBP 2023 uses NAICS 2017 (e-commerce 454110 and software 511210 have no nonemployer row)
+
+Plan: Done (2026-11-21): 36 niches mapped by hand in config/who_counts.yaml
+
+### web - Web footprint - how old competitors' sites are, who went quiet, how much traffic they get
+
+#### ✅ Wayback Machine CDX API (`wayback_machine`) - P2
+
+https://web.archive.org · geo global · role trend · freshness daily · stage groups s9 · stage `s9_wayback`
+
+Signals:
+- first capture (site age), last live capture and months with captures for the websites of the niche's top apps - how entrenched the leaders are, how many newcomers appeared on the web, how many competitors went quiet; no second snapshot needed
+
+Feeds: `data/out/wayback.csv`; `data/out/wayback_domains.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://web.archive.org/cdx/search/cdx?url=<domain>&output=json&fl=timestamp,statuscode&collapse=timestamp:6 | none | $0 | slow and sometimes times out (a domain then stays unmeasured); 1 request/s; cached per month | 200 2026-11-21 - hallow.com: first capture 1998 (an earlier owner of the domain) |
+
+Traps:
+- A domain's history can predate the current business
+- Rarely crawled small sites look 'quiet'
+- Developer sites come from the iTunes sellerUrl field: web-only competitors are not covered
+
+Plan: Done (2026-11-21); price-page history (price raises) is the next step
+
+#### 💰 Similarweb (`similarweb`) - P3
+
+https://www.similarweb.com · geo global · role evaluation · freshness monthly · stage groups s5 · stage not implemented
+
+Signals:
+- competitors' visits and traffic mix (search, paid, referral, social) - which channel acquires their customers
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://api.similarweb.com/v1/website/<domain>/total-traffic-and-engagement/visits | paid API key (a Similarweb MCP connector is also offered in Claude Code, unauthorised here) | subscription | - | 401 2026-11-21 - invalid API key |
+
+Traps:
+- Estimates are weak for small sites, which are most of a fragmented niche
+
+Plan: Only if a subscription appears
+
+### ads - Ad libraries and ad-account forecasts - acquisition cost and who pays for traffic
+
+#### ✋ Meta Ad Library (`meta_ad_library`) - P2
+
+https://www.facebook.com/ads/library/ · geo global · role evaluation · freshness daily · stage groups s5 · stage not implemented
+
+Signals:
+- active ads per advertiser and how long each runs - an advertiser who keeps one ad for months is profitable on paid traffic: acquisition pays back in the niche
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=US&q=... | none | $0 | a JavaScript challenge for scripts | 403 2026-11-21 - challenge page |
+| api | graph.facebook.com/<v>/ads_archive | identity-verified Meta developer token | $0 | non-political ads only for ads delivered in the EU (DSA) | 403 2026-11-21 - not probed with a token |
+
+Traps:
+- US coverage of commercial ads exists only in the web interface
+
+Plan: By hand for the final 3-5 niches: count advertisers and ads older than 60 days
+
+#### 🛠 Google Ads Transparency Center (`google_ads_transparency`) - P2
+
+https://adstransparency.google.com · geo global · role evaluation · freshness daily · stage groups s5 · stage not implemented
+
+Signals:
+- advertisers and their ads per query / domain - the fifth fragmentation point that the SERP paid blocks never gave
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://adstransparency.google.com/?region=US | none | $0 | a JavaScript application; data comes from internal RPC calls | 200 2026-11-21 - 2.6 MB application page |
+| api | DataForSEO SERP API: google/ads_advertisers and google/ads_search | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | per task, paid | - | 402 2026-11-21 - not probed: balance exhausted |
+
+Traps:
+- Advertiser counts favour niches with high CPC
+
+Plan: After a top-up: probe the DataForSEO ads endpoints, then add advertisers per niche to s5_serp
+
+#### 🛠 Yandex Direct budget forecast (API v4 Live) (`yandex_direct_forecast`) - P2
+
+https://yandex.ru/dev/direct/ · geo ru · role evaluation · freshness monthly · stage groups s3, s6 · stage not implemented
+
+Signals:
+- Yandex CPC and clicks per Wordstat phrase - the price of a click on the search engine Russians use (the Russian pool's CPC now comes from Google Keyword Planner)
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://api.direct.yandex.ru/live/v4/json/ (CreateNewForecast / GetForecast) | OAuth token of a Direct account and an approved application | $0 | forecast units per day | 200 2026-11-21 - error 512 'method must be POST': the endpoint answers; no token to go further |
+
+Traps:
+- Needs a Yandex Direct account
+
+Plan: Add a YANDEX_DIRECT_TOKEN key and a stage that fills a Russian CPC column
+
+### oss - Open source - free substitutes that cap willingness to pay
+
+#### ✅ GitHub repository search (`github_search`) - P2
+
+https://github.com/search · geo global · role evaluation · freshness daily · stage groups s5 · stage `s5_oss`
+
+Signals:
+- open-source substitutes per niche: repos with >= 100 / 1,000 stars, maintained (pushed < 12 months) -> flag O:oss-substitute
+
+Feeds: `data/out/oss_substitutes.csv`; `data/out/oss_repos.csv`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://api.github.com/search/repositories?q="<phrase>" in:name,description,topics fork:false&sort=stars&per_page=100 | optional GITHUB_TOKEN (Bearer) | $0 | 10 search requests/min keyless, 30/min with GITHUB_TOKEN; 1,000 results max per query | 200 2026-11-21 - keyless works; 74 niches in 35 minutes without rate-limit hits; 27 flagged O:oss-substitute |
+
+Traps:
+- Stars = developer attention, not buyers, and can be bought (compare forks)
+- Phrase search misses projects worded differently (Fider for feedback boards)
+
+Plan: Done (2026-11-21): s5_oss
+
+### regulation - Regulations - compliance deadlines that create demand before it shows in search
+
+#### ✅ Federal Register (API) (`federal_register`) - P2
+
+https://www.federalregister.gov/developers/documentation/api/v1 · geo global · role discovery · freshness daily · stage groups s0 · stage `s0_regulation`
+
+Signals:
+- US final and proposed rules of the last 12 months: title, abstract, action, dates, agencies, effective date, significant flag -> new recurring compliance tasks for small businesses (who must do what by when) before the demand shows in search
+
+Feeds: `data/out/regulation_prefilter.csv`; `data/out/regulation_candidates.csv`; `reports/S0-regulation.md`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://www.federalregister.gov/api/v1/documents.json?per_page=1000&conditions[type][]=RULE\|PRORULE&conditions[publication_date][gte\|lte]=...&fields[]=... | none | $0 | 1,000 per page, next_page_url with a cursor; ~5 requests a year of history | 200 2026-11-21 - 2,931 final + 1,771 proposed rules in 12 months; 794 pass the prefilter (60% of final rules are airworthiness directives, safety zones, air plans) |
+
+Traps:
+- The LLM reads the abstract, not the rule text
+- 2025-2026 rules often remove obligations
+- Discovery for a human: never scored or written to niches.yaml
+
+Plan: Done (2026-11-21): s0_regulation; LLM classification waits for an LLM balance top-up (DeepSeek 402 on 2026-11-21)
+
+#### ✅ regulation.gov.ru (federal portal of draft regulations, open-data API) (`regulation_gov_ru`) - P2
+
+https://regulation.gov.ru · geo ru · role discovery · freshness daily · stage groups s0 · stage `s0_regulation`
+
+Signals:
+- Russian draft regulations of the last 12 months: kind, department, ORV procedure and impact degree, affected persons, problem, mandatory-requirements flag, planned entry into force -> compliance tasks for Russian small businesses before adoption
+
+Feeds: `data/out/regulation_prefilter.csv`; `data/out/regulation_candidates.csv`; `reports/S0-regulation.md`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://regulation.gov.ru/api/npalist?limit=500&offset=N&sort=desc (XML; fields, search, id) | none | $0 | limit <= 500 (limit=1000 answers 200 with an error text); no date filter, walk newest first; directly reachable, NF_PROXY_RU timed out | 200 2026-11-21 - total 130,351 projects; 8,880 in 12 months (18 pages); 2,806 pass the prefilter; most list rows carry only a title |
+| api | https://regulation.gov.ru/api/public/PublicProjects/Print/<id> (JSON passport); /api/public/Rss/ (RSS) | none | $0 | one request per draft, some answers take tens of seconds; the passport also holds officials' contacts (not read) | 200 2026-11-21 - 150 passports read: keywords, economic activity, 'mandatory requirements (KND)', affected persons, planned entry into force |
+| api | http://publication.pravo.gov.ru/api/Documents?PageSize=10&Index=1&block=government (adopted acts) | none | $0 | PageSize must be one of the allowed values (5 -> 400); titles only ('on amendments to resolution No. N'), no abstract | 200 2026-11-21 - 58,872 government acts; not used, too little text for a classifier |
+
+Traps:
+- Drafts may never be adopted
+- The ORV impact degree is the strongest prefilter signal (1,220 ORV drafts a year)
+- Discovery for a human: never scored or written to niches.yaml
+
+Plan: Done (2026-11-21): s0_regulation; LLM classification waits for an LLM balance top-up
+
+### info_market - Paid information products - whether people pay for knowledge on a topic
+
+#### 🛠 Etsy (digital downloads) (`etsy`) - P3
+
+https://www.etsy.com · geo global · role evaluation · freshness daily · stage groups s8 · stage not implemented
+
+Signals:
+- digital listings (planners, templates, guides) and shop sales counts - paid demand for a topic's information products
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| html | https://www.etsy.com/search?q=... | none | $0 | anti-bot challenge | 403 2026-11-21 - blocked |
+| api | https://openapi.etsy.com/v3/application/listings/active?keywords=... | a free API key (developer application) | $0 | 10 requests/s | 403 2026-11-21 - not probed with a key |
+
+Traps:
+- English-speaking buyers
+
+Plan: Add an ETSY_API_KEY and extend info_paid
+
+#### ✅ Stepik (online courses) (`stepik`) - P2
+
+https://stepik.org · geo ru · role evaluation · freshness daily · stage groups info · stage `info_paid`
+
+Signals:
+- info cohort: relevant paid courses per topic, learners in them, reviews, median price, paid courses published in 24 months - do people pay for knowledge on the subject
+
+Feeds: `data/out/info_paid.csv: sp_*`; `data/out/info_paid_items.csv (source=stepik)`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://stepik.org/api/search-results?query=...&type=course&page=N | none | $0 | 20 courses a page, at most 200 results; page 11 -> 404, and a page past the real end can answer 404 while has_next is true; ranks by popularity more than relevance (under 'английский язык' page 1 is Python courses), so every page is read and titles are filtered; language= and is_paid= are ignored | 200 2026-11-21 - 'английский язык': count 200, 21 English-language-learning titles over 10 pages; 'вязание спицами': no knitting course in the top 200 |
+| api | https://stepik.org/api/courses?ids[]=..&ids[]=.. ; /api/course-review-summaries?ids[]=.. | none | $0 | 20 ids a call; learners_count, is_paid, price, currency_code, display_price, language, became_published_at, review_summary | 200 2026-11-21 - course 92015: 11,091 learners, 4,100 RUB, 388 reviews (avg 4.99) |
+
+Traps:
+- Mostly IT, school-exam and university courses: craft, beauty and lifestyle topics read empty although they sell elsewhere (first run: 1 paid knitting course, 0-2 learners)
+- learners_count includes people who took only a free part of a paid course
+- Connection resets under parallel load on 2026-11-21, through the proxy and directly; retries fix them
+
+Plan: Done (2026-11-21): info_paid (Stepik + Litres), shown in info_score with the flags I:paid-market / I:no-paid; no effect on the score
+
+#### ✅ Litres (ebook store) (`litres`) - P2
+
+https://www.litres.ru · geo ru · role evaluation · freshness daily · stage groups info · stage `info_paid`
+
+Signals:
+- info cohort: relevant paid non-fiction ebooks per topic, their rating counts (a sales proxy), median price, books first on sale in 24 months, self-published books (the route open to a single author)
+
+Feeds: `data/out/info_paid.csv: lr_*`; `data/out/info_paid_items.csv (source=litres)`
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://api.litres.ru/foundation/api/search?q=...&types=text_book&limit=100&offset=N | none | $0 | limit 100; relevance order; matches every word of the query ('пианино для начинающих' -> 0 books, 'пианино' finds them); covers fiction and offers no genre filter | 200 2026-11-21 - 'вязание спицами': 905 books, each with full_price, is_free, rated_total_count, available_from, persons (publisher role) |
+| api | https://api.litres.ru/foundation/api/arts/<id> | none | $0 | one book a call (~0.2 s); the only endpoint with genres (is_main marks the main one); a withdrawn book -> 404 | 200 2026-11-21 - genres of a matched 'Право ...' novel = romance fantasy (main) |
+
+Traps:
+- A topic word is often a novel's title: under 'право' 73 matched books were fiction, so each counted book's main genre is checked
+- Rating counts are lifetime, not a yearly rate; the ratio of ratings to sales is unknown
+- Magazines and school workbooks count as paid info
+
+Plan: Done (2026-11-21): info_paid
+
+#### 🛠 Gumroad (digital products) (`gumroad`) - none
+
+https://gumroad.com · geo global · role evaluation · freshness daily · stage groups info · stage not implemented
+
+Signals:
+- English info products per keyword: count, price, ratings (no sales counts)
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://gumroad.com/products/search?query=... | none | $0 | the discover page's own JSON: total, tags, products with price_cents, currency, ratings {count, average}, native_type; no sales counts | 200 2026-11-21 - 'notion': total 24,612; 'knitting': 295; Cyrillic query: 0 |
+
+Traps:
+- No Cyrillic catalogue and no Russian payments: useless for the Russian info cohort
+
+Plan: Not a stage: revisit only for an English info product, as supply count + ratings per keyword
+
+#### 🛠 Plati.market / Digiseller (digital goods) (`plati_market`) - none
+
+https://plati.market · geo ru · role evaluation · freshness daily · stage groups info · stage not implemented
+
+Signals:
+- Russian digital goods per keyword with numsold (sales count), price, seller, reviews
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://plati.io/api/search.ashx?query=...&pagesize=50&pagenum=1&response=json | none | $0 | items with numsold, count_positiveresponses, price_rur, section_id | 200 2026-11-21 - knitting: 0 items; English: test packs, exam answers and essays; neural networks: subscription resale |
+
+Traps:
+- The catalogue is game keys, accounts, student work and leaked courses, not topic info products
+
+Plan: Not worth a stage
+
+#### ⛔ Boosty (paid subscriptions of authors) (`boosty`) - P3
+
+https://boosty.to · geo ru · role evaluation · freshness daily · stage groups info · stage not implemented
+
+Signals:
+- paid author subscriptions by topic: tiers, prices, subscriber counts where shown
+
+| Method | Endpoint | Auth | Cost | Limits / format | Probe |
+|---|---|---|---|---|---|
+| api | https://api.boosty.to/v1/blog/search?query=... | none | $0 | 'search' is read as a blog name: there is no open topic search | 200 2026-11-21 - no topic search |
+
+Traps:
+- Reachable only blog by blog, e.g. from the Telegram / YouTube links of info authors
+
+Plan: Read the Boosty links that info_telegram finds behind teaching Shorts, if that proves useful
 

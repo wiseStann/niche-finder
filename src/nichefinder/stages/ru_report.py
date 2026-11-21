@@ -1,7 +1,9 @@
 """Russian B2B: combine the five measures into a score and a report.
 
 Inputs (data/out/): ru_b2b_wordstat.csv, ru_b2b_wordstat_dyn.csv, ru_b2b_hh.csv, ru_b2b_zakupki.csv, ru_b2b_reestr.csv,
-ru_b2b_bitrix.csv, optionally ru_b2b_reestr_classes.csv; configs: config/ru_b2b_niches.yaml, config/ru_b2b_traps.yaml.
+ru_b2b_bitrix.csv, optionally ru_b2b_reestr_classes.csv, ru_vendor_revenue.csv (vendor income from FNS open data) and
+ru_ecosystems.csv (YCLIENTS / MoySklad / amoCRM apps) - both shown per niche, not in the score;
+configs: config/ru_b2b_niches.yaml, config/ru_b2b_traps.yaml.
 Output: data/out/ru_b2b_score.csv and reports/S0-ru-b2b.md.
 
 Score (percentiles are taken inside the RU B2B cohort; weights follow the spirit of the global score):
@@ -41,6 +43,31 @@ def pct(values, v):
     if v is None or not vals:
         return 0.5
     return sum(1 for x in vals if x <= v) / len(vals)
+
+
+def vendor_lines(v: dict | None) -> list[str]:
+    """Income of the register's right holders (ru_vendor_revenue): evidence, not in the score."""
+    if not v or not f(v.get("owners")):
+        return []
+    g = f(v.get("income_growth"))
+    return [f"- **Vendor income** (FNS open data, statements for {v.get('year') or '-'}; not in the score): {v['matched']} of {v['owners']} register owners "
+            f"matched by name ({v['ambiguous']} ambiguous, {v['diversified']} large groups left out); total {f(v['income_sum'], 0) / 1e6:,.0f} M RUB, "
+            f"median {f(v.get('income_median'), 0) / 1e6:,.1f} M RUB, {v['vendors_100m']} vendors with 100 M RUB or more, "
+            f"largest «{v['top_vendor']}» {f(v.get('top_share'), 0):.0%}" + (f"; income growth of vendors matched in both years {g:+.0%}" if g is not None else "") + "."]
+
+
+def eco_lines(rows: list[dict] | None) -> list[str]:
+    """Apps in Russian SMB marketplaces (ru_ecosystems): evidence, not in the score."""
+    out = []
+    for r in rows or []:
+        if not f(r.get("apps")):
+            continue
+        name = {"moysklad": "MoySklad apps", "amocrm": "amoCRM widgets (public showcase)"}.get(r.get("marketplace", ""), r.get("marketplace", ""))
+        lead = f", largest developer «{r['top_developer']}» {f(r.get('top_developer_share'), 0):.0%} of the apps" if r.get("top_developer") else ""
+        paid = f(r.get("paid_share"))
+        out.append(f"- **{name}:** {r['apps']} of {r.get('catalog', '?')} apps from {r.get('developers') or '?'} developers{lead}"
+                   + (f", paid {paid:.0%}" if paid is not None else "") + " (no installs published; not in the score).")
+    return out
 
 
 def run(ws: Workspace, args: argparse.Namespace) -> None:
@@ -146,6 +173,11 @@ def write_report(ws: Workspace, rows, niches) -> None:
                  f"{nm(x['hh_roles'])} / {nm(x['hh_brands'])} | {nm(x['zak_last12'])} · {pc(x['zak_yoy'])} · {nm((x['zak_sum_rub'] or 0) / 1e6, '{:,.0f}')} M | "
                  f"{nm(x['reestr_products'])} / {nm(x['reestr_owners'])} / {nm(x['reestr_new_25_26'])} | {nm(x['bitrix_apps_100'])} / {sh(x['bitrix_top1_share'])} | {x['flags']} |")
     L += ["", "## 2. By niche (measurement details)", ""]
+    vrev = rd("ru_vendor_revenue.csv")     # evidence, not in the score
+    eco: dict[str, list[dict]] = {}
+    if ws.out("ru_ecosystems.csv").exists():
+        for r in csv.DictReader(open(ws.out("ru_ecosystems.csv"), encoding="utf-8")):
+            eco.setdefault(r["niche_id"], []).append(r)
     for x in rows:
         n = next(y for y in niches if y["id"] == x["niche_id"])
         L += [f"### {x['name']}", "",
@@ -155,6 +187,7 @@ def write_report(ws: Workspace, rows, niches) -> None:
               f"- **Procurements:** with the phrase in the title {nm(x['zak_last12'])} (previous 12 months {nm(x['zak_prev12'])}; all full-text matches {nm(x['zak_total_last12'])}); sum of initial prices {nm((x['zak_sum_rub'] or 0) / 1e6, '{:,.1f}')} M RUB, median {nm((x['zak_median_rub'] or 0) / 1e3, '{:,.0f}')} k RUB.",
               f"- **Software register:** {nm(x['reestr_products'])} products ({x['reestr_detail']}), of which flagged AI {nm(x['reestr_ai'])}; owners {nm(x['reestr_owners'])}, largest {sh(x['reestr_top_owner_share'])}; new in 2025-26: {nm(x['reestr_new_25_26'])}; classes: {x['reestr_classes'] or '—'}.",
               f"- **Bitrix24 Market:** apps with at least 100 installs {nm(x['bitrix_apps_100'])}, leader «{x['bitrix_top1']}» {sh(x['bitrix_top1_share'])} (fuzzy search).",
+              *vendor_lines(vrev.get(x["niche_id"])), *eco_lines(eco.get(x["niche_id"])),
               f"- Note: {n.get('notes') or ''}", ""]
     cp = ws.out("ru_b2b_reestr_classes.csv")
     if cp.exists():

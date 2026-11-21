@@ -33,6 +33,17 @@ GROUPS: dict[str, dict] = {
                 "10,000 units per day.",
         "where": "https://console.cloud.google.com/apis/library/youtube.googleapis.com (create an API key under Credentials)",
     },
+    "trustmrr": {
+        "keys": ("TRUSTMRR_API_KEY",),
+        "what": "Optional: the full TrustMRR list of startups with payment-verified revenue (s0_trustmrr --mode api); without it "
+                "the stage reads a public snapshot of ~1,000 top earners. Free with an account.",
+        "where": "https://trustmrr.com (account settings, API key)",
+    },
+    "github": {
+        "keys": ("GITHUB_TOKEN",),
+        "what": "Optional: raises the GitHub search limit for s5_oss from 10 to 30 requests a minute. A token with no scopes is enough.",
+        "where": "https://github.com/settings/tokens",
+    },
 }
 
 

@@ -201,18 +201,29 @@ def download(url: str, path: Path, *, timeout: float = 120, proxy: str | None = 
     last: Exception | None = None
     for attempt in range(max(1, tries)):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": user_agent})
-            with urlopen(req, timeout=timeout, proxy=p) as r, open(tmp, "wb") as f:
+            # A retry resumes an interrupted .part with an HTTP Range request; a server that ignores it answers 200 and the
+            # file starts over.
+            have = tmp.stat().st_size if attempt and tmp.is_file() and url.startswith("http") else 0
+            headers = {"User-Agent": user_agent, **({"Range": f"bytes={have}-"} if have else {})}
+            req = urllib.request.Request(url, headers=headers)
+            with urlopen(req, timeout=timeout, proxy=p) as r:
+                resumed = bool(have) and getattr(r, "status", None) == 206
+                f = open(tmp, "ab" if resumed else "wb")
                 total, done, step = int(r.headers.get("Content-Length") or 0), 0, 0.1
-                while True:
-                    block = r.read(chunk)
-                    if not block:
-                        break
-                    f.write(block)
-                    done += len(block)
-                    if progress and total and done / total >= step:
-                        print(f"    {done / total:4.0%} of {total / 1e6:,.0f} MB", flush=True)
-                        step += 0.1
+                if resumed:
+                    total, done = total + have, have
+                    step = (done / total // 0.1 + 1) * 0.1 if total else 0.1
+                    print(f"    resuming at {have / 1e6:,.0f} MB", flush=True)
+                with f:
+                    while True:
+                        block = r.read(chunk)
+                        if not block:
+                            break
+                        f.write(block)
+                        done += len(block)
+                        if progress and total and done / total >= step:
+                            print(f"    {done / total:4.0%} of {total / 1e6:,.0f} MB", flush=True)
+                            step += 0.1
             if total and done != total:
                 raise OSError(f"incomplete: {done} of {total} bytes")
             os.replace(tmp, path)

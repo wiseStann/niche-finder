@@ -27,7 +27,8 @@ FRESH = {"realtime", "daily", "weekly", "monthly", "quarterly", "static"}
 STATUS = {"in_pipeline", "planned", "manual", "blocked", "paid"}
 PRIORITY = {"P1", "P2", "P3", "none"}
 STATUS_ICON = {"in_pipeline": "✅", "planned": "🛠", "manual": "✋", "blocked": "⛔", "paid": "💰"}
-GROUP_ORDER = ["launch", "funding", "community", "crowdfunding", "hiring", "vc_portfolio", "patents", "m_and_a", "store", "search", "ru_registry"]
+GROUP_ORDER = ["launch", "funding", "community", "crowdfunding", "hiring", "vc_portfolio", "patents", "m_and_a", "store", "search",
+               "ru_registry", "gov_stats", "web", "ads", "oss", "regulation", "info_market"]
 
 with open(SRC, encoding="utf-8") as f:
     doc = yaml.safe_load(f)

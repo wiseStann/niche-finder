@@ -14,13 +14,16 @@ funnel), as a table after the ranking and a line per topic; score.csv gets tg_li
 
 Gates (red): I0 fewer than gates.min_videos short videos in the window; I1 median views below gates.min_views_median.
 Flags (no effect): I:top3, I:fading, I:no-tg, I:ai-answers (info_ai rates the free chatbot answer at covers >=
-flags.ai_answers: the chat gives the product's content away). Verdict: red on a failed gate, green at verdict.green_min_score from
+flags.ai_answers: the chat gives the product's content away), I:paid-market / I:no-paid (info_paid's paid_flag, its
+thresholds in config/info_paid.yaml). Verdict: red on a failed gate, green at verdict.green_min_score from
 nf.yaml (70), yellow otherwise. While score_info.yaml has `status: draft` the report says so at the top: fix the
 weights before reading the ranking as a decision.
 
 All video metrics are over the teaching Shorts of a topic (info_youtube labels each video; entertainment and
 off-topic videos are left out). Input: data/out/info_youtube.csv (required), info_youtube_videos.csv (examples in
-the report, teaching videos only), info_ai.csv (optional, the AI substitute probe), config/info_topics.yaml, config/score_info.yaml. Output: data/out/info_score.csv, reports/info.md.
+the report, teaching videos only), info_ai.csv (optional, the AI substitute probe), info_paid.csv (optional, the paid
+market: Stepik courses, Litres books), config/info_topics.yaml, config/score_info.yaml. Output: data/out/info_score.csv,
+reports/info.md.
 """
 from __future__ import annotations
 
@@ -43,7 +46,10 @@ TELEGRAM = ("yt_channels", "tg_linked", "tg_subs_median", "tg_subs_p90", "tg_sub
 TELEGRAM_COLS = ["tg_linked", "tg_subs_median", "tg_big", "pay_share"]
 COLS = ["rank", "topic_id", "verdict", "score", "gates", "flags", "attention", "newcomers", "monetization", "spread",
         "trend", "n_videos", "views_median", "views_p90", "breakout_share", "small_share", "tg_channel_share",
-        "offer_share", "top3_share", "recent_ratio", "n_shorts", "teach_share", "ai_covers", "who", "task", "product"]
+        "offer_share", "top3_share", "recent_ratio", "n_shorts", "teach_share", "ai_covers", "paid_flag", "sp_paid",
+        "sp_paid_learners", "lr_paid", "lr_ratings", "who", "task", "product"]
+PAID = ("paid_flag", "sp_courses", "sp_paid", "sp_paid_learners", "sp_price_median", "sp_top", "lr_paid", "lr_ratings",
+        "lr_price_median", "lr_new", "lr_selfpub", "lr_top")
 
 
 def f(v):
@@ -100,6 +106,8 @@ def score_rows(rows: list[dict], cfg: dict, green_min: float) -> list[dict]:
         ai = f(r.get("ai_covers"))
         if ai is not None and fl.get("ai_answers") is not None and ai >= fl["ai_answers"]:
             flags.append("I:ai-answers")
+        if r.get("paid_flag"):
+            flags.append(r["paid_flag"])
         verdict = "red" if gates else ("green" if score >= green_min else "yellow")
         out.append({**r, **{k: round(x, 1) for k, x in parts.items()}, "score": round(score, 1),
                     "gates": " ".join(gates), "flags": " ".join(flags), "verdict": verdict})
@@ -146,20 +154,28 @@ def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str
                  "**Videos are not labelled** (no LLM key in the info_youtube run): entertainment counts as attention."),
               "",
               "| # | topic | verdict | score | attention | newcomers | money | spread | trend | median views | p90 views "
-              "| breakout | small channels | TG channels | offers | teaching / all shorts | AI covers | gates / flags |",
-              "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+              "| breakout | small channels | TG channels | offers | teaching / all shorts | AI covers "
+              "| paid learners / ratings | gates / flags |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in scored:
         lines.append(f"| {r['rank']} | {r['topic_id']} | {r['verdict']} | {r['score']} | {r['attention']} | "
                      f"{r['newcomers']} | {r['monetization']} | {r['spread']} | {r['trend']} | "
                      f"{human(r.get('views_median'))} | {human(r.get('views_p90'))} | {share(r.get('breakout_share'))} | "
                      f"{share(r.get('small_share'))} | {share(r.get('tg_channel_share'))} | "
                      f"{share(r.get('offer_share'))} | {teach(r)} | {r.get('ai_covers') if r.get('ai_covers') not in (None, '') else '-'} | "
+                     f"{human(r.get('sp_paid_learners'))} / {human(r.get('lr_ratings'))} | "
                      f"{' '.join(x for x in (r['gates'], r['flags']) if x)} |")
     if any(r.get("ai_covers") not in (None, "") for r in scored):
         lines += ["", "AI covers (info_ai, no effect on the score): how much of the micro product a free chatbot answer "
                   "gives away; 2 = an equivalent for free, 1 = the content but not what the product adds (video, "
                   "designed materials, a trusted author, accountability), 0 = the chat barely helps. Same model answers "
                   "and judges; answers in `data/out/info_ai_answers.jsonl`."]
+    if any(r.get("paid_flag") is not None for r in scored):
+        lines += ["", "Paid learners / ratings (info_paid, no effect on the score): learners in the relevant paid Stepik "
+                  "courses / ratings of the relevant paid non-fiction Litres books that sold (a rating is a sales proxy); "
+                  "flags I:paid-market and I:no-paid by the thresholds in `config/info_paid.yaml`. Stepik is mostly IT, "
+                  "school and exam courses: an empty Stepik says little about craft topics. Items in "
+                  "`data/out/info_paid_items.csv`."]
     if rest:
         why = {"global": "the most viewed top of the phrase is foreign-language; add a Russian-specific phrase",
                "quota": "not measured yet; re-run info_youtube after the quota reset (midnight Pacific time)",
@@ -193,6 +209,13 @@ def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str
             lines.append(f"- **free chatbot answer**: covers {r['ai_covers']} of 2 (votes {r.get('ai_votes') or '-'}) - "
                          f"{r.get('ai_reason', '')}"
                          + (f" The chat cannot give: {r['ai_missing']}." if r.get("ai_missing") else ""))
+        if r.get("paid_flag") is not None:
+            lines.append(f"- **paid market**: Stepik {r.get('sp_paid') or 0} paid of {r.get('sp_courses') or 0} courses, "
+                         f"{human(r.get('sp_paid_learners'))} learners, median {human(r.get('sp_price_median'))} RUB"
+                         + (f" (top: {r['sp_top']})" if r.get("sp_top") else "")
+                         + f"; Litres {r.get('lr_paid') or 0} books sold, {human(r.get('lr_ratings'))} ratings, median "
+                         f"{human(r.get('lr_price_median'))} RUB, {r.get('lr_new') or 0} new in 24 months, "
+                         f"{r.get('lr_selfpub') or 0} self-published" + (f" (top: {r['lr_top']})" if r.get("lr_top") else ""))
         vs = [x for x in videos.get(r["topic_id"], []) if x.get("kind", "") in ("T", "")]
         top = sorted(vs, key=lambda x: -(f(x["views"]) or 0))[:3]
         brk = sorted((x for x in vs if x.get("breakout") == "1" and x.get("small") == "1"),
@@ -222,8 +245,12 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         ai = {a["topic_id"]: {"ai_covers": a["covers"], "ai_votes": a.get("votes", ""), "ai_reason": a["reason"],
                               "ai_missing": a["missing"]}
               for a in csv.DictReader(open(apath, encoding="utf-8"))}
+    paid: dict[str, dict] = {}
+    ppath = ws.out("info_paid.csv")
+    if ppath.is_file():
+        paid = {p["topic_id"]: {k: p.get(k, "") for k in PAID} for p in csv.DictReader(open(ppath, encoding="utf-8"))}
     rows = [{**r, **{k: meta.get(r["topic_id"], {}).get(k, "") for k in ("who", "task", "product")},
-             **ai.get(r["topic_id"], {})}
+             **ai.get(r["topic_id"], {}), **paid.get(r["topic_id"], {})}
             for r in csv.DictReader(open(src, encoding="utf-8"))]
     scored = score_rows(rows, cfg, float(ws.setting("verdict.green_min_score", 70)))
     rest = [r for r in rows if r.get("status") != "ok"]

@@ -1,0 +1,21 @@
+# ru_ecosystems: supply inside Russian SMB app marketplaces (MoySklad integrations, amoCRM widgets) for the niches of
+# config/ru_b2b_niches.yaml. Each catalog is read in full once a month and matched by keywords; YCLIENTS is not readable
+# (its catalog sits behind /api/, which robots.txt disallows). Evidence only: never changes the S6 score or verdict.
+
+sleep: 1.0          # seconds between live requests
+
+# niche_id -> keywords that REPLACE the niche's `bitrix` keywords for these catalogs. Matched against the app name and
+# the start of its description; word endings are free for words of 5+ letters, shorter words must match whole.
+keywords:
+  ru-lms-smb: [обучение сотрудников, корпоративное обучение, lms, онлайн-обучение]     # "курсы" also matches currency-rate apps
+  ru-tender-search: [тендер, госзакупк, 44-фз, 223-фз]                                  # "закупки" matches purchase-order apps
+  ru-logistics-dispatch: [грузоперевозки, tms, маршрутизация, диспетчер]               # "логистика" matches marketplace-seller apps
+
+# marketplace -> niche_id -> catalog categories whose every app counts for the niche (MoySklad category slugs from
+# /integratsii/<slug>/, read from page 1 only; amoCRM groups: recommended, phone, site, mail, chats, useful).
+categories:
+  moysklad:
+    ru-marketplace-sellers: [torgovye-ploshchadki]
+    ru-chatbots-business: [chaty]          # not ai-ii-i-chat-boty: mostly AI assistants over MoySklad data, not customer chatbots
+  amocrm:
+    ru-chatbots-business: [chats]

@@ -1,0 +1,19 @@
+# s5_serp: who owns the first page of Google for a niche's category queries.
+# A result counts in a group when its domain equals a listed domain or ends with "." + it.
+#   directory - software review sites and listicle directories: a buyer compares there, an entrant must get listed
+#   store     - app stores and plugin marketplaces: the channel is the store, not the web
+#   ugc       - forums and video: buyers ask each other; a product is found through communities
+#   media     - publishers with "best X apps" articles: affiliate listicles, pay-to-play visibility
+# Any other domain counts as a brand of the niche when its main label contains a brand name from queries/*.yaml
+# (letters and digits only, "Zen Planner" -> "zenplanner"), and as "other" (smaller vendors, blogs) otherwise.
+directory: [g2.com, capterra.com, getapp.com, softwareadvice.com, trustradius.com, sourceforge.net, saasworthy.com,
+            crozdesk.com, alternativeto.net, producthunt.com, gartner.com, softwaresuggest.com, selecthub.com,
+            goodfirms.co, financesonline.com, saashub.com, slashdot.org, trustpilot.com, startpack.ru, otzovik.com]
+store: [apps.apple.com, play.google.com, apps.shopify.com, wordpress.org, chromewebstore.google.com,
+        marketplace.atlassian.com, microsoft.com, rustore.ru, bitrix24.ru]
+ugc: [reddit.com, quora.com, youtube.com, medium.com, linkedin.com, facebook.com, tiktok.com, instagram.com, x.com,
+      twitter.com, pinterest.com, stackexchange.com, stackoverflow.com, vc.ru, habr.com, pikabu.ru, dzen.ru, vk.com]
+media: [forbes.com, techradar.com, pcmag.com, cnet.com, zdnet.com, tomsguide.com, nerdwallet.com, investopedia.com,
+        wikipedia.org, nytimes.com, businessnewsdaily.com, verywellfit.com, healthline.com, usnews.com,
+        bankrate.com, theverge.com, wired.com, engadget.com, lifehacker.com, makeuseof.com, zapier.com, hubspot.com,
+        shopify.com, wix.com, squarespace.com, thebalancemoney.com, garagegymreviews.com]

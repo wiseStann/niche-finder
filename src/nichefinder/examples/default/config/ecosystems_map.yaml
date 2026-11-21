@@ -1,0 +1,117 @@
+# Niche -> Chrome Web Store and Atlassian Marketplace searches for s5_ecosystems (evidence, never the S6 score).
+#
+# A niche belongs here only when the store is a real channel for its product: the buyer installs a browser extension
+# (focus blockers, crosslisting, seller research, price/restock trackers...) or a Jira/Confluence app (feature-request
+# boards). Mobile-first B2C niches and vertical SaaS have no entry. Only shortlisted niches are measured.
+#
+#   cws:        Chrome Web Store search phrases (150 results each, ranked by the store's relevance)
+#   atlassian:  Atlassian Marketplace search phrases (up to 200 results each, cloud hosting)
+#   match:      case-insensitive regex on name + description; a result counts only if it matches. Without it the
+#               niche's regex from config/deal_keywords.yaml (or its coverage phrases) is used.
+#   not:        optional regex that drops a neighbouring category (ad blockers next to site blockers, shopping
+#               cashback next to credit-card rewards...)
+#   note:       why the store is a channel, and what the extensions there stand for
+#
+# Store search is broad (Atlassian matches any word), so `match` does the real filtering: audit it in
+# data/out/ecosystems_items.csv (column `relevant`) after a run, and change it with a written reason, never to move a
+# favourite niche. Draft of 2026-11-21, tuned once on the first run's items.
+#
+# _settings: cws_pages (150 results per page; the deeper pages are long tail), atlassian_pages (50 per page),
+# atlassian_hosting (cloud | datacenter | server; empty = all).
+_settings:
+  cws_pages: 1
+  atlassian_pages: 4
+  atlassian_hosting: cloud
+
+screen-time-focus-apps:
+  cws: [website blocker, block distracting sites, focus mode, screen time]
+  match: "\\b((web|site|website|url|app|porn|distraction|focus|productivity|social media|youtube|shorts) ?blocker|block(s|ing|er)? (any |distracting |unwanted )?(websites?|sites?|apps?|distractions?|social media|youtube|shorts|reels|feeds?)|distraction|focus (mode|timer|session)|stay focused|screen time|pomodoro|doomscroll|procrastinat|time (limit|waster)|self.?control|deep work)"
+  not: "\\b(ad ?block|ads? blocker|block(s|ing)? ads|adblocker|pop.?up blocker|tracker blocker|cookie)"
+  note: "Desktop side of the niche: site blockers and focus timers (BlockSite, StayFocusd, Freedom). The phone app market is measured by the S5/S8 app stores."
+
+cold-email-deliverability:
+  cws: [email verifier, email deliverability, email warmup, cold email]
+  match: "\\b(cold (email|outreach|mail)|email (verif|validat|warm|deliverab|checker|bounce)|verify emails?|deliverability|warm.?up|inbox placement|spam (checker|test|score|folder)|bounce)"
+  note: "Gmail/LinkedIn-side tools of the outreach stack: verifiers, cold-email assistants, deliverability checkers. Warm-up itself runs server-side; email finders, trackers, mail merge and sales-engagement suites (Yesware, GMass) are a neighbouring market."
+
+cookie-consent-gdpr-widgets:
+  cws: [cookie scanner, cookie consent checker, gdpr compliance checker, consent mode debugger]
+  match: "\\b(cookie (scan|audit|checker|compliance|inspector|consent (check|test|debug|manag))|consent (checker|debug|mode|manager|management|inspector)|\\bcmp\\b|gdpr (compliance|scanner|checker|audit)|privacy (compliance|audit|scanner)|tcf|iab)"
+  not: "(don.?t care about cookies|auto(matically)?.{0,20}(reject|accept|deny|dismiss|hide|close)|reject all|cookie banners? (block|remov|kill)|(block|remove|hide|kill)s? (cookie|consent) (banners?|pop.?ups?|notices?))"
+  note: "Site-owner tools only (scanners, consent debuggers, compliance checkers). The consumer anti-banner extensions (Consent-O-Matic and the like) are excluded by `not`: they are the opposite side of the market."
+
+web-accessibility-widgets:
+  cws: [accessibility checker, wcag checker, ada compliance]
+  match: "(accessib.{0,40}(check|audit|test|scan|evaluat|issue|error|violation|complian|report|insight|validat)|(check|audit|test|scan|evaluat|validat).{0,40}accessib|\\bwcag|\\bada (compliance|compliant)|\\ba11y|\\baxe\\b|contrast (checker|ratio)|section 508)"
+  note: "Audit and testing extensions for site owners and agencies (WAVE, axe, Silktide). End-user aids (readers, dyslexia fonts) do not match."
+
+indie-app-dev-aso-tools:
+  cws: [app store optimization, aso tool, app store keywords, app store screenshots]
+  match: "\\b(aso\\b|app store (optimi|keyword|screenshot|rank|review|analytics|intelligence|connect|listing)|play (store|console) (optimi|keyword|rank|analytics|listing|review)|google play (console|keyword|aso)|app (rank|keyword)s? track|appfigures|apptweak|sensor tower|mobile app (marketing|analytics|growth))"
+  note: "Developer-side helpers for App Store Connect / Play Console, keyword and screenshot tools."
+
+restock-drop-alerts:
+  cws: [restock alert, back in stock alert, price drop alert, price tracker]
+  match: "\\b(restock|back in stock|in.?stock (alert|notif|monitor|track)|stock (alert|monitor|checker|notif|track)|price (drop|tracker|tracking|alert|history|watch|monitor)|drop alert|sneaker|availability (alert|monitor|track)|(in|out of) stock\\b)"
+  not: "\\b(grow a garden|roblox|seeds? restock|stock counter|stock (market|trading|price|ticker)s?)"
+  note: "Shopper-side availability and price monitors (Keepa, price-history trackers). Price trackers are counted: monitoring price and stock is the same job."
+
+saas-product-feedback-boards:
+  cws: [feature request, product feedback, website feedback widget, user feedback]
+  atlassian: [feature request, customer feedback, product feedback, idea portal]
+  match: "\\b(feature (requests?|voting|ideas?)|product (feedback|ideas?)|customer feedback|user feedback|feedback (board|portal|collection|management)|ideas? (portal|board|management)|public roadmap|customer.facing roadmap|roadmap (portal|for customers)|changelog)"
+  not: "\\b(planning poker|story points|estimation|retrospective|retro\\b|employee (feedback|survey)|360|bug (report|track|captur)|collaborative testing|test management|reviews? (extract|scrap|export)|aliexpress)"
+  note: "Feature-request and customer-feedback tools. In the browser the channel is thin: visual bug-feedback widgets (BugHerd and the like) are a neighbouring QA market, excluded by `not`. In Jira/Confluence: apps that collect requests from customers, vote and publish roadmaps."
+
+reseller-crosslisting-scanners:
+  cws: [crosslisting, poshmark sharing tool, ebay listing tool, reseller tool]
+  match: "\\b(cross.?list|reseller|resell|poshmark|mercari|depop|vinted|grailed|ebay (lister|listing|bulk|seller)|closet (shar|organ)|share (closet|listings?)|relist|delist|list perfectly|vendoo|sold (history|listings|items|comps)|purchase history)"
+  note: "Crosslisting, closet-sharing and sold-price research tools are browser extensions by nature (Vendoo, List Perfectly, Crosslist, Closet Tools)."
+
+pod-kdp-etsy-seller-tools:
+  cws: [etsy seller tool, etsy keyword research, kdp keyword research, print on demand]
+  match: "\\b(etsy|kdp|kindle|self.?publish|authors?|book (research|keywords?)|print.?on.?demand|\\bpod\\b|merch|redbubble|teepublic|low.?content|spreadshirt|printful|printify|zazzle)"
+  note: "Etsy and KDP research runs in the browser (eRank, EverBee, Alura, Titans, KDSPY)."
+
+marketplace-seller-analytics:
+  cws: [amazon seller tool, amazon product research, fba calculator, amazon keyword research]
+  match: "\\b(amazon (seller|fba|ppc|product research|keyword|listing|sales estimat|analytics|repricer|bsr|rank)|\\bfba\\b|seller (central|tool|analytics)|\\basins?\\b|\\bbsr\\b|best sellers? rank|\\bamz|extension for amazon|product research|walmart seller|wildberries|ozon|helium ?10|jungle ?scout|keepa)"
+  note: "Amazon seller research sits on top of the store pages (Helium 10, Jungle Scout, AMZScout)."
+
+local-seo-gbp-agencies:
+  cws: [google business profile, local seo, gmb audit, google maps rank tracker]
+  match: "\\b(google business profile|\\bgbp\\b|\\bgmb\\b|google my business|local seo|local (rank|search)|maps? rank|google maps (seo|audit|rank|categor)|citations?|review (management|requests?))"
+  not: "\\b(scrap(e|er|ing)|extract(or|s)?|leads? (generat|extract|finder)|email finder)"
+  note: "GBP audit and map-rank extensions (GMB Everywhere, Pleper, GBP Check). Google Maps scrapers are lead-gen, excluded by `not`."
+
+credit-card-points-optimizers:
+  cws: [credit card rewards, credit card points, best credit card to use, amex offers]
+  match: "\\b(credit cards?|card (rewards|points|offers|benefits)|amex offers|chase offers|points (and|&) miles|award (travel|flights?|search)|(frequent flyer|travel rewards|reward) points|points prices|maxrewards|cardpointers|kudos)"
+  not: "\\b(coupons?|promo codes?|cashback (shopping|portal)|gift cards?|credit card (generator|validator|checker|number|required)|no credit card|without (a )?credit card)"
+  note: "Checkout-time card pickers, offer activators and points-price overlays (CardPointers, Kudos, Points Path). Shopping-cashback and coupon extensions are a neighbouring market."
+
+homework-solvers-ai:
+  cws: [homework helper, ai homework solver, math solver, quiz solver]
+  match: "\\b(homework|solver|(ai )?tutor|quiz(zes)?|study (helper|assistant|ai|tool|companion|sidekick)|step.by.step|gauth|photomath|test answers|exam (helper|solver)|answers?|solve (any )?(questions?|problems?|quiz))"
+  note: "AI homework and quiz solvers on top of LMS pages (Gauth, StudyX and many small clones)."
+
+recipe-manager-meal-planner:
+  cws: [recipe saver, recipe clipper, recipe manager, meal planner]
+  match: "\\b(recipes?|meal plan|grocery list|cookbook|cooking|recime|paprika|mealime|whisk)"
+  note: "Save-a-recipe-from-any-site is a browser job (Copy Me That, Plan To Eat, ReciMe)."
+
+str-hosts-tools:
+  cws: [airbnb host, vacation rental host, airbnb pricing]
+  match: "\\b(airbnb hosts?|hosts?.{0,20}(airbnb|vrbo)|vacation rental|short.?term rental|\\bstr\\b|channel manager|dynamic pricing|guest messag|property manag)"
+  not: "(price compar|compare (prices|rates)|direct booking|book direct|savings|deals|scrap(e|er|ing)|extract)"
+  note: "Host-side helpers for the Airbnb/Vrbo dashboards. Guest-side price comparers and scrapers are excluded."
+
+ctrl-task-manager:
+  cws: [task manager, to do list]
+  match: "\\b(task (manager|management|list|tracker)|tasks\\b|to.?do|todo|project management|kanban)"
+  note: "Control (expected red): a crowded store category with big leaders."
+
+ctrl-transcription:
+  cws: [speech to text, meeting transcription, audio transcription]
+  match: "\\b(transcri(be|bes|bing|ption|pts?)|speech.?to.?text|voice.?to.?text|dictation|meeting (notes|recorder|assistant)|note.?taker)"
+  note: "Control (expected green): meeting and audio transcription extensions (Tactiq, Otter, Fireflies) and dictation."

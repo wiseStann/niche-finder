@@ -1,0 +1,45 @@
+# Paid info market of the `info` cohort (info_paid): do people pay for information on a topic? Stepik courses and
+# Litres ebooks per topic of config/info_topics.yaml. Evidence only: info_score shows the columns and the flag,
+# neither changes the info score or the verdict. Rationale: docs/methodology.md, "Info".
+#
+# status: draft until the thresholds are fixed. Fix them BEFORE reading the flags as a decision (set `status: fixed`
+# and `fixed_on`); after that every change needs a written reason in `changes`, never to rescue a favourite topic.
+status: draft
+fixed_on:
+changes: []
+
+new_months: 24          # sp_paid_new / lr_new: published (Litres: first on sale) within this many months of the run month
+# Removed from the topic phrases before searching both stores: Litres matches every word, and "пианино для
+# начинающих" found no book on 2026-11-21 while "пианино" finds the piano books.
+phrase_strip: '\b(?:для начинающих|для новичков|с нуля)\b'
+
+stepik:
+  pages: 10             # catalog search pages per phrase, 20 courses each; Stepik serves at most 200 results (10 pages).
+                        # The search ranks by popularity, so relevant courses are spread over all pages: read them all
+
+litres:
+  pages: 2              # search pages per phrase (relevance order)...
+  limit: 100            # ...of this many books each
+  min_ratings: 5        # a book "sold" when it is relevant, paid, not fiction and has at least this many ratings; only
+                        # such books are looked up for their genre (one request each, cached per book)
+  # Main-genre names that make a book fiction (a regex). The search covers fiction, and a topic word is often a
+  # novel's title. Default (when the key is missing): the FICTION pattern in src/nichefinder/stages/info_paid.py.
+  # fiction_genres: 'роман|фэнтези|фантастик|...'
+
+# Informational flag of a topic (paid_flag in data/out/info_paid.csv, appended to the flags in info_score).
+# Draft values, set after the first run of 61 topics (2026-11-21): Litres ratings had quartiles 284 / 1,080 / 3,286
+# and Stepik paid learners 0 / 13 / 2,410, so 1,000 would have flagged half the cohort. The flag marks about the
+# top third: a paid market that is clearly there, not "some books exist".
+flags:
+  paid_market:          # I:paid-market - clear paid demand on at least one source:
+    stepik_learners: 5000   # learners in the relevant paid Stepik courses, or...
+    litres_ratings: 3000    # ...ratings of the Litres books that sold
+  no_paid:              # I:no-paid - both sources read, no relevant paid Stepik course and...
+    litres_books: 3         # ...fewer Litres books that sold...
+    litres_ratings: 100     # ...with fewer ratings in all (two books with 300 ratings are a small market, not none)
+
+# Per-topic title filters for the paid stores, over the topic's own `must` / `must_not` (which were written for
+# YouTube titles and descriptions). Use when data/out/info_paid_items.csv shows hits of another subject; leave a
+# comment with the reason.
+topics: {}
+#  some-topic: {must: 'regex on the title', must_not: 'regex on the title or description'}

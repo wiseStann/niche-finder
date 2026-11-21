@@ -1,0 +1,47 @@
+# YouTube comments (S10): what viewers write under each niche's how-to and review videos, mainly in Russian
+# (s10_yt_comments_* -- --lang en reads US English videos into files ending in _en).
+# Read by s10_yt_comments_fetch (`fetch`), s10_yt_comments_classify (`sample`) and s10_yt_comments_report (`verdict`).
+# Rationale: docs/methodology.md section 9. Like the Reddit and reviews verdicts, this one never changes the S6 verdict.
+#
+# status: draft until the thresholds are fixed. Fix them BEFORE reading the first real verdicts (set `status: fixed`
+# and `fixed_on`); after that every change needs a written reason in `changes`, never to rescue a favourite niche.
+status: draft
+fixed_on:
+changes: []
+
+fetch:
+  window_months: 36       # videos published from the first day of the month this many months before the run month
+  phrases: [anchor, problem, brand]   # query intents tried per niche, in this order: anchor = the anchor query,
+                          # problem / category = the first such query, brand = the first brand query + brand_suffix
+  max_phrases: 2          # at most this many searches per niche (100 quota units each)
+  min_videos: 3           # search the next phrase only while fewer relevant videos were found
+  videos: 5               # per niche: the relevant videos with the most comments
+  min_video_comments: 20  # candidates need at least this many comments
+  pages_per_video: 3      # commentThreads pages of 100 top-level comments (1 unit each): up to 300 per video
+  check_candidates: 30    # per phrase, the most commented candidates the LLM video check sees
+  video_check: true       # keep only videos whose viewers are the niche's buyers (needs LLM_API_KEY)
+  brand_suffix: {ru: "обзор", en: "review"}
+
+sample:
+  max_comments: 300       # per niche, taken round-robin over its videos; the LLM labels 25 comments per call
+  min_chars: 25           # shorter comments ("Thanks!", "Cool") name no need and are not sent to the LLM
+
+# Verdict: a rule, not a score. Shares are over comments about the niche (its task, its problem or its products), not
+# over reactions to the video. Comment sections differ by genre (a review draws complaints, a tutorial draws questions),
+# so the rule compares niches with each other: a share must be in the top third of the cohort (mid-rank percentile among
+# the measured niches of the same segment, B2C + prosumer or B2B) AND above an absolute floor. Labels are tried in order:
+# gap, pain, seeking, how-to, content, mixed.
+verdict:
+  min_niche_comments: 60  # quiet: fewer labeled comments about the niche
+  min_videos: 2           # quiet: fewer videos with comments about the niche
+  min_cohort: 6           # with fewer measured niches in a segment percentiles mean nothing: the floors alone decide
+  gap_pct: 0.67           # gap: unmet needs + price objections in the top third...
+  gap_floor: 0.10         # ...and at least this share
+  pain_pct: 0.67          # pain: complaints about the task or the existing tools in the top third...
+  pain_floor: 0.20        # ...and at least this share
+  seek_pct: 0.67          # seeking: "which app should I use?" in the top third (buyers compare, they do not flee)...
+  seek_floor: 0.12        # ...and at least this share
+  howto_pct: 0.67         # how-to: questions on how to do the task in the top third (demand for know-how)...
+  howto_floor: 0.20       # ...and at least this share
+  content_praise: 0.25    # content: praise of a product or of the current way at least this share, none of the above
+  top_video_warn: 0.60    # a caution in the reason (not a gate) when one video gives more of the niche's comments than this

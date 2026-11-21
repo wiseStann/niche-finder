@@ -123,6 +123,44 @@ def ai_search_volume(ws: Workspace, keywords, location_code=2840, language_code=
     return out, res.get("cost")
 
 
+COST_SERP = 0.002        # USD, serp/google/organic/live/advanced, one page of 10 results
+COST_KD_TASK = 0.01      # USD per DataForSEO Labs bulk_keyword_difficulty task, plus COST_KD_KEYWORD per keyword
+COST_KD_KEYWORD = 0.0001
+
+
+def serp_cached(ws: Workspace, keyword, location_code=2840, language_code="en", depth=10) -> bool:
+    task = {"keyword": keyword, "location_code": location_code, "language_code": language_code,
+            "device": "desktop", "os": "windows", "depth": depth}
+    return _cache_path(ws, "serp", task).exists()
+
+
+def keyword_difficulty(ws: Workspace, keywords, location_code=2840, language_code="en", use_cache=True):
+    """DataForSEO Labs bulk keyword difficulty (0-100, from the link profiles of the top-10 pages), up to 1000 keywords
+    per task. Cached as kd_<sha1>.json. Returns ({keyword: difficulty}, cost)."""
+    assert len(keywords) <= BATCH
+    task = {"keywords": keywords, "location_code": location_code, "language_code": language_code}
+    path = _cache_path(ws, "kd", task)
+    if use_cache and path.exists():
+        res = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        res = _request("POST", "/dataforseo_labs/google/bulk_keyword_difficulty/live", [task])
+        if res["tasks"][0].get("status_code") == 20000:
+            path.write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
+    t = res["tasks"][0]
+    if t.get("status_code") != 20000:
+        raise RuntimeError(f"DataForSEO keyword difficulty {t.get('status_code')}: {t.get('status_message')}")
+    out = {}
+    for block in t.get("result") or []:
+        for it in block.get("items") or []:
+            if it.get("keyword") is not None and it.get("keyword_difficulty") is not None:
+                out[it["keyword"].lower()] = it["keyword_difficulty"]
+    return out, res.get("cost")
+
+
+def keyword_difficulty_cached(ws: Workspace, keywords, location_code=2840, language_code="en") -> bool:
+    return _cache_path(ws, "kd", {"keywords": keywords, "location_code": location_code, "language_code": language_code}).exists()
+
+
 def serp(ws: Workspace, keyword, location_code=2840, language_code="en", depth=10, use_cache=True):
     """Google SERP (advanced: organic + paid blocks). Cached as serp_<sha1>.json. Returns (items, cost)."""
     task = {"keyword": keyword, "location_code": location_code, "language_code": language_code,

@@ -44,6 +44,8 @@ STAGES: list[Stage] = [
     Stage("s0_betalist", "s0"),
     Stage("s0_productradar", "s0", market="ru"),
     Stage("s0_kickstarter", "s0"),
+    Stage("s0_trustmrr", "s0"),
+    Stage("s0_regulation", "s0"),      # discovery report for a human: rules with a compliance deadline, never auto-added
     Stage("s0_merge", "s0"),
     # S1 — niches
     Stage("s1_niches", "s1"),
@@ -55,6 +57,7 @@ STAGES: list[Stage] = [
     Stage("s3_dataforseo", "s3"),
     Stage("s3_metrics", "s3"),
     Stage("s3_report", "s3"),
+    Stage("s3_switch_intent", "s3"),   # evidence: "<brand> alternative" demand, not in the score
     # Experiment, own group so that `nf run s3` never pays for it: AI search volume index vs Google (never scored)
     Stage("s3_ai_volume", "exp", in_all=False),
     # S4 — trend depth
@@ -69,6 +72,9 @@ STAGES: list[Stage] = [
     Stage("s5_pricing_b2c", "s5"),
     Stage("s5_deals", "s5"),
     Stage("s5_ai_substitute", "s5"),   # evidence for the manual G3 platform risk, not a gate
+    Stage("s5_serp", "s5"),            # evidence: who owns the SERP, keyword difficulty (DataForSEO Labs, paid)
+    Stage("s5_ecosystems", "s5"),      # evidence: Chrome Web Store, Atlassian Marketplace
+    Stage("s5_oss", "s5"),             # evidence: free open-source substitutes (GitHub)
     Stage("s5_merge", "s5"),
     # First score pass: S8 and S10 reports show score and verdict, and s6_score reads S8 outputs — see s6_rescore
     Stage("s9_entrants", "s9"),
@@ -84,10 +90,16 @@ STAGES: list[Stage] = [
     Stage("s8_hh", "s8", market="ru"),
     Stage("s8_hn_mentions", "s8"),
     Stage("s8_hn_hiring", "s8"),
+    # Russian SME register: group ru (so `nf run s8` never downloads 2 x 2.2 GB), placed here so s8_who_counts and the
+    # passports of a full run see it
+    Stage("ru_msp_counts", "ru", market="ru"),
+    Stage("s8_who_counts", "s8"),      # how many target businesses exist (US Census; Russian SME register via ru_msp_counts)
+    Stage("s8_freelance", "s8"),       # paid demand on freelance exchanges
     Stage("s8_offsearch", "s8"),
     # S9 — supply over time
     Stage("s9_snapshot", "s9", in_all=False),
     Stage("s9_gplay_refresh", "s9", in_all=False),
+    Stage("s9_wayback", "s9"),         # competitor site age and liveness (Wayback Machine)
     # S10 — buyer voice (Reddit)
     Stage("s10_reddit_fetch", "s10"),
     Stage("s10_reddit_threads", "s10"),
@@ -98,6 +110,10 @@ STAGES: list[Stage] = [
     Stage("s10_ru_reviews_fetch", "s10", market="ru"),
     Stage("s10_ru_reviews_classify", "s10", market="ru"),
     Stage("s10_ru_reviews_report", "s10", market="ru"),
+    # S10 - buyer voice in YouTube comments (Russian and English): a separate column, never changes the S6 verdict
+    Stage("s10_yt_comments_fetch", "s10"),
+    Stage("s10_yt_comments_classify", "s10"),
+    Stage("s10_yt_comments_report", "s10"),
     # S6 — final score, ceiling, passports; S7 — leaderboard
     Stage("s6_rescore", "s6"),
     Stage("s6_ru", "s6", market="ru"),
@@ -110,6 +126,7 @@ STAGES: list[Stage] = [
     Stage("info_youtube", "info"),
     Stage("info_telegram", "info"),    # Telegram funnels behind the teaching Shorts: shown in info_score, no score effect
     Stage("info_ai", "info"),          # AI substitute probe: flag I:ai-answers in info_score, no effect on the score
+    Stage("info_paid", "info"),        # paid info market (Stepik, Litres): shown in info_score, no effect on the score
     Stage("info_score", "info"),
     # Russian B2B module (software registry, public procurement, Bitrix24 Market, hh.ru, Wordstat)
     Stage("ru_reestr", "ru", market="ru"),
@@ -117,6 +134,8 @@ STAGES: list[Stage] = [
     Stage("ru_bitrix", "ru", market="ru"),
     Stage("ru_hh", "ru", market="ru"),
     Stage("ru_wordstat", "ru", market="ru"),
+    Stage("ru_vendor_revenue", "ru", market="ru"),   # income of registry vendors (FNS open data from financial statements)
+    Stage("ru_ecosystems", "ru", market="ru"),
     Stage("ru_report", "ru", market="ru"),
 ]
 

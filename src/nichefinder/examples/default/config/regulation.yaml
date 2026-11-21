@@ -1,0 +1,145 @@
+# s0_regulation: new rules that create a recurring compliance task for small businesses or prosumers. A discovery list
+# for a human: demand that a rule creates before it shows in search. Never scored, never written to niches.yaml.
+#
+# The prefilter only decides what the LLM reads (max_docs per run, split between the markets); the LLM decides whether
+# a document creates a task. Each distinct `terms` hit adds 1 to a document's priority; the highest priorities are
+# classified first. Regexes are case-insensitive.
+
+window_months: 12     # publication dates within this many months before the run date
+max_docs: 300         # documents the LLM classifies per run (both markets together); --max-docs overrides
+batch: 10             # documents per LLM call (batched within one market and publication month)
+workers: 4            # parallel LLM calls
+
+us:
+  # Federal Register document types: RULE (final rules), PRORULE (proposed rules)
+  types: [RULE, PRORULE]
+  significant_bonus: 2          # added to the priority of documents flagged significant (EO 12866)
+  # a title matching any of these is dropped before the term check: routine notices that never create a small-business task
+  exclude_title:
+    - airworthiness directive
+    - safety zones?\b
+    - security zones?\b
+    - special local regulation
+    - drawbridge
+    - airspace
+    - instrument approach
+    - air plan
+    - air quality
+    - approval and promulgation
+    - state implementation plan
+    - fisher
+    - magnuson
+    - endangered and threatened
+    - pesticide
+    - tolerances?\b
+    - marine mammals
+    - special conditions
+    - spent fuel
+    - sanctions
+    - highly migratory
+    - radio broadcasting
+    - television broadcasting
+    - controlled substances
+    - technical amendment
+    - correction
+    - correcting amendment
+    - migratory bird
+    - hunting
+    - national forest
+    - wilderness
+    - regatta
+    - fireworks
+    - anchorage
+    - regulated navigation area
+    - medical devices?;.*classification
+    - tariff
+    - extension of comment period
+    - reopening of (the )?comment period
+  # compliance vocabulary, matched in title + action + abstract
+  terms:
+    - small business
+    - small entit
+    - record-?keep
+    - reporting requirement
+    - disclos
+    - certif
+    - registration|register with
+    - label(l)?ing
+    - notif
+    - employers?\b
+    - attest
+    - audit
+    - compliance date
+    - must (file|submit|register|report|obtain|maintain|disclose|label|certify|notify|keep|retain|provide|implement|conduct)
+    - new requirement
+    - requires? (covered|regulated|businesses|entities|employers|owners|operators|providers|dealers|manufacturers|sellers|retailers|lenders|firms|companies)
+    - cybersecurity
+    - privacy
+    - accessib
+    - training
+    - inspection
+    - documentation
+    - verification
+    - reporting
+    - filing
+    - licen[cs]e
+    - permits?\b
+
+ru:
+  # regulation.gov.ru: drafts of federal regulations. The ORV procedure (regulatory impact assessment) is required for
+  # drafts that set mandatory requirements for business, so its impact degree weighs more than one term hit. Most
+  # drafts carry only a title in the list; the selected ones get their passport (keywords, affected persons) before the
+  # LLM reads them.
+  orv_procedure: Оценка регулирующего воздействия
+  impact_weight:
+    Высокая: 4
+    Средняя: 3
+    Низкая: 2
+  orv_unrated_weight: 2         # an ORV draft whose impact degree is not set yet
+  business_bonus: 1             # the affected persons (circlePersons) name businesses
+  business: предпринимател|юридическ|хозяйствующ|субъект\w* (малого|среднего|предприниматель)|самозанят|организаци|продав|изготовител|импортер|перевозчик|оператор|работодател|владел
+  exclude_procedures:
+    - Принятие решения о порядке предоставления субсидий
+  # a title matching any of these is dropped: internal acts of the state apparatus
+  exclude_title:
+    - гражданск\w* служ
+    - форменн\w* одежд
+    - премий
+    - материальной помощи
+    - наград
+    - знак\w* отличия
+    - служебн\w* удостоверени
+    - штатн\w* расписан
+    - денежного довольствия
+    - военнослужащ
+    - присвоени\w* (наименовани|звани)
+    - реорганизаци\w* федеральн
+    - субсиди
+  # compliance vocabulary, matched in title + problem + circlePersons + socialRelations
+  terms:
+    - обязательн\w* требовани
+    - отчетност|отчета?\b|отчетов
+    - деклараци
+    - уведомлени
+    - маркировк
+    - сертификац|подтверждени\w* соответствия
+    - лицензи
+    - аккредитац
+    - реестр
+    - регистрац
+    - журнал
+    - учет[аеу]?\b
+    - форм[аыу] .{0,40}(представлени|заявлени|отчет|расчет|деклараци|уведомлени)
+    - формат\w* (представлени|электронн)
+    - порядк\w* (представлени|ведени|заполнени|уведомлени)
+    - информировани|раскрыти\w* информации
+    - персональн\w* данн
+    - контрольно-кассов|онлайн-касс|кассов\w* чек
+    - налог
+    - взнос
+    - экологическ
+    - охран\w* труда
+    - пожарн
+    - санитарн
+    - обучени
+    - проверк

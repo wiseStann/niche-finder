@@ -1,0 +1,10 @@
+# s3_switch_intent: phrases built from every brand query (intent `brand`, brand name `b`) in queries/*.yaml.
+# {b} is the brand name in lower case. `alternative` = shopping for a substitute; `churn` = leaving (cancel a subscription).
+# Changing the list changes every niche at once; never tune it to rescue one niche (methodology section 2).
+templates:
+  en:
+    alternative: ["{b} alternative", "{b} alternatives", "alternatives to {b}", "apps like {b}"]
+    churn: ["cancel {b}", "{b} cancel subscription"]
+  ru:
+    alternative: ["аналог {b}", "аналоги {b}", "{b} аналог"]
+    churn: ["отменить подписку {b}", "{b} отменить подписку"]

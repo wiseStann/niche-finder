@@ -1,0 +1,74 @@
+# s5_oss: free open-source substitutes on GitHub per shortlisted niche (evidence, never the S6 score).
+#
+# By default every shortlisted niche is searched with its first English category queries (anchor first), with the
+# generic tail cut: "free invoice app for small business" -> "invoice", "screen time app" -> "screen time". Each phrase
+# is searched as an exact phrase in repository names, descriptions and topics, top 100 by stars. A repo counts when
+# its name + description + topics contain the phrase or match the niche's regex in config/deal_keywords.yaml, and
+# do not match `exclude`. The flag O:oss-substitute needs a maintained repo (pushed within maintained_months, not
+# archived) with at least 1,000 stars.
+#
+#   settings:     phrases_per_niche, maintained_months, max_words (longer stripped phrases are dropped)
+#   trail_words / lead_words / cut_words: optional replacements of the built-in generic-word lists
+#   exclude:      regex on name + description + topics for repos that are not products (lists, tutorials, clones)
+#   queries:      niche -> phrases that replace the automatic ones, where those are ambiguous on GitHub
+#   not:          niche -> regex on name + description + topics for homonyms of that niche only
+#   skip:         niches not searched at all
+#
+# Change a phrase with a written reason (an ambiguous word on GitHub), never to move a favourite niche. Draft of
+# 2026-11-21, tuned once on the first run's repos (data/out/oss_repos.csv keeps the irrelevant repos with 100+ stars).
+settings:
+  phrases_per_niche: 3
+  maintained_months: 12
+  max_words: 4
+
+exclude: "\\b(awesome|tutorials?|courses?|clone|boilerplate|starter|templates?|interview|cheat.?sheet|examples?|demo|homework assignment|learning project|portfolio)\\b"
+
+queries:
+  # "estimate" alone matches pose/cost estimation code
+  invoice-estimate-mobile-apps: [invoice, invoicing, invoice generator]
+  # "credit card to use" is a stripped question, not a product phrase
+  credit-card-points-optimizers: [credit card rewards, credit card points, credit card optimizer]
+  # "affiliate" and "referral" alone match link shorteners and marketing scripts
+  course-creator-affiliate-payouts: [affiliate tracking, affiliate program, referral program]
+  # "loyalty" alone is fine, but the Shopify phrase comes first
+  shopify-loyalty-rewards: [shopify loyalty, loyalty program, loyalty points]
+  # "budget" alone matches performance and cloud-cost budgets
+  personal-budgeting-apps: [budgeting, personal finance, expense tracker]
+  # "relationship" alone matches database relationship tooling
+  couples-relationship-apps: [couples, long distance relationship, couple questions]
+  # "esim" alone matches eUICC profile tooling, which does not sell travel data
+  travel-esim-apps: [travel esim, esim marketplace]
+  # "asl" alone matches the Amazon States Language
+  sign-language-learning: [learn sign language, sign language learning, asl learning]
+  # "aso" alone matches unrelated words in other languages
+  indie-app-dev-aso-tools: [app store optimization, app store keyword, app store screenshot]
+  # "card scanner" alone matches payment-card OCR
+  tcg-sports-card-scanners: [trading card scanner, pokemon card scanner, tcg collection]
+  # "ai answering" is a fragment
+  ai-phone-receptionist-local: [ai receptionist, ai phone answering, ai phone agent]
+  # "bible" alone matches programming cheat sheets ("pure bash bible")
+  faith-devotional-apps: [bible app, bible study, prayer app]
+  # "recipe" alone matches code recipes and LLM cookbooks
+  recipe-manager-meal-planner: [recipe manager, meal planner, recipe organizer]
+  # "gym log" matches reinforcement-learning gym environments
+  workout-log-trackers: [workout tracker, workout log, weightlifting]
+  # "fishing" alone matches game bots
+  anglers-fishing-apps: [fishing log, fishing forecast, fishing spots]
+  # "couples" alone matches compatibility and numerology dashboards
+  couples-relationship-apps: [couples app, long distance relationship, couple questions]
+  # "fundraising" alone matches startup fundraising checklists
+  small-nonprofits-donor-crm: [donor management, nonprofit crm, donation management]
+  # "property management" matches hotel PMS (QloApps)
+  small-landlords-pm: [landlord, rental property management, rent collection]
+  # "public roadmap" finds companies' own roadmap repos (GitHub, AWS, Docker), not feedback tools
+  saas-product-feedback-boards: [customer feedback, feature request, feedback board]
+
+not:
+  anglers-fishing-apps: "\\b(genshin|minecraft|game|phishing)"
+  # issue trackers of other products ("bugs and feature requests for X") and companies' roadmap repos
+  saas-product-feedback-boards: "((bugs?|issues?)( reports?)?,? (and|&|or) feature requests?|feature requests? (and|&|or) (bugs?|issues?)|feature requests are not|community hub|(github|aws|azure|microsoft|google|docker|containers|terraform|kubernetes)[^.]{0,30}roadmap)"
+  astrology-human-design: "\\b(destiny matrix|soul blueprint)"
+  # "landlord" is also the Dou Dizhu card game
+  small-landlords-pm: "(doudizhu|dou dizhu|poker|card game|斗地主)"
+
+skip: []

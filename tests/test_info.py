@@ -229,6 +229,35 @@ def test_info_score_gates_verdicts_and_report(tmp_path):
     assert "DRAFT weights" in md and "- later (quota: not measured yet" in md
 
 
+def test_info_score_shows_paid_market_without_changing_the_score(tmp_path):
+    ws = make_ws(tmp_path, [{"id": "a", "q": ["x"]}, {"id": "b", "q": ["y"]}])
+    base = {"status": "ok", "phrases": "x", "window_from": "2025-11-01", "views_p90": "100000", "breakout_share": "0.1",
+            "small_share": "0.2", "tg_channel_share": "0.2", "offer_share": "0.1", "top3_share": "0.3",
+            "recent_ratio": "1.0", "n_videos": "40", "views_median": "20000"}
+    with open(ws.out("info_youtube.csv"), "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=info_youtube.TOPIC_COLS, extrasaction="ignore")
+        w.writeheader()
+        w.writerows([{**base, "topic_id": "a"}, {**base, "topic_id": "b", "views_median": "40000"}])
+    info_score.run(ws, argparse.Namespace())
+    before = {r["topic_id"]: r for r in csv.DictReader(open(ws.out("info_score.csv"), encoding="utf-8"))}
+    with open(ws.out("info_paid.csv"), "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=["topic_id", "paid_flag", "sp_courses", "sp_paid", "sp_paid_learners", "lr_paid",
+                                           "lr_ratings"])
+        w.writeheader()
+        w.writerows([{"topic_id": "a", "paid_flag": "I:paid-market", "sp_courses": "10", "sp_paid": "3", "sp_paid_learners": "5000",
+                      "lr_paid": "20", "lr_ratings": "1500"},
+                     {"topic_id": "b", "paid_flag": "I:no-paid", "sp_paid": "0", "sp_paid_learners": "0",
+                      "lr_paid": "1", "lr_ratings": "7"}])
+    info_score.run(ws, argparse.Namespace())
+    after = {r["topic_id"]: r for r in csv.DictReader(open(ws.out("info_score.csv"), encoding="utf-8"))}
+    assert {k: (r["score"], r["verdict"], r["rank"]) for k, r in after.items()} == \
+           {k: (r["score"], r["verdict"], r["rank"]) for k, r in before.items()}
+    assert "I:paid-market" in after["a"]["flags"].split() and "I:no-paid" in after["b"]["flags"].split()
+    assert after["a"]["sp_paid_learners"] == "5000" and after["b"]["lr_ratings"] == "7"
+    md = ws.report("info.md").read_text(encoding="utf-8")
+    assert "| 5.0k / 1.5k |" in md and "- **paid market**: Stepik 3 paid of 10 courses" in md
+
+
 def test_info_suggest_aggregates_expansions(tmp_path, monkeypatch):
     ws = make_ws(tmp_path, [{"id": "a", "q": ["авито продажи"]}], seeds=["авито"])
     answers = {"авито": ["авито", "авито продажи", "авито вакансии"], "авито а": ["авито аккаунт", "авито продажи"]}

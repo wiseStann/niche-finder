@@ -5,7 +5,8 @@ one schema: entity, source, source_type, geo, side, category, one_liner, signal,
 
 Sources and their source_type: YC, Product Hunt, BetaList and Product Radar (geo ru) = rising; TinySeed, App Store
 top-grossing, Google Play top-grossing, WordPress plugins (>= 5000 active installs), Shopify apps and successful
-Kickstarter projects with >= 200 backers (paid in advance) = proven; Empire Flippers software and digital listings
+Kickstarter projects with >= 200 backers (paid in advance) and TrustMRR startups with >= $1,000 of payment-verified revenue
+in 30 days = proven; Empire Flippers software and digital listings
 (verified P&L, for sale and sold) = transactions; Google Play top-free = usage.
 Google Play lists are cut at rank 150.
 
@@ -151,6 +152,18 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             "entity": r["name"], "source": f"kickstarter:{r['category']}", "source_type": "proven", "geo": "global", "side": "b2c",
             "category": f"{r['category']} / {r['subcategory']}", "one_liner": r["blurb"][:160],
             "signal": f"pledged=${int(float(r['pledged_usd'] or 0)):,}; backers={r['backers']}", "url": r["url"], "niche_id": "",
+        })
+
+    # TrustMRR: proven (revenue read from the payment provider), at least $1,000 in the last 30 days
+    for r in read("trustmrr.csv"):
+        rev = float(r.get("revenue_30d") or 0)
+        if rev < 1000:
+            continue
+        rows.append({
+            "entity": r["name"], "source": "trustmrr", "source_type": "proven", "geo": "global", "side": "",
+            "category": (r.get("category") or "").replace("|", ", ")[:80], "one_liner": (r.get("description") or "")[:160],
+            "signal": f"revenue_30d=${rev:,.0f}; mrr=${float(r.get('mrr') or 0):,.0f}" + ("; for sale" if r.get("on_sale") == "1" else ""),
+            "url": r.get("website") or r.get("url") or "", "niche_id": "",
         })
 
     if not rows:

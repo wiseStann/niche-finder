@@ -145,7 +145,7 @@ def test_auto_shortlist_carries_unsettled_controls():
 def test_registry_resolve():
     names = [s.name for s in STAGES]
     assert len(names) == len(set(names))
-    assert [s.name for s in resolve(["s3"])] == ["s3_dataforseo", "s3_metrics", "s3_report"]
+    assert [s.name for s in resolve(["s3"])] == ["s3_dataforseo", "s3_metrics", "s3_report", "s3_switch_intent"]
     assert all(s.in_all for s in resolve(["all"]))
     with pytest.raises(SystemExit):
         resolve(["nope"])

@@ -1,0 +1,31 @@
+# s8_freelance: paid demand on Russian freelance exchanges (Kwork buyer requests, FL.ru projects).
+# The stage reads the public lists within robots.txt (Kwork: page 1 of every subcategory; FL.ru: /projects/page-N/),
+# keeps every post in data/out/freelance_history.csv, matches posts to shortlisted niches by keywords and lets the LLM
+# label each match (build / service / study / topic / none). Evidence only: never changes the S6 score or verdict.
+
+sleep: 1.0              # seconds between live requests
+kwork:
+  enabled: true
+fl:
+  enabled: true
+  max_pages: 80         # the FL.ru list ends after ~65 pages (about two months of projects)
+llm: true               # label keyword matches with the LLM when LLM_API_KEY is set
+llm_workers: 6
+
+# Per-niche regex (case-insensitive) that REPLACES the keyword predicate from niches.text_matchers for job posts.
+# Needed where a coverage stem is the start of a common Russian word in job posts: the stem for car repair shops
+# matches "price", the task-manager stem matches "task", the wardrobe stem matches "image", "budget" appears in most
+# posts, the coin stem matches "monetisation", the Bible stem matches "library", the legal stem matches "legal entity".
+# Set a niche here when its candidates are mostly noise; the LLM check still runs on what this lets through.
+match:
+  auto-repair-shops: "автосервис|автомастерск|(?<![а-яё])сто(?![а-яё])|авторемонт|ремонт[а-яё]* (авто|машин)|auto repair|car repair|garage management"
+  ctrl-task-manager: "таск-?менеджер|трекер[а-яё]* задач|менеджер[а-яё]* задач|постановк[а-яё]* задач|канбан|task manager|task tracker|kanban|to-?do"
+  digital-wardrobe-outfit-planner: "гардероб|стилист|капсульн|подбор[а-яё]* образ|wardrobe|outfit|closet"
+  personal-budgeting-apps: "уч[её]т[а-яё]* (личных |семейных |своих )?(расход|финанс|доход)|личн[а-яё]* финанс|семейн[а-яё]* бюджет|домашн[а-яё]* бюджет|доходы и расходы|расходы и доходы|budget(ing)? app|expense tracker|personal finance|money manager"
+  coin-antique-identifiers: "монет(?!из)|нумизмат|антиквар|банкнот|coin (identif|scanner|value|collect)|numismat"
+  faith-devotional-apps: "библи(?!отек)|молитв|коран|намаз|православ|церк[оа]в|bible|prayer|quran"
+  churches-tools: "богослужен|церк[оа]в|приход[а-яё]* (храм|церк)|church|sermon|worship"
+  law-firm-intake: "юрист|адвокат|юридическ[а-яё]* (фирм|компан|услуг|практик|бюро|консульт)|law firm|lawyer|attorney|legal intake"
+  couples-relationship-apps: "для пар(?![а-яё])|для влюбл[её]нных|couples? app|relationship app"
+  sobriety-quit-trackers: "бросить (курить|пить)|трезв|алкогол[а-яё]* зависим|никотин|sobriety|quit (smoking|drinking)"
+  indie-app-dev-aso-tools: "(?<![a-zа-яё])aso(?![a-zа-яё])|app store optimi|revenuecat|(продвижени|оптимизаци)[а-яё]* (в )?(app store|google play|rustore)"

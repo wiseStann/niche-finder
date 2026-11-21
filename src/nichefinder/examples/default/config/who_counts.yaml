@@ -1,0 +1,141 @@
+# How many target businesses exist per niche: the "who" of who x task x product, counted in official registers.
+# Read by s8_who_counts (US: Census County Business Patterns and Nonemployer Statistics) and ru_msp_counts
+# (Russia: the FNS register of small and medium businesses, by main activity code).
+#
+#   niche_id:
+#     naics: [codes]   NAICS 2017 codes as used by CBP 2023. A code matches itself; "8111" is the 4-digit group.
+#     okved: [codes]   OKVED2 main-activity codes. A code matches its whole subtree ("43.2" counts 43.21, 43.22.1 ...; "45.20" counts 45.20.1).
+#     note:  what the codes leave out or overcount. Say it plainly: the count is a ceiling or a floor, never "the market".
+#
+# Only niches whose buyers are businesses of one industry belong here. "Any local business" niches (SMS marketing,
+# AI phone receptionist, digital signage) and audiences that are not firms (Shopify merchants, website owners,
+# creators) are left out on purpose: a register cannot count them.
+# Russian non-profit and religious organisations are not small businesses in the register, so those niches have no okved.
+# Self-employed people on the professional income tax (NPD) are not in the register either: for trades where most
+# workers are self-employed (beauty masters, tutors, home bakers) the Russian number is a floor.
+# This is a hand-kept map, like startpack_map.yaml. Fix a code when the passport shows a number that cannot be right.
+
+pet-care-facilities:
+  naics: ["812910"]
+  okved: ["96.09"]
+  note: "OKVED 96.09 is all other personal services, so the Russian number is a ceiling"
+gym-martial-arts-studios:
+  naics: ["713940", "611620"]
+  okved: ["93.13", "85.41.1"]
+  note: "fitness centres plus sports instruction (martial arts schools)"
+auto-repair-shops:
+  naics: ["8111"]
+  okved: ["45.20"]
+str-hosts-tools:
+  naics: ["721191", "721199"]
+  okved: ["55.20"]
+  note: "most hosts are private individuals outside both registers: a floor"
+small-landlords-pm:
+  naics: ["531311", "531110"]
+  okved: ["68.20", "68.32"]
+  note: "private landlords are mostly individuals: a floor; 68.20 also includes commercial lessors"
+small-nonprofits-donor-crm:
+  naics: ["8132", "8133", "8134"]
+  note: "grantmaking, advocacy and civic organisations with employees; volunteer-only nonprofits are not counted"
+churches-tools:
+  naics: ["813110"]
+  note: "religious organisations with employees"
+law-firm-intake:
+  naics: ["541110"]
+  okved: ["69.10"]
+invoice-estimate-mobile-apps:
+  naics: ["2382", "2383"]
+  okved: ["43.2", "43.3"]
+  note: "the core trades only (building equipment and finishing contractors); freelancers of other kinds are not counted"
+loyalty-wallet-passes:
+  naics: ["722515", "812112", "812113", "713940"]
+  okved: ["56.30", "96.02", "93.13"]
+  note: "core verticals only: coffee shops and bars, salons, fitness; small retail is left out"
+local-seo-gbp-agencies:
+  naics: ["541810", "541613"]
+  okved: ["73.11"]
+  note: "agencies only; multi-location businesses that buy directly are not counted"
+marketplace-seller-analytics:
+  naics: ["454110"]
+  okved: ["47.91"]
+  note: "47.91 is the code Russian marketplace sellers register; 454110 is all US e-commerce, not only marketplace sellers"
+saas-product-feedback-boards:
+  naics: ["511210"]
+  okved: ["58.29", "62.01"]
+  note: "all software companies, not only product teams: a ceiling"
+pest-control-software:
+  naics: ["561710"]
+  okved: ["81.29.1"]
+tattoo-pmu-studios:
+  naics: ["812199"]
+  okved: ["96.09"]
+  note: "812199 and 96.09 are 'other personal care / services': ceilings"
+kids-classes-camps:
+  naics: ["611610", "611620", "721214"]
+  okved: ["85.41"]
+  note: "85.41 is all supplementary education, adults included: a ceiling"
+tutoring-language-schools:
+  naics: ["611630", "611691"]
+  okved: ["85.41"]
+  note: "85.41 overlaps with kids-classes-camps; independent tutors are mostly self-employed (floor)"
+salon-beauty-booking:
+  naics: ["812112", "812113"]
+  okved: ["96.02"]
+  note: "US nonemployer firms (solo masters) are shown separately; Russian self-employed masters are not counted"
+home-bakers-cake-makers:
+  naics: ["311811"]
+  okved: ["10.71"]
+  note: "home bakers are mostly unregistered or self-employed: a floor"
+wedding-event-pros-crm:
+  naics: ["541921", "812990"]
+  okved: ["74.20"]
+  note: "photographers plus 'all other personal services' (planners); florists and DJs are not counted"
+interior-designers-pm:
+  naics: ["541410"]
+  okved: ["74.10"]
+  note: "74.10 is all specialised design, not only interiors: a ceiling"
+event-equipment-rental:
+  naics: ["532289"]
+  okved: ["77.29"]
+sign-print-shops:
+  naics: ["323111", "323113"]
+  okved: ["18.12"]
+home-inspectors-reports:
+  naics: ["541350"]
+subcontractor-takeoff-estimating:
+  naics: ["2381", "2382"]
+  okved: ["43.2", "43.9"]
+  note: "all firm sizes; the 5-50 people target is a part of it (see the under-20 column)"
+small-trucking-fleets:
+  naics: ["484110", "484121"]
+  okved: ["49.41"]
+home-services-field-ops:
+  naics: ["2382", "561720", "561730"]
+  okved: ["43.2", "81.2"]
+staffing-agencies-ats:
+  naics: ["561311", "561320"]
+  okved: ["78.10", "78.20"]
+accounting-practices-client-portal:
+  naics: ["541211", "541213", "541219"]
+  okved: ["69.20"]
+driving-schools-software:
+  naics: ["611692"]
+  okved: ["85.42.1"]
+dry-cleaning-laundry-software:
+  naics: ["812310", "812320"]
+  okved: ["96.01"]
+florists-software:
+  naics: ["453110"]
+  okved: ["47.76.1"]
+funeral-homes-software:
+  naics: ["812210"]
+  okved: ["96.03"]
+jewelry-store-management:
+  naics: ["448310"]
+  okved: ["47.77"]
+moving-companies-software:
+  naics: ["484210"]
+  okved: ["49.42"]
+daycare-childcare-software:
+  naics: ["624410"]
+  okved: ["88.91"]
