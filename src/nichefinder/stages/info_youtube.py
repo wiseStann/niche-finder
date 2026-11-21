@@ -16,6 +16,9 @@ topic's attention pool):
   views (0.47-0.51 on test topics), so a views share only says whether there was a mega-hit;
 - tg_channel_share / tg_video_share: Telegram link or mention (tg_pattern) in the video or channel description;
 - offer_share: title or description names a guide, checklist, course... (offer_pattern);
+- per video only, for info_telegram: pay (the video or channel description links a payment, paid-content or
+  sales-funnel platform, pay_pattern) and tg_links (the Telegram channels and groups those descriptions link to or
+  name as "@name" after a Telegram word);
 - recent_ratio: (videos from the recent half of the window + 1) / (videos from the older half + 1). Older videos had
   longer to collect views, so every topic leans old; a higher ratio means recent videos reach the top.
 
@@ -71,16 +74,42 @@ MEASURE = {
     "small_channel_subs": 10000, "tg_pattern": r"(?:t\.me|telegram\.me|telegram\.dog)/|telegram|\btg\b",
     "offer_pattern": r"guide|checklist|course|template|ebook|workshop|webinar|coaching", "classify": True,
     "pages": 2,
+    # Payment, paid-content or sales-funnel platforms in a description: the author already sells (info_telegram too)
+    "pay_pattern": r"getcourse|boosty\.to|tribute\.tg|t\.me/tribute|prodamus|payform|lava\.top|robokassa|yookassa"
+                   r"|yoomoney|cloudpayments|gumroad|patreon\.com|bothelp\.io|salebot|leadteh|senler",
 }
 CYRILLIC = re.compile("[\u0400-\u04FF]")
 HASHTAG = re.compile(r"#\w+")
+# Telegram links in descriptions: public names and invite links; service paths are not channels
+TG_LINK = re.compile(r"(?:t\.me|telegram\.me|telegram\.dog)/(?:s/)?(\+[\w-]{6,}|joinchat/[\w-]{6,}|[A-Za-z]\w{3,31})")
+TG_SERVICE = {"share", "addstickers", "addemoji", "addlist", "proxy", "socks", "boost", "tribute", "joinchat", "iv",
+              "contact", "setlanguage", "login"}
+# "@name" right after a Telegram word ("TG @name", "Telegram - @name"): a third of the mentions carry no t.me link.
+# No "@" in between, so an e-mail address or an Instagram handle after another word is not taken.
+TG_AT = re.compile(r"(?:телеграм|telegram|\bтг\b|\btg\b)[^@\n]{0,40}@([A-Za-z]\w{3,31})", re.I)
+
+
+def tg_links(*texts: str) -> list[str]:
+    """Telegram channel or group links in the texts: public names (lower case, from t.me links or "@name" after a
+    Telegram word) and invite links; bots and service paths are left out (a bot has no audience count)."""
+    out = []
+    for text in texts:
+        for m in [*TG_LINK.finditer(text or ""), *TG_AT.finditer(text or "")]:
+            h = m.group(1)
+            if not h.startswith(("+", "joinchat/")):
+                h = h.lower()
+                if h in TG_SERVICE or h.endswith("bot"):
+                    continue
+            if h not in out:
+                out.append(h)
+    return out
 DURATION = re.compile(r"P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$")
 TOPIC_COLS = ["topic_id", "status", "phrases", "n_found", "dropped_lang", "dropped_must", "n_shorts", "dropped_fun",
               "dropped_off", "teach_share", "classified", "n_videos", "n_channels", "views_median", "views_p90",
               "subs_median", "breakout_share", "small_share", "top3_share", "tg_channel_share",
               "tg_video_share", "offer_share", "recent", "older", "recent_ratio", "window_from"]
 VIDEO_COLS = ["topic_id", "video_id", "kind", "published", "seconds", "views", "likes", "comments", "channel_id",
-              "channel_title", "subs", "breakout", "small", "tg", "offer", "title"]
+              "channel_title", "subs", "breakout", "small", "tg", "offer", "pay", "tg_links", "title"]
 KIND_PROMPT = """You sort short videos (YouTube Shorts) of one topic for a study of who could sell a micro info product
 (a guide, a checklist, a mini course) on this topic through short videos.
 
@@ -130,6 +159,7 @@ def video_rows(topic_id: str, videos: list[dict], channels: list[dict], measure:
     each filter removed: long, lang, must, must_not."""
     tg = re.compile(measure["tg_pattern"], re.I)
     offer = re.compile(measure["offer_pattern"], re.I)
+    pay = re.compile(measure["pay_pattern"], re.I)
     need = re.compile(must, re.I) if must else None
     drop = re.compile(must_not, re.I) if must_not else None
     ch = {c["id"]: c for c in channels}
@@ -162,6 +192,8 @@ def video_rows(topic_id: str, videos: list[dict], channels: list[dict], measure:
             "tg": int(bool(tg.search(desc))),
             "tg_channel": int(bool(tg.search(desc) or tg.search((c.get("snippet") or {}).get("description") or ""))),
             "offer": int(bool(offer.search(title + "\n" + desc))),
+            "pay": int(bool(pay.search(desc + "\n" + ((c.get("snippet") or {}).get("description") or "")))),
+            "tg_links": " ".join(tg_links(desc, (c.get("snippet") or {}).get("description") or "")),
             "title": title, "desc": desc,
         })
     return rows
