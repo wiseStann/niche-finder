@@ -625,7 +625,7 @@ Traps:
 - B2B buyers rarely comment on YouTube: B2B niches are often quiet
 - LLM labels and themes are not hand-validated
 
-Plan: Fetch the remaining 40 niches over the next days (about 25 a day at --budget 3000), re-run the classify after the LLM top-up, then fix the thresholds
+Plan: 7 niches measured and labelled (2026-11-21); fetch the remaining 40 over the next days (about 25 a day at --budget 3000), then fix the thresholds
 
 ### crowdfunding - Crowdfunding - a pre-order as demand before the product (B2C hardware / consumer)
 
@@ -827,7 +827,7 @@ Traps:
 - Small budgets (median 3,000 RUB); much of the board is lead generation and content work
 - Coverage stems collide with common words in job posts: config/freelance.yaml match overrides plus the LLM check are needed
 
-Plan: Done (2026-11-21): s8_freelance; LLM labels unverified on the first run (DeepSeek HTTP 402)
+Plan: Done (2026-11-21): s8_freelance; LLM-labelled re-run: 58 of 142 keyword candidates are paid demand (build / service) in 13 niches
 
 #### ✅ FL.ru (projects) (`fl_ru`) - P3
 
@@ -1289,7 +1289,7 @@ Feeds: `data/out/dfs_*.csv`; `data/out/metrics_quick.csv`; `data/out/switch_inte
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| api | google_ads/search_volume/live | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | $0.09/call up to 1,000 keywords | a positive balance is required | 402 2026-11-21 - s3_switch_intent: 2 of 6 batches paid and cached, then 'Payment Required' - the balance ran out (top up to finish, about $0.36) |
+| api | google_ads/search_volume/live | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | $0.09/call up to 1,000 keywords | a positive balance is required | 402 2026-11-21 - s3_switch_intent: 2 of 6 batches paid and cached, then 'Payment Required'; after a top-up DataForSEO paused the account (task status 40201 'unusual activity'): support must lift it, then about $0.36 finishes the stage |
 
 Traps:
 - Google Ads does not target Russia; a hump in 'X software' in 2024 and an acceleration of 'X app' in 2025-26 distort year-over-year comparisons (see the base-year setting of the metrics stage)
@@ -1352,7 +1352,7 @@ Feeds: `data/out/serp_ownership.csv`; `data/out/serp_items.csv`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| api | serp/google/organic/live/advanced (top 10, US); dataforseo_labs/google/bulk_keyword_difficulty/live (up to 1,000 keywords per task) | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48 | a positive balance is required; the stage stops before paying when the balance is below 1.5x the estimate | 402 2026-11-21 - not run: balance exhausted; organic SERP items worked earlier (paid blocks did not, methodology S5); parser tested offline on the documented format |
+| api | serp/google/organic/live/advanced (top 10, US); dataforseo_labs/google/bulk_keyword_difficulty/live (up to 1,000 keywords per task) | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48 | a positive balance is required; the stage stops before paying when the balance is below 1.5x the estimate | 402 2026-11-21 - not run: first the balance, then the account pause (status 40201) after the top-up; organic SERP items worked earlier (paid blocks did not, methodology S5); parser tested offline on the documented format |
 
 Traps:
 - One snapshot of a page that changes daily and is personalised
@@ -1630,7 +1630,7 @@ Signals:
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
 | html | https://adstransparency.google.com/?region=US | none | $0 | a JavaScript application; data comes from internal RPC calls | 200 2026-11-21 - 2.6 MB application page |
-| api | DataForSEO SERP API: google/ads_advertisers and google/ads_search | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | per task, paid | - | 402 2026-11-21 - not probed: balance exhausted |
+| api | DataForSEO SERP API: google/ads_advertisers and google/ads_search | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | per task, paid | - | 402 2026-11-21 - not probed: balance exhausted, then the account was paused (status 40201) |
 
 Traps:
 - Advertiser counts favour niches with high CPC
@@ -1694,7 +1694,7 @@ Traps:
 - 2025-2026 rules often remove obligations
 - Discovery for a human: never scored or written to niches.yaml
 
-Plan: Done (2026-11-21): s0_regulation; LLM classification waits for an LLM balance top-up (DeepSeek 402 on 2026-11-21)
+Plan: Done (2026-11-21): s0_regulation; first full run: 32 of 150 selected US documents create a task (16 with high confidence; most deadlines already passed, Section 1071 lending data from 2028)
 
 #### ✅ regulation.gov.ru (federal portal of draft regulations, open-data API) (`regulation_gov_ru`) - P2
 
@@ -1716,7 +1716,7 @@ Traps:
 - The ORV impact degree is the strongest prefilter signal (1,220 ORV drafts a year)
 - Discovery for a human: never scored or written to niches.yaml
 
-Plan: Done (2026-11-21): s0_regulation; LLM classification waits for an LLM balance top-up
+Plan: Done (2026-11-21): s0_regulation; first full run: 55 of 150 selected Russian drafts create a task (25 with high confidence: traceability, marking, EGAIS formats, lifting-equipment logs)
 
 ### info_market - Paid information products - whether people pay for knowledge on a topic
 
