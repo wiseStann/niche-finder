@@ -24,12 +24,23 @@ KEYS: tuple[str, ...] = ()
 NEEDS: tuple[str, ...] = ("curl",)
 
 MAX_PAGES = 14
+# An anti-bot interstitial is about 44 KB, above any size floor, so it is recognised by its markers (2026-11-21: 45 of
+# 51 category pages came back as "Security Check" and were cached as if they were data).
+BLOCK_MARKERS = ("<title>Security Check</title>", "<title>Just a moment", "cf-browser-verification", "challenge-platform")
+
+
+def blocked(text: str) -> bool:
+    head = text[:5000]
+    return any(m in head for m in BLOCK_MARKERS) and '"numberOfItems"' not in text
 
 
 def fetch(ws: Workspace, slug: str, page: int) -> str:
     path = ws.cache("capterra") / f"{slug}_p{page}.html"
     if path.exists() and path.stat().st_size > 10000:
-        return path.read_text(encoding="utf-8", errors="ignore")
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if not blocked(text):
+            return text
+        path.unlink()   # a block page cached by an earlier version
     url = f"https://www.capterra.com/{slug}/" + (f"?page={page}" if page > 1 else "")
     for attempt in range(3):
         try:
@@ -37,7 +48,7 @@ def fetch(ws: Workspace, slug: str, page: int) -> str:
                                 tries=1, raise_for_status=False).text
         except OSError:
             text = ""
-        if len(text) > 10000:
+        if len(text) > 10000 and not blocked(text):
             path.write_text(text, encoding="utf-8")
             time.sleep(1.0)
             return text

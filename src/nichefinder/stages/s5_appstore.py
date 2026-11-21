@@ -2,12 +2,18 @@
 
 For every shortlisted niche, the category queries (EN -> US store, RU -> RU store for geo `both`/`ru`) are searched
 and merged by trackId; each app records in how many queries it appeared (hits) and its best position.
-An app is relevant when it ranks in the top TOP_POS of at least one query (Apple orders by relevance) or appears in
-3+ queries with a name that shares a token with the queries; config/appstore_relevance.yaml then adds manual
-`exclude` / `include` lists of trackIds per niche and store.
+An app is a candidate (`auto`) when it ranks in the top TOP_POS of at least one query (Apple orders by relevance) or
+appears in 3+ queries with a name that shares a token with the queries. Search position alone lets in games, apps for
+the other side of a market and giants (2026-11-21: Pandora held 97 % of the ratings of the music-distribution niche,
+the Chase bank app 94 % of credit-card points, Instagram led Russian transcription), so the candidates then pass the
+LLM product check (appfit.py, columns `fit` and `fit_why`): an app the model calls "no" is not relevant. Without
+LLM_API_KEY the check is skipped with a note. config/appstore_relevance.yaml then adds manual `exclude` / `include`
+lists of trackIds per niche and store; `include` wins over the check.
 Inputs: niches.yaml, queries/*.yaml, config/shortlist.yaml, config/appstore_relevance.yaml.
-Outputs: data/out/appstore_apps.csv (all apps), data/out/appstore_review.md (top 25 per niche for an eyeball check).
-Calls the free iTunes Search API (no key); responses are cached in data/cache/appstore/.
+Outputs: data/out/appstore_apps.csv (all apps), data/out/appstore_review.md (top 25 per niche for an eyeball check, and
+the most-rated apps the product check dropped).
+Calls the free iTunes Search API (no key); responses are cached in data/cache/appstore/. The product check costs LLM
+tokens (one call per 60 candidates, cached in data/cache/llm/).
 """
 from __future__ import annotations
 
@@ -17,7 +23,7 @@ import re
 import time
 import urllib.parse
 
-from nichefinder import http, niches
+from nichefinder import appfit, http, keys, niches
 from nichefinder.workspace import Workspace
 
 SUMMARY = "App Store players per niche (iTunes Search API, relevance by position + manual exclusions)"
@@ -52,10 +58,15 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     ids = niches.shortlist_ids(ws)
     queries = niches.load_queries(ws)
     rel = ws.load_config("appstore_relevance.yaml", {}) or {}
+    use_fit = bool(keys.get("LLM_API_KEY"))
+    if not use_fit:
+        print("no LLM_API_KEY: the product check is skipped, relevance by search position and manual lists only")
 
     rows, review = [], ["# S5 App Store: top 25 apps per niche (relevance check)\n",
                         "hits - number of category queries the app appeared in; rel - whether it is in the relevant set "
-                        "(edit `config/appstore_relevance.yaml`: `exclude`/`include` by trackId).\n"]
+                        "(edit `config/appstore_relevance.yaml`: `exclude`/`include` by trackId). Candidates by search position "
+                        "pass an LLM product check; the most-rated apps it dropped are listed under each table.\n"]
+    n_cand = n_drop = 0
     for nid in ids:
         n = all_niches[nid]
         stores = [("us", "en")]
@@ -77,20 +88,29 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                     apps[tid]["best_pos"] = min(apps[tid]["best_pos"], pos)
             ov = (rel.get(nid) or {}).get(country) or {}
             excl, incl = set(ov.get("exclude") or []), set(ov.get("include") or [])
-            for tid, rec in apps.items():
-                a = rec["a"]
-                name_tok = tokens(a.get("trackName", ""))
-                # relevant: in the top TOP_POS of at least one query (Apple ranks by relevance),
+            for rec in apps.values():
+                # a candidate: in the top TOP_POS of at least one query (Apple ranks by relevance),
                 # or seen in 3+ queries with a name that overlaps the query tokens
-                auto = rec["best_pos"] <= TOP_POS or (rec["hits"] >= 3 and bool(name_tok & qtok))
-                relevant = (auto and tid not in excl) or tid in incl
+                rec["auto"] = rec["best_pos"] <= TOP_POS or (rec["hits"] >= 3 and bool(tokens(rec["a"].get("trackName", "")) & qtok))
+            cands = sorted((tid for tid, rec in apps.items() if rec["auto"] and tid not in excl),
+                           key=lambda t: -(apps[t]["a"].get("userRatingCount") or 0))
+            fit = {}
+            if use_fit and cands:
+                fit = dict(zip(cands, appfit.check(ws, n, [{"app": apps[t]["a"].get("trackName", ""), "developer": apps[t]["a"].get("sellerName", ""),
+                                                             "genre": apps[t]["a"].get("primaryGenreName", "")} for t in cands])))
+            n_cand += len(fit)
+            n_drop += sum(1 for v, _ in fit.values() if v == "no")
+            for tid, rec in apps.items():
+                a, auto = rec["a"], rec["auto"]
+                f_fit, f_why = fit.get(tid, ("", ""))
+                relevant = (auto and tid not in excl and f_fit != "no") or tid in incl
                 rows.append({
                     "niche_id": nid, "store": country, "track_id": tid, "name": a.get("trackName", ""),
                     "seller": a.get("sellerName", ""), "ratings": a.get("userRatingCount", 0),
                     "rating": a.get("averageUserRating", 0), "price": a.get("price", 0),
                     "release": (a.get("releaseDate") or "")[:10], "updated": (a.get("currentVersionReleaseDate") or "")[:10],
                     "genre": a.get("primaryGenreName", ""), "hits": rec["hits"], "best_pos": rec["best_pos"], "auto": int(auto), "relevant": int(relevant),
-                    "queries": " | ".join(rec["qs"]),
+                    "queries": " | ".join(rec["qs"]), "fit": f_fit, "fit_why": f_why,
                 })
             top = sorted([r for r in rows if r["niche_id"] == nid and r["store"] == country and r["relevant"]], key=lambda r: -r["ratings"])[:25]
             review.append(f"\n## {nid} - {country} ({len(apps)} apps, queries: {', '.join(cats)})\n")
@@ -98,11 +118,19 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             review.append("|---|---|---|---|---|---|---|---|---|---|")
             for r in top:
                 review.append(f"| {r['track_id']} | {r['name'][:50]} | {r['seller'][:28]} | {r['ratings']:,} | {r['rating']:.1f} | {r['price']} | {r['release']} | {r['hits']} | {r['best_pos']} | {'✓' if r['relevant'] else ''} |")
-            print(f"{nid:36} {country} apps={len(apps):3} relevant={sum(1 for r in rows if r['niche_id']==nid and r['store']==country and r['relevant'])}")
+            dropped = sorted([r for r in rows if r["niche_id"] == nid and r["store"] == country and r["fit"] == "no" and not r["relevant"]],
+                             key=lambda r: -r["ratings"])[:10]
+            if dropped:
+                review.append("\nDropped by the product check (most-rated): " + "; ".join(
+                    f"{r['track_id']} {r['name'][:40]} ({r['ratings']:,}: {r['fit_why']})" for r in dropped) + "\n")
+            print(f"{nid:36} {country} apps={len(apps):3} relevant={sum(1 for r in rows if r['niche_id']==nid and r['store']==country and r['relevant'])}"
+                  + (f" (product check dropped {sum(1 for v, _ in fit.values() if v == 'no')} of {len(fit)})" if fit else ""))
 
     if not rows:
         print("no apps found - nothing written")
         return
+    if n_cand:
+        print(f"product check: {n_drop} of {n_cand} candidates are not products of their niche")
     out = ws.out("appstore_apps.csv")
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))

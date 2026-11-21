@@ -112,7 +112,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         # growth 20
         s_gr = 10 * pct(cohort["_yoy"], r["_yoy"]) + 5 * pct(cohort["_mom"], r["_mom"]) + 5 * pct(cohort["_cagr"], r["_cagr"])
         # fragmentation 25
-        supply_na = r["gate_s5"] in ("NA", "NA:proxy")
+        supply_na = r["gate_s5"].startswith("NA")   # NA, NA:proxy, NA:nodata
         s_fr = 10 * (1 - f(r["hhi_brand"], 0.5)) + 5 * pct(cohort["_comp"], r["_comp"])
         s_fr += (2.5 + 2.5) if supply_na else (5 * pct(cohort["_players"], r["_players"]) + 5 * (1 - f(r["supply_top3_share"], 0.5)))
         # deals 15

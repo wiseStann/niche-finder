@@ -38,7 +38,7 @@ import os
 import subprocess
 from collections import Counter, defaultdict
 
-from nichefinder import http, llm, niches, tools
+from nichefinder import appfit, http, niches, tools
 from nichefinder.sources import startpack
 from nichefinder.stages.s10_reddit_fetch import months_back
 from nichefinder.workspace import Workspace
@@ -62,15 +62,6 @@ STORE_NAME = {"appstore": "App Store", "gplay": "Google Play", "startpack": "Sta
 DOCS, APPS, FIT, GPLAY_PLAN = "ru_reviews_docs.jsonl", "ru_reviews_apps.csv", "ru_reviews_fit.csv", "ru_reviews_gplay_plan.json"
 APP_COLS = ["niche_id", "store", "app_id", "app", "developer", "ratings", "rating", "fetched", "kept", "oldest", "status"]
 FIT_COLS = ["niche_id", "store", "app_id", "app", "developer", "genre", "ratings", "fit", "by", "why"]
-FIT_SYSTEM = (
-    "You check which apps belong to a market niche. A niche is who x task x product. You get the niche and a numbered list of "
-    "apps that app store search returned for its queries (name | developer | store genre). For each app decide fit: "
-    "yes = a product these users would choose or compare for this task: built for it, or a direct substitute they weigh against it; "
-    "no = anything else: games and simulators; apps for the other side of a market (shoppers, guests, tenants, couriers, drivers, "
-    "car owners or club members when the niche serves the business, the host or the seller); big general apps where the task is "
-    "only a side feature (social networks, messengers, browsers, marketplaces, voice assistants, search engines, e-book readers); "
-    "apps that only share a word with the niche. Judge by who the users are as much as by the task. "
-    'Output JSON: {"apps": [{"k": <number>, "fit": "yes" or "no", "why": "<5-12 words>"}]} with every number.')
 
 
 def settings(ws: Workspace, section: str) -> dict:
@@ -101,22 +92,9 @@ def target_niches(ws: Workspace, only: str = "") -> list[str]:
 
 
 def app_fit(ws: Workspace, niche: dict, cands: list[dict]) -> dict[tuple[str, str], tuple[str, str]]:
-    """The LLM product check of one niche's candidates: (store, app_id) -> (fit, why); fit is "yes", "no", or "" when
-    the model gave no answer for the app."""
-    lines = [f"{k}: {c['app']} | {c['developer'] or '-'} | {c.get('genre') or '-'}" for k, c in enumerate(cands, 1)]
-    user = (f"Niche: {niche.get('name') or niche.get('id', '')}\nWho: {niche.get('who', '')}\nTask: {niche.get('task', '')}\n"
-            f"Product: {niche.get('product', '')}\n\nApps:\n" + "\n".join(lines))
-    content, _, _ = llm.chat_json(ws, [{"role": "system", "content": FIT_SYSTEM}, {"role": "user", "content": user}],
-                                  max_tokens=4000, temperature=0.0)
-    got: dict[int, tuple[str, str]] = {}
-    for it in (content or {}).get("apps") or []:
-        try:
-            k = int(it.get("k"))
-        except (TypeError, ValueError, AttributeError):
-            continue
-        fit = str(it.get("fit") or "").strip().lower()
-        got[k] = ("yes" if fit == "yes" else "no", str(it.get("why") or "").strip()[:160])
-    return {(c["store"], c["app_id"]): got.get(k, ("", "no answer from the model")) for k, c in enumerate(cands, 1)}
+    """The LLM product check of one niche's candidates (appfit.check): (store, app_id) -> (fit, why); fit is "yes",
+    "no", or "" when the model gave no answer for the app."""
+    return dict(zip(((c["store"], c["app_id"]) for c in cands), appfit.check(ws, niche, cands)))
 
 
 def pick_apps(ws: Workspace, ids: list[str], st: dict) -> tuple[list[dict], list[dict]]:

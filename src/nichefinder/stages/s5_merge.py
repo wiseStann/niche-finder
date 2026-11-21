@@ -5,7 +5,9 @@ shopify_metrics.csv, pricing_b2b_niche.csv, pricing_b2c_niche.csv, deals.csv. Fo
 in capterra_map) gives the concentration and the product counts of all categories are summed.
 S5 gate "fragmentation by an independent signal": top1_share (by ratings/reviews) <= 0.5 and players >= 8
 (B2C: 1k+ ratings; B2B: 100+ reviews). Niches with no measurable supply get gate NA; a Capterra category whose map note
-says "broader" or "proxy" gets NA:proxy (supply is judged by hand in the passport).
+says "broader" or "proxy" gets NA:proxy (supply is judged by hand in the passport). A source row without a top-1 share
+(Capterra pages that did not parse, such as an anti-bot "Security Check" page) is no data: the niche falls back to the
+other source, or gets NA:nodata. Until 2026-11-21 a missing share counted as 100 % and failed the gate.
 Trend verdict: when the anchor's Google Trends verdict is DOWN or NA (or FLAT/UP and brands disagree), the brand queries
 of the category (kind=brand rows, at least 2 with signal and mean_2024 >= 5) vote and may move it by one step.
 """
@@ -149,10 +151,12 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             "topgross_us": f(deals.get(nid, {}).get("topgrossing_us")), "topgross_ru": f(deals.get(nid, {}).get("topgrossing_ru")),
         }
         # independent concentration: App Store for b2c/prosumer, Capterra for b2b; if both exist, the one matching the side
+        # a Capterra row without a top-1 share means its pages did not parse (a "Security Check" page): no data
+        has_cap = bool(c) and row["cap_top1_share"] is not None
         use_as = row["as_na"] == 0 and n["side"] in ("b2c", "prosumer")
-        use_cap = bool(c) and n["side"].startswith("b2b")
+        use_cap = has_cap and n["side"].startswith("b2b")
         if not use_as and not use_cap:   # fallback: whatever is available
-            use_as, use_cap = row["as_na"] == 0, bool(c) and not (row["as_na"] == 0)
+            use_as, use_cap = row["as_na"] == 0, has_cap and not (row["as_na"] == 0)
         if nid in shop:   # Shopify niches: apps.shopify.com is the only direct supply signal
             row["supply_src"], row["supply_top1_share"], row["supply_top3_share"], row["supply_players"], row["supply_top1"] = "shopify", row["shop_top1_share"], row["shop_top3_share"], row["shop_players_100"], row["shop_top1"]
         elif use_as:
@@ -166,6 +170,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             row["gate_s5"] = "NA"
         elif row["supply_src"] == "capterra" and ("proxy" in note or "broader" in note):
             row["gate_s5"] = "NA:proxy"   # the Capterra category does not match the niche - supply is judged by hand in the passport
+        elif row["supply_top1_share"] is None:
+            row["gate_s5"] = "NA:nodata"   # the source has no concentration for this niche: missing data is not a failed gate
         else:
             ok = (row["supply_top1_share"] or 1) <= 0.5 and (row["supply_players"] or 0) >= 8
             row["gate_s5"] = "PASS" if ok else ("FAIL:top1" if (row["supply_top1_share"] or 1) > 0.5 else "FAIL:players")
