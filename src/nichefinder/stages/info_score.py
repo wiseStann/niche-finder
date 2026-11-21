@@ -9,12 +9,13 @@ Score, 0-100 (weights in config/score_info.yaml; mid-rank percentiles within the
 A missing value counts as the neutral percentile 0.5, as in s6_score.
 
 Gates (red): I0 fewer than gates.min_videos short videos in the window; I1 median views below gates.min_views_median.
-Flags (no effect): I:top3, I:fading, I:no-tg. Verdict: red on a failed gate, green at verdict.green_min_score from
+Flags (no effect): I:top3, I:fading, I:no-tg, I:ai-answers (info_ai rates the free chatbot answer at covers >=
+flags.ai_answers: the chat gives the product's content away). Verdict: red on a failed gate, green at verdict.green_min_score from
 nf.yaml (70), yellow otherwise. While score_info.yaml has `status: draft` the report says so at the top: fix the
 weights before reading the ranking as a decision.
 
-Input: data/out/info_youtube.csv (required), info_youtube_videos.csv (examples in the report), config/info_topics.yaml,
-config/score_info.yaml. Output: data/out/info_score.csv, reports/info.md.
+Input: data/out/info_youtube.csv (required), info_youtube_videos.csv (examples in the report), info_ai.csv (optional,
+the AI substitute probe), config/info_topics.yaml, config/score_info.yaml. Output: data/out/info_score.csv, reports/info.md.
 """
 from __future__ import annotations
 
@@ -31,10 +32,10 @@ NEEDS: tuple[str, ...] = ()
 WEIGHTS = {"views_median": 20, "views_p90": 10, "breakout_share": 15, "small_share": 10, "tg_channels": 15,
            "offers": 10, "spread": 10, "recent": 10}
 GATES = {"min_videos": 10, "min_views_median": 1000}
-FLAGS = {"top3_share": 0.6, "recent_ratio_low": 0.5}
+FLAGS = {"top3_share": 0.6, "recent_ratio_low": 0.5, "ai_answers": 2}
 COLS = ["rank", "topic_id", "verdict", "score", "gates", "flags", "attention", "newcomers", "monetization", "spread",
         "trend", "n_videos", "views_median", "views_p90", "breakout_share", "small_share", "tg_channel_share",
-        "offer_share", "top3_share", "recent_ratio", "who", "task", "product"]
+        "offer_share", "top3_share", "recent_ratio", "ai_covers", "who", "task", "product"]
 
 
 def f(v):
@@ -88,6 +89,9 @@ def score_rows(rows: list[dict], cfg: dict, green_min: float) -> list[dict]:
             flags.append("I:fading")
         if not v["tg_channel_share"]:
             flags.append("I:no-tg")
+        ai = f(r.get("ai_covers"))
+        if ai is not None and fl.get("ai_answers") is not None and ai >= fl["ai_answers"]:
+            flags.append("I:ai-answers")
         verdict = "red" if gates else ("green" if score >= green_min else "yellow")
         out.append({**r, **{k: round(x, 1) for k, x in parts.items()}, "score": round(score, 1),
                     "gates": " ".join(gates), "flags": " ".join(flags), "verdict": verdict})
@@ -123,14 +127,20 @@ def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str
               f"lang `{settings['lang']}`, region `{settings['region']}`; {len(scored)} topics scored. "
               "Percentiles are within this run's topics: the score ranks topics against each other.", "",
               "| # | topic | verdict | score | attention | newcomers | money | spread | trend | median views | p90 views "
-              "| breakout | small channels | TG channels | offers | shorts | gates / flags |",
-              "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+              "| breakout | small channels | TG channels | offers | shorts | AI covers | gates / flags |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in scored:
         lines.append(f"| {r['rank']} | {r['topic_id']} | {r['verdict']} | {r['score']} | {r['attention']} | "
                      f"{r['newcomers']} | {r['monetization']} | {r['spread']} | {r['trend']} | "
                      f"{human(r.get('views_median'))} | {human(r.get('views_p90'))} | {share(r.get('breakout_share'))} | "
                      f"{share(r.get('small_share'))} | {share(r.get('tg_channel_share'))} | "
-                     f"{share(r.get('offer_share'))} | {r.get('n_videos')} | {' '.join(x for x in (r['gates'], r['flags']) if x)} |")
+                     f"{share(r.get('offer_share'))} | {r.get('n_videos')} | {r.get('ai_covers') if r.get('ai_covers') not in (None, '') else '-'} | "
+                     f"{' '.join(x for x in (r['gates'], r['flags']) if x)} |")
+    if any(r.get("ai_covers") not in (None, "") for r in scored):
+        lines += ["", "AI covers (info_ai, no effect on the score): how much of the micro product a free chatbot answer "
+                  "gives away; 2 = an equivalent for free, 1 = the content but not what the product adds (video, "
+                  "designed materials, a trusted author, accountability), 0 = the chat barely helps. Same model answers "
+                  "and judges; answers in `data/out/info_ai_answers.jsonl`."]
     if rest:
         why = {"global": "the most viewed top of the phrase is foreign-language; add a Russian-specific phrase",
                "quota": "not measured yet; re-run info_youtube after the quota reset (midnight Pacific time)",
@@ -143,6 +153,10 @@ def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str
             if r.get(k):
                 lines.append(f"- **{k}**: {r[k]}")
         lines.append(f"- **phrases**: {r.get('phrases', '')}")
+        if r.get("ai_covers") not in (None, ""):
+            lines.append(f"- **free chatbot answer**: covers {r['ai_covers']} of 2 (votes {r.get('ai_votes') or '-'}) - "
+                         f"{r.get('ai_reason', '')}"
+                         + (f" The chat cannot give: {r['ai_missing']}." if r.get("ai_missing") else ""))
         vs = videos.get(r["topic_id"], [])
         top = sorted(vs, key=lambda x: -(f(x["views"]) or 0))[:3]
         brk = sorted((x for x in vs if x.get("breakout") == "1" and x.get("small") == "1"),
@@ -166,7 +180,14 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         raise SystemExit(f"{src} not found: run `nf run info_youtube` first")
     cfg = ws.load_config(info.SCORE_FILE, {}) or {}
     meta = {t["id"]: t for t in topics if t.get("id")}
-    rows = [{**r, **{k: meta.get(r["topic_id"], {}).get(k, "") for k in ("who", "task", "product")}}
+    ai: dict[str, dict] = {}
+    apath = ws.out("info_ai.csv")
+    if apath.is_file():
+        ai = {a["topic_id"]: {"ai_covers": a["covers"], "ai_votes": a.get("votes", ""), "ai_reason": a["reason"],
+                              "ai_missing": a["missing"]}
+              for a in csv.DictReader(open(apath, encoding="utf-8"))}
+    rows = [{**r, **{k: meta.get(r["topic_id"], {}).get(k, "") for k in ("who", "task", "product")},
+             **ai.get(r["topic_id"], {})}
             for r in csv.DictReader(open(src, encoding="utf-8"))]
     scored = score_rows(rows, cfg, float(ws.setting("verdict.green_min_score", 70)))
     rest = [r for r in rows if r.get("status") != "ok"]

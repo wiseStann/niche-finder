@@ -29,6 +29,7 @@ gates:
 flags:
   top3_share: 0.6       # I:top3 - three channels made most of the top videos (they own the topic)
   recent_ratio_low: 0.5 # I:fading - half as many uploads in the recent half of the window
+  ai_answers: 2         # I:ai-answers - info_ai rates the free chatbot answer at this level or above (gives the content away)
 
 # Verdict: red if a gate fails; green when the score reaches verdict.green_min_score in nf.yaml (70); yellow otherwise.
 

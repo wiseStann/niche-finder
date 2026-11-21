@@ -6,7 +6,8 @@ Optional inputs (the matching passport block is skipped when a file is missing):
 capterra_categories_stats.csv, shopify_metrics.csv, pricing_b2b.csv, pricing_b2c.csv, deals.csv, deals_matches.csv
 (with BetaList / Product Radar / Kickstarter launches), path_to_goal.csv (s6_ceiling), entrant_survival.csv (S9),
 offsearch.csv (S8, with Hacker News), reddit_voice.csv, reddit_brands.csv,
-reddit_voice_llm.csv, reddit_voice_themes.json, ru_reviews_verdict.csv, ru_reviews_llm.csv, ru_reviews_themes.json (S10);
+reddit_voice_llm.csv, reddit_voice_themes.json, ru_reviews_verdict.csv, ru_reviews_llm.csv, ru_reviews_themes.json (S10),
+ai_substitute.csv (s5_ai_substitute);
 config/overrides.yaml (notes, lens, manual supply estimates).
 """
 from __future__ import annotations
@@ -109,6 +110,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     rt = json.load(open(out("reddit_voice_themes.json"), encoding="utf-8")) if os.path.exists(out("reddit_voice_themes.json")) else {}
     reddit_verdict = _reddit_verdict()
     # S10 buyer voice in Russian: app-review verdict (s10_ru_reviews_report), shares and pain themes (s10_ru_reviews_classify)
+    ais = _rows(out("ai_substitute.csv"), "niche_id")   # S5 AI substitute probe (s5_ai_substitute)
     qv = _rows(out("ru_reviews_verdict.csv"), "niche_id")
     ql = _rows(out("ru_reviews_llm.csv"), "niche_id")
     qt = json.load(open(out("ru_reviews_themes.json"), encoding="utf-8")) if os.path.exists(out("ru_reviews_themes.json")) else {}
@@ -178,6 +180,12 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                 L.append(f"| {r['name']} | {n(r['ratings'])} | {'yes' if r['has_iap']=='1' else 'no'} | {('$'+r['min_monthly']) if r['min_monthly'] else '—'} | {('$'+r['min_yearly']) if r['min_yearly'] else '—'} | {('$'+r['min_weekly']) if r['min_weekly'] else '—'} | {('$'+r['min_lifetime']) if r['min_lifetime'] else '—'} | {r['iap_sample'][:70]} |")
             L += ["", f"{p(sp['b2c_monetized'])} of the top 8 are monetized; median monthly subscription **${n(sp['b2c_median_monthly'], '{:.2f}')}**, yearly ${n(sp['b2c_median_yearly'], '{:.2f}')}.", ""]
         L += [f"Lock-in (manual): {m.get('lock_in', '—')} of 2. Platform risk: **{m.get('platform_risk', '—')}** - {m.get('platform_note', '') or 'none'}.", ""]
+        ai = ais.get(nid)
+        if ai and ai.get("covers") not in ("", None):
+            L += [f"AI substitute (LLM probe, evidence for the manual platform risk, not a gate): a free chatbot covers the job **{ai['covers']} of 2** (votes over buyer requests: {ai.get('votes') or '-'}) - {ai['reason']}"
+                  + (f" Still needs a product for: {ai['missing']}." if ai.get("missing") else "")
+                  + (f" Brands the chatbot recommends: {ai['brands']}." if ai.get("brands") else "")
+                  + (f" **{ai['check']}.**" if ai.get("check") else "") + " Method: `S5-ai-substitute.md`.", ""]
         # deals
         if d:
             L += ["## Deals, launches, monetization (S0 corpora)", "",

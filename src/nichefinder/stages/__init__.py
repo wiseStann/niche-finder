@@ -10,7 +10,8 @@ Each stage is a module in this package with:
 
 Groups: s0 universe · s1 niches · s2 queries · s3 search demand · s4 trend depth · s5 supply depth ·
 s8 off-search demand · s9 supply over time · s10 buyer voice (Reddit; Russian app reviews) · s6 score and passports ·
-s7 HTML leaderboard · info micro info products (short video -> Telegram, own score) · ru Russian B2B module.
+s7 HTML leaderboard · info micro info products (short video -> Telegram, own score) · ru Russian B2B module ·
+exp paid one-off experiments (manual, never scored).
 """
 from __future__ import annotations
 
@@ -54,6 +55,8 @@ STAGES: list[Stage] = [
     Stage("s3_dataforseo", "s3"),
     Stage("s3_metrics", "s3"),
     Stage("s3_report", "s3"),
+    # Experiment, own group so that `nf run s3` never pays for it: AI search volume index vs Google (never scored)
+    Stage("s3_ai_volume", "exp", in_all=False),
     # S4 — trend depth
     Stage("s4_trends", "s4"),
     Stage("s4_wordstat_dynamics", "s4", market="ru"),
@@ -65,6 +68,7 @@ STAGES: list[Stage] = [
     Stage("s5_pricing_b2b", "s5"),
     Stage("s5_pricing_b2c", "s5"),
     Stage("s5_deals", "s5"),
+    Stage("s5_ai_substitute", "s5"),   # evidence for the manual G3 platform risk, not a gate
     Stage("s5_merge", "s5"),
     # First score pass: S8 and S10 reports show score and verdict, and s6_score reads S8 outputs — see s6_rescore
     Stage("s9_entrants", "s9"),
@@ -104,6 +108,7 @@ STAGES: list[Stage] = [
     Stage("info_discover", "info", market="ru"),
     Stage("info_suggest", "info"),
     Stage("info_youtube", "info"),
+    Stage("info_ai", "info"),          # AI substitute probe: flag I:ai-answers in info_score, no effect on the score
     Stage("info_score", "info"),
     # Russian B2B module (software registry, public procurement, Bitrix24 Market, hh.ru, Wordstat)
     Stage("ru_reestr", "ru", market="ru"),

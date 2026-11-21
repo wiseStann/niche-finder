@@ -1,4 +1,5 @@
-"""DataForSEO client: Google Ads search volume (exact volume, CPC, competition, up to 48 months of history) and Google SERP.
+"""DataForSEO client: Google Ads search volume (exact volume, CPC, competition, up to 48 months of history), Google SERP
+and the AI Keyword Data index (`ai_search_volume`, modeled from Google People Also Ask).
 
 Credentials: DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD (workspace .env or environment).
 Cache: data/cache/dfs/sv_<sha1>.json and serp_<sha1>.json, keyed by the request body, so re-runs are free.
@@ -21,6 +22,7 @@ from nichefinder.workspace import Workspace
 API = "https://api.dataforseo.com/v3"
 UA = http.BOT_UA
 COST_PER_CALL = 0.09     # USD, search_volume/live with up to 1000 keywords
+COST_PER_AI_KEYWORD = 0.0001   # USD, ai_optimization/ai_keyword_data/keywords_search_volume/live
 BATCH = 1000
 
 
@@ -86,6 +88,38 @@ def search_volume(ws: Workspace, keywords, location_code=None, language_code=Non
     out = {}
     for item in t.get("result") or []:
         out[item["keyword"].lower()] = item
+    return out, res.get("cost")
+
+
+def ai_search_volume_cached(ws: Workspace, keywords, location_code=2840, language_code="en") -> bool:
+    """True when this exact AI-volume batch is already in the cache (the call would be free)."""
+    task = {"keywords": keywords, "location_code": location_code, "language_code": language_code}
+    return _cache_path(ws, "aisv", task).exists()
+
+
+def ai_search_volume(ws: Workspace, keywords, location_code=2840, language_code="en", use_cache=True):
+    """AI Keyword Data: `ai_search_volume` and up to 12 months of `ai_monthly_searches` per keyword (<= 1000 keywords).
+
+    DataForSEO models this index from Google's People Also Ask data, not from chatbot logs, so it is not independent
+    of Google demand. Price: COST_PER_AI_KEYWORD per keyword. Russia and Belarus are not served.
+    Cached as aisv_<sha1>.json. Returns ({keyword: item}, cost)."""
+    assert len(keywords) <= BATCH
+    task = {"keywords": keywords, "location_code": location_code, "language_code": language_code}
+    path = _cache_path(ws, "aisv", task)
+    if use_cache and path.exists():
+        res = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        res = _request("POST", "/ai_optimization/ai_keyword_data/keywords_search_volume/live", [task])
+        if res["tasks"][0].get("status_code") == 20000:
+            path.write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
+    t = res["tasks"][0]
+    if t.get("status_code") != 20000:
+        raise RuntimeError(f"DataForSEO AI keyword data: {t.get('status_code')} {t.get('status_message')}")
+    out = {}
+    for block in t.get("result") or []:
+        for item in (block.get("items") or [block]) if isinstance(block, dict) else []:
+            if item.get("keyword"):
+                out[item["keyword"].lower()] = item
     return out, res.get("cost")
 
 
