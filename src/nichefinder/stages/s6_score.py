@@ -16,7 +16,7 @@ Search volume is taken from the clean base year (demand_2023 column) when Keywor
 
 Gates (any failure = red): G3 platform_risk = 2; G5 feasibility score >= 2; S5 supply concentration (top-1 > 50% or too few
 players) - PASS when the Google Play leader holds <= 50% with >= 8 players above 100k installs (PASS:android); unmeasured
-supply passes only with a manual supply estimate (PASS*).
+supply passes only with a manual supply estimate (PASS*, flag S5:manual); without one it fails S5:unmeasured.
 
 Verdict: gates failed -> red; otherwise green when score >= nf.yaml `verdict.green_min_score` (default 70), else yellow.
 `verdict` in config/overrides.yaml for a niche replaces the automatic green/yellow. The reason is written to `verdict_note`.
@@ -148,7 +148,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             flags.append("G4:expertise")
         if m.get("platform_risk") == 1:
             flags.append("P1:platform-partial")
-        if supply_na:
+        if s5 == "PASS*":   # only a niche with a manual estimate; unmeasured supply without one fails S5:unmeasured above
             flags.append("S5:manual")
         if r["_dem_flag"]:
             flags.append(r["_dem_flag"])

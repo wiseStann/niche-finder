@@ -122,3 +122,26 @@ def test_capterra_block_pages_are_not_data_and_not_cached(tmp_path, monkeypatch)
     assert s5_capterra.fetch(ws, "x-software", 1) == "" and not cached.exists()
     monkeypatch.setattr(http, "request", lambda *a, **k: Resp(REAL))
     assert s5_capterra.parse(s5_capterra.fetch(ws, "x-software", 1))[0] == 321 and cached.exists()
+
+
+def test_s5_manual_flag_only_with_a_manual_estimate(tmp_path):
+    from nichefinder.stages import s6_score
+    ws = make_ws(tmp_path, side="b2b-smb")
+    (tmp_path / "config" / "score.yaml").write_text(yaml.safe_dump({
+        "cpc_band": {"en": [0.5, 8.0], "en_b2b": [1.0, 1000.0]}, "cpc_below": 0.3, "cpc_above": 0.6,
+        "trend_up": 0.05, "trend_down": -0.05}), encoding="utf-8")
+    (tmp_path / "config" / "overrides.yaml").write_text(yaml.safe_dump({"budget": {"supply_manual": "ten players, no leader"}}),
+                                                       encoding="utf-8")
+    write_csv(ws.out("metrics_quick.csv"), [{"id": nid, "us_yoy": 0.1, "us_momentum": 1.0, "us_cagr_3y": 0.05} for nid in ("budget", "crm")])
+    base = {"tier": "A", "side": "b2b-smb", "geo": "global", "demand_us": 1000, "demand_2023": 900, "gates_s3": "", "trend_kp": "FLAT",
+            "trend_gt": "FLAT", "comp_idx": 50, "tinyseed": 0, "ph_12m": 1, "yc": 0, "topgross_us": 0, "cpc": 5, "hhi_brand": 0.3,
+            "b2b_price_public": 0.5, "b2b_under100": 0.5, "b2c_with_monthly": 0, "b2c_n": 0, "expertise_flag": 0,
+            "b2c_median_monthly": "", "b2b_median_monthly": 60, "gate_s5": "NA:proxy", "supply_src": "capterra",
+            "supply_players": 3, "supply_top1": "Big", "supply_top1_share": 0.6, "supply_top3_share": 0.8}
+    write_csv(ws.out("supply_deep.csv"), [{"niche_id": nid, **base} for nid in ("budget", "crm")])
+    s6_score.run(ws, argparse.Namespace())
+    rows = {r["niche_id"]: r for r in csv.DictReader(open(ws.out("score_final.csv"), encoding="utf-8"))}
+    assert (rows["budget"]["gate_s5"], rows["budget"]["flags"], rows["budget"]["gates_failed"]) == ("PASS*", "S5:manual", "")
+    assert (rows["crm"]["gate_s5"], rows["crm"]["gates_failed"], rows["crm"]["verdict"]) == ("NA", "S5:unmeasured", "red")
+    assert "S5:manual" not in rows["crm"]["flags"]   # no manual estimate: the flag would read "manual estimate" in passports
+    assert rows["budget"]["s_frag"] == rows["crm"]["s_frag"]   # both get the neutral half-credit for players / top-3

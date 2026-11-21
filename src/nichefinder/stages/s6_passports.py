@@ -331,7 +331,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     for k, s in enumerate(ordered, 1):
         if "S5:manual" in s["flags"]:
             sup = "manual estimate (see passport)"
-        elif s["supply_src"] != "na":
+        elif s["supply_src"] != "na" and s["gate_s5"] != "NA":   # NA here = unmeasured, the proxy numbers are not supply
             sup = f"{s['supply_src']}: {n(s['supply_players'])} / {p(s['supply_top1_share'])} {s['supply_top1'][:22]}"
         else:
             sup = "not measured"

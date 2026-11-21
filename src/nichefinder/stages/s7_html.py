@@ -122,7 +122,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         row = {
             "id": nid, "name": x.get("name", nid), "who": x.get("who", ""), "side": SIDE.get(x["side"], x["side"]), "geo": x["geo"], "tier": s["tier"],
             "verdict": s["verdict"], "score": num(s["score"]), "demand": num(s["demand_us"]), "demand2023": num(sp["demand_2023"]),
-            "cpc": num(s["cpc"]), "kp": s["trend_kp"], "gt": s["trend_gt"], "src": s["supply_src"], "manual": "S5:manual" in s["flags"],
+            "cpc": num(s["cpc"]), "kp": s["trend_kp"], "gt": s["trend_gt"], "src": "na" if s["gate_s5"] == "NA" else s["supply_src"], "manual": "S5:manual" in s["flags"],
             "players": num(s["supply_players"]), "top1": num(s["supply_top1_share"]), "top1name": s["supply_top1"],
             "price": price, "gates": s["gates_failed"], "flags": s["flags"], "note": s.get("verdict_note") or m.get("verdict_note", ""), "md": md,
             "yt": o.get("yt_verdict", ""), "gp": num(o.get("gp_us_installs")),
