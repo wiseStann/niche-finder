@@ -288,3 +288,26 @@ def test_info_youtube_global_top_is_not_thin(tmp_path, monkeypatch):
     assert (row["status"], row["dropped_lang"], row["n_videos"]) == ("global", "8", "1")
     info_score.run(ws, argparse.Namespace())
     assert "guitar (global: the most viewed top" in ws.report("info.md").read_text(encoding="utf-8")
+
+
+def test_discover_trends_from_wordstat_dynamics(tmp_path, monkeypatch):
+    from nichefinder.sources import wordstat
+    from nichefinder.stages import info_discover
+    ws = make_ws(tmp_path, [])
+    months = [f"{2023 + (i + 10) // 12}-{(i + 10) % 12 + 1:02d}-01" for i in range(36)]
+    series = {"растёт": [100] * 24 + [150] * 12, "падает": [100] * 24 + [70] * 12, "сезон": [50, 50, 200] * 12}
+    monkeypatch.setattr(wordstat, "dynamics", lambda ws, p, m, log=None: (
+        {"results": [{"date": d, "count": c} for d, c in zip(months, series[p])]}, False))
+    topics = [{"head_phrase": p} for p in series] + [{"head_phrase": "не мерим"}]
+    info_discover.trends(ws, topics, 3)
+    assert [t["trend"] for t in topics[:3]] == ["UP", "DOWN", "FLAT"]     # a seasonal series is not growth
+    assert topics[0]["yoy"] == 0.5 and "trend" not in topics[3]
+
+
+def test_discover_write_topics_keeps_the_hand_made_backup(tmp_path):
+    from nichefinder.stages import info_discover
+    ws = make_ws(tmp_path, [{"id": "mine", "q": ["x"]}])
+    info_discover.write_topics(ws, [{"id": "a", "q": ["a"], "source": "info_discover"}])
+    info_discover.write_topics(ws, [{"id": "b", "q": ["b"], "source": "info_discover"}])   # second write
+    prev = yaml.safe_load(ws.config("info_topics.previous.yaml").read_text(encoding="utf-8"))
+    assert [t["id"] for t in prev["topics"]] == ["mine"]

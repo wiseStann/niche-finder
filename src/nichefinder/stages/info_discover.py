@@ -23,6 +23,10 @@ topic itself (the subject in 1-3 words, the cohort's phrase rule); `must` is bui
 plus the model's stems with generic ones removed (the model alone proposed "lesson", "beginner", "master class" and
 2-letter stems such as "bo" for guitar); who / task / product are the model's hypotheses, to be checked by a human.
 
+With --dynamics N the head phrase of each of the top N topics gets its 36-month Wordstat dynamics: yoy (last 12 months
+against the previous 12), momentum (last 3 months against the same months a year earlier) and a trend UP / FLAT / DOWN
+at +-15 %, so "most demanded" can be read together with "growing now". One Wordstat request per topic.
+
 Keys: YANDEX_API_KEY (Wordstat, about 100 requests per hour; one per stem), LLM_API_KEY. Cache: data/cache/wordstat/,
 data/cache/llm/; a re-run with the same stems, threshold and model costs nothing.
 """
@@ -102,6 +106,39 @@ def add_arguments(p: argparse.ArgumentParser) -> None:
     p.add_argument("--write-topics", type=int, nargs="?", const=-1, default=0, metavar="N",
                    help="replace the topics of config/info_topics.yaml with the top N discovered topics "
                         "(N defaults to top_n in config/info_discover.yaml)")
+    p.add_argument("--dynamics", type=int, nargs="?", const=-1, default=0, metavar="N",
+                   help="36-month Wordstat dynamics of the head phrase of the top N topics (one request each; "
+                        "N defaults to top_n): yoy, momentum, trend")
+
+
+def trends(ws: Workspace, topics: list[dict], n: int) -> None:
+    """Add yoy / momentum / trend to the top n topics from the 36-month dynamics of each topic's head phrase.
+
+    yoy = last 12 months / previous 12, both years capped at 3x the median of the 24 months; momentum = last 3 months
+    / the same 3 months a year earlier. Both compare whole years or the same months, so seasonal topics (knitting peaks
+    in autumn and winter) are not read as growth. The cap is symmetric on purpose: S4 caps only the last 12 months at
+    3x the previous-year median, which turns a stable topic with yearly peaks above 3x (New Year crafts) into DOWN
+    (-17 % on a flat 50-50-200 series). Trend: UP at yoy >= +15 %, DOWN at <= -15 % (S4's single-source thresholds)."""
+    from nichefinder.stages.s4_wordstat_dynamics import parse
+    for t in topics[:n]:
+        res, _ = wordstat.dynamics(ws, t["head_phrase"], 36, log=print)
+        m = yoy_metrics([v for _, v in parse(res)]) if "_error" not in res else {}
+        yoy = m.get("yoy")
+        t["yoy"], t["momentum"], t["spike"] = (yoy if yoy is not None else ""), m.get("momentum", ""), m.get("spike", "")
+        t["trend"] = "" if yoy is None else ("UP" if yoy >= 0.15 else "DOWN" if yoy <= -0.15 else "FLAT")
+
+
+def yoy_metrics(v: list[int]) -> dict:
+    """yoy with a symmetric 3x-median cap, momentum on the same months, spike = last-year max above 3x its median."""
+    if len(v) < 24:
+        return {}
+    last12, prev12 = v[-12:], v[-24:-12]
+    med = sorted(last12 + prev12)[12] or 1
+    capped = [min(x, 3 * med) for x in last12], [min(x, 3 * med) for x in prev12]
+    yoy = round(sum(capped[0]) / sum(capped[1]) - 1, 3) if sum(capped[1]) else None
+    mom = round(sum(v[-3:]) / sum(v[-15:-12]) - 1, 3) if sum(v[-15:-12]) else ""
+    spike = int(max(last12) > 3 * (sorted(last12)[6] or 1))
+    return {"yoy": yoy, "momentum": mom, "spike": spike}
 
 
 def settings(ws: Workspace) -> dict:
@@ -193,7 +230,7 @@ def rank(rows: list[dict]) -> list[dict]:
         total = sum(kinds.values())
         topics.append({
             "topic": t, "area": max(areas, key=areas.get), "demand": demand([(r["phrase"], r["count"]) for r in rs]),
-            "head": rs[0]["count"], "n_phrases": len(rs),
+            "head": rs[0]["count"], "head_phrase": rs[0]["phrase"], "n_phrases": len(rs),
             "learn": round(kinds.get("L", 0) / total, 2), "fix": round(kinds.get("F", 0) / total, 2),
             "material": round(kinds.get("M", 0) / total, 2),
             "examples": " | ".join(r["phrase"] for r in rs[:5]),
@@ -223,6 +260,8 @@ def propose(ws: Workspace, top: list[dict]) -> list[dict]:
             entry.update({"who": p.get("who", ""), "task": p.get("task", ""),
                           "product": (p.get("product") or "") + " (hypothesis)",
                           "demand": t["demand"], "area": t["area"], "source": "info_discover"})
+            if t.get("trend"):
+                entry.update({"trend": t["trend"], "yoy": t["yoy"]})
             out.append(entry)
     return out
 
@@ -285,7 +324,10 @@ def write_topics(ws: Workspace, entries: list[dict]) -> Path:
     path = ws.config(info.TOPICS_FILE)
     text = path.read_text(encoding="utf-8") if path.is_file() else "_settings: {}\n"
     head = text[:text.index("\ntopics:") + 1] if "\ntopics:" in text else text.rstrip("\n") + "\n"
-    if "\ntopics:" in text:
+    current = (yaml.safe_load(text) or {}).get("topics") or []
+    # Back up only a hand-made list: a list written by this stage is regenerated from the cache, and backing it up
+    # would overwrite the hand-made list kept by the first --write-topics.
+    if "\ntopics:" in text and any(t.get("source") != "info_discover" for t in current if isinstance(t, dict)):
         ws.config("info_topics.previous.yaml").write_text(text, encoding="utf-8")
     seen: set[str] = set()
     for e in entries:
@@ -307,10 +349,16 @@ def report(ws: Workspace, cfg: dict, topics: list[dict], n_phrases: int, n_sorte
              + ", ".join(f"{KINDS.get(k, 'other')} {v}" for k, v in sorted(kinds.items())) + ".",
              "", "Demand is the sum of a topic's phrases without nested ones (impressions per month, broad match): an "
              "upper estimate for ranking, not a market size.", "",
-             "| # | topic | area | demand | head phrase | phrases | learn / fix / material | examples |",
-             "|---|---|---|---|---|---|---|---|"]
+             "Trend (where measured): the head phrase's last 12 months against the previous 12 in Wordstat, UP at +15 %, "
+             "DOWN at -15 %; momentum = last 3 months against the same months a year earlier.", "",
+             "| # | topic | area | demand | head phrase | trend | yoy | momentum | phrases | learn / fix / material | examples |",
+             "|---|---|---|---|---|---|---|---|---|---|---|"]
+
+    def pc(v):
+        return f"{v:+.0%}" if isinstance(v, (int, float)) else "-"
     for t in topics[:cfg["report_n"]]:
-        lines.append(f"| {t['rank']} | {t['topic']} | {t['area']} | {t['demand']:,} | {t['head']:,} | {t['n_phrases']} | "
+        lines.append(f"| {t['rank']} | {t['topic']} | {t['area']} | {t['demand']:,} | {t['head_phrase']} ({t['head']:,}) | "
+                     f"{t.get('trend') or '-'} | {pc(t.get('yoy'))} | {pc(t.get('momentum'))} | {t['n_phrases']} | "
                      f"{t['learn']:.0%} / {t['fix']:.0%} / {t['material']:.0%} | {t['examples']} |")
     path = ws.report("info_discover.md")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -339,9 +387,13 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         w.writeheader()
         w.writerows(rows)
     topics = rank(rows)
-    cols = ["rank", "topic", "area", "demand", "head", "n_phrases", "learn", "fix", "material", "examples"]
+    nd = int(getattr(args, "dynamics", 0) or 0)
+    if nd:
+        trends(ws, topics, int(cfg["top_n"]) if nd < 0 else nd)
+    cols = ["rank", "topic", "area", "demand", "head", "head_phrase", "trend", "yoy", "momentum", "spike", "n_phrases",
+            "learn", "fix", "material", "examples"]
     with open(ws.out("info_discover.csv"), "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=cols)
+        w = csv.DictWriter(f, fieldnames=cols, restval="")
         w.writeheader()
         w.writerows(topics)
     path = report(ws, cfg, topics, len(phrases), len(items), kinds)
