@@ -63,7 +63,7 @@ def test_info_telegram_end_to_end(tmp_path, monkeypatch):
         for i, (t, ch, kind, links, pay) in enumerate(vids):
             w.writerow({"topic_id": t, "video_id": f"v{i}", "channel_id": ch, "kind": kind, "tg_links": links,
                         "pay": pay, "title": "x"})
-    pages = {"knita": page("20 000 subscribers"), "knita2": page("500 subscribers"),
+    pages = {"knita": page("20 000 subscribers", "Вязание | Анна"), "knita2": page("500 subscribers"),
              "knitb": page("3 000 subscribers", desc='<a href="https://boosty.to/knitb">Boosty</a>'),
              "sponsor": page("590 000 subscribers"), "mathf": page("@mathf")}
     calls = []
@@ -78,10 +78,44 @@ def test_info_telegram_end_to_end(tmp_path, monkeypatch):
     assert (knit["yt_channels"], knit["tg_linked"]) == ("4", "2")       # A, B, C, E with teaching videos; D a sketch
     assert float(knit["tg_subs_median"]) == 11500 and knit["tg_subs_max"] == "20000"   # A counts once, its largest
     assert knit["tg_big"] == "1" and knit["pay_share"] == "0.5"          # B via its Telegram page, C via YouTube
-    assert knit["top_channel"] == "knita (20000)"
+    assert knit["top_channel"] == "Вязание / Анна (20000)"                 # the title, "|" would break a table
     assert rows["math"]["tg_linked"] == "0"                               # the sponsor is out, mathf is a user page
     chans = {r["link"]: r for r in csv.DictReader(open(ws.out("info_telegram_channels.csv"), encoding="utf-8"))}
     assert chans["sponsor"]["shared"] == "1" and chans["knitb"]["pay"] == "1" and "knitd" not in chans
     n = len(calls)
     info_telegram.run(ws, argparse.Namespace())
     assert len(calls) == n                                                # same month: from the cache
+
+
+def test_info_score_shows_telegram_without_changing_the_score(tmp_path):
+    from nichefinder.stages import info_score
+    ws = make_ws(tmp_path)
+    base = {"status": "ok", "phrases": "x", "window_from": "2025-11-01", "views_median": "20000", "views_p90": "100000",
+            "breakout_share": "0.1", "small_share": "0.2", "tg_channel_share": "0.2", "offer_share": "0.1",
+            "top3_share": "0.3", "recent_ratio": "1.0", "n_videos": "40"}
+    with open(ws.out("info_youtube.csv"), "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=info_youtube.TOPIC_COLS, extrasaction="ignore")
+        w.writeheader()
+        w.writerows([{**base, "topic_id": "knit"}, {**base, "topic_id": "math", "views_median": "90000"}])
+    info_score.run(ws, argparse.Namespace())
+    before = {r["topic_id"]: r["score"] for r in csv.DictReader(open(ws.out("info_score.csv"), encoding="utf-8"))}
+    assert "Telegram funnels" not in ws.report("info.md").read_text(encoding="utf-8")
+    with open(ws.out("info_telegram.csv"), "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=info_telegram.TOPIC_COLS)
+        w.writeheader()
+        w.writerow({"topic_id": "knit", "yt_channels": 10, "tg_linked": 3, "tg_share": 0.3, "tg_subs_median": 12000,
+                    "tg_subs_p90": 50000, "tg_subs_max": 50000, "tg_big": 2, "pay_share": 0.2,
+                    "top_channel": "knitschool (50000)"})
+    info_score.run(ws, argparse.Namespace())
+    rows = {r["topic_id"]: r for r in csv.DictReader(open(ws.out("info_score.csv"), encoding="utf-8"))}
+    assert {k: r["score"] for k, r in rows.items()} == before
+    assert (rows["knit"]["tg_linked"], rows["knit"]["pay_share"], rows["math"]["tg_linked"]) == ("3", "0.2", "")
+    md = ws.report("info.md").read_text(encoding="utf-8")
+    assert "Telegram funnels" in md and "| knit | 10 | 3 | 12.0k | 50.0k | 2 | 20% | knitschool (50000) |" in md
+    assert "- **Telegram**: 3 of 10 authors of teaching Shorts link a measurable channel" in md
+
+
+def test_info_telegram_runs_between_youtube_and_score():
+    from nichefinder.stages import STAGES
+    names = [s.name for s in STAGES]
+    assert names.index("info_youtube") + 1 == names.index("info_telegram") < names.index("info_score")

@@ -11,6 +11,7 @@ linked pages and measures, per topic, over the YouTube channels of its teaching 
 - tg_linked: of them, channels that link a Telegram channel or group showing a count (a funnel you can measure).
   A link named by two or more different YouTube channels is a sponsor or a network, not one author's funnel
   (the first run: a search engine's 590k channel from paid integrations), so it is left out (`shared` 1);
+- top_channel: the largest linked channel, by title, with its subscribers;
 - tg_subs_median, tg_subs_p90, tg_subs_max: subscribers of those Telegram channels, one per YouTube channel (its
   largest link), so one author's three links do not count three times;
 - tg_big: linked Telegram channels with at least `big_subs` subscribers (10,000 by default);
@@ -83,6 +84,12 @@ def fetch(ws: Workspace, link: str, sleep: float) -> dict:
     return parse_page(page)
 
 
+def top_name(link: str, pages: dict[str, dict]) -> str:
+    """The channel's title (an invite link is an unreadable hash), without "|", which would break a Markdown table."""
+    title = " ".join((pages.get(link, {}).get("title") or "").replace("|", "/").split())
+    return title or link
+
+
 def topic_metrics(videos: list[dict], pages: dict[str, dict], pay: re.Pattern, big: int,
                   shared: set[str] = frozenset()) -> dict:
     """Per-topic metrics over the YouTube channels of the teaching videos (see the module docstring)."""
@@ -108,7 +115,8 @@ def topic_metrics(videos: list[dict], pages: dict[str, dict], pay: re.Pattern, b
         "yt_channels": n_yt, "tg_linked": len(subs), "tg_share": round(len(subs) / n_yt, 3) if n_yt else "",
         "tg_subs_median": statistics.median(s) if s else "", "tg_subs_p90": percentile(s, 0.9) if s else "",
         "tg_subs_max": s[-1] if s else "", "tg_big": sum(1 for x in s if x >= big),
-        "pay_share": round(paying / n_yt, 3) if n_yt else "", "top_channel": f"{top[0]} ({top[1]})" if top[0] else "",
+        "pay_share": round(paying / n_yt, 3) if n_yt else "", "top_channel": top_name(top[0], pages) + f" ({top[1]})"
+        if top[0] else "",
     }
 
 

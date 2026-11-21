@@ -8,6 +8,10 @@ Score, 0-100 (weights in config/score_info.yaml; mid-rank percentiles within the
   trend        = recent * pct(recent_ratio)
 A missing value counts as the neutral percentile 0.5, as in s6_score.
 
+Shown, never scored: data/out/info_telegram.csv (optional, info_telegram): the Telegram funnels of the authors of
+teaching Shorts (how many link a measurable channel, its subscribers, how many already link a payment or a sales
+funnel), as a table after the ranking and a line per topic; score.csv gets tg_linked, tg_subs_median, tg_big, pay_share.
+
 Gates (red): I0 fewer than gates.min_videos short videos in the window; I1 median views below gates.min_views_median.
 Flags (no effect): I:top3, I:fading, I:no-tg, I:ai-answers (info_ai rates the free chatbot answer at covers >=
 flags.ai_answers: the chat gives the product's content away). Verdict: red on a failed gate, green at verdict.green_min_score from
@@ -34,6 +38,9 @@ WEIGHTS = {"views_median": 20, "views_p90": 10, "breakout_share": 15, "small_sha
            "offers": 10, "spread": 10, "recent": 10}
 GATES = {"min_videos": 10, "min_views_median": 1000}
 FLAGS = {"top3_share": 0.6, "recent_ratio_low": 0.5, "ai_answers": 2}
+TELEGRAM = ("yt_channels", "tg_linked", "tg_subs_median", "tg_subs_p90", "tg_subs_max", "tg_big", "pay_share",
+            "top_channel")
+TELEGRAM_COLS = ["tg_linked", "tg_subs_median", "tg_big", "pay_share"]
 COLS = ["rank", "topic_id", "verdict", "score", "gates", "flags", "attention", "newcomers", "monetization", "spread",
         "trend", "n_videos", "views_median", "views_p90", "breakout_share", "small_share", "tg_channel_share",
         "offer_share", "top3_share", "recent_ratio", "n_shorts", "teach_share", "ai_covers", "who", "task", "product"]
@@ -159,12 +166,29 @@ def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str
                "empty": "no teaching Shorts passed the filters"}
         lines += ["", "Not scored:"]
         lines += [f"- {r['topic_id']} ({r.get('status')}: {why.get(r.get('status'), '')})" for r in rest]
+    if any(r.get("tg_linked") not in (None, "") for r in scored):
+        lines += ["", "Telegram funnels (info_telegram, no effect on the score): of the YouTube authors of a topic's "
+                  "teaching Shorts, how many link a Telegram channel or group that shows a count (t.me links and "
+                  "\"@name\" in the descriptions), its subscribers (one per author: the largest link), how many have "
+                  "10k+, and the share of authors who link a payment or sales-funnel platform (GetCourse, Boosty, "
+                  "Tribute, BotHelp...). A floor: a channel's \"link in profile\" is not in the YouTube API. Links "
+                  "in `data/out/info_telegram_channels.csv`.", "",
+                  "| # | topic | authors | with Telegram | median subscribers | p90 | 10k+ | sell | largest |",
+                  "|---|---|---|---|---|---|---|---|---|"]
+        lines += [f"| {r['rank']} | {r['topic_id']} | {r.get('yt_channels') or 0} | {r.get('tg_linked') or 0} | "
+                  f"{human(r.get('tg_subs_median'))} | {human(r.get('tg_subs_p90'))} | {r.get('tg_big') or 0} | "
+                  f"{share(r.get('pay_share'))} | {r.get('top_channel') or '-'} |" for r in scored]
     for r in scored:
         lines += ["", f"## {r['rank']}. {r['topic_id']}: {r['verdict']}, {r['score']}", ""]
         for k in ("who", "task", "product"):
             if r.get(k):
                 lines.append(f"- **{k}**: {r[k]}")
         lines.append(f"- **phrases**: {r.get('phrases', '')}")
+        if r.get("tg_linked") not in (None, ""):
+            lines.append(f"- **Telegram**: {r['tg_linked']} of {r.get('yt_channels') or 0} authors of teaching Shorts "
+                         f"link a measurable channel; median {human(r.get('tg_subs_median'))} subscribers, "
+                         f"{r.get('tg_big') or 0} with 10k+; {share(r.get('pay_share'))} link a payment or sales funnel"
+                         + (f"; largest {r['top_channel']}" if r.get("top_channel") else ""))
         if r.get("ai_covers") not in (None, ""):
             lines.append(f"- **free chatbot answer**: covers {r['ai_covers']} of 2 (votes {r.get('ai_votes') or '-'}) - "
                          f"{r.get('ai_reason', '')}"
@@ -203,13 +227,18 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             for r in csv.DictReader(open(src, encoding="utf-8"))]
     scored = score_rows(rows, cfg, float(ws.setting("verdict.green_min_score", 70)))
     rest = [r for r in rows if r.get("status") != "ok"]
+    tpath = ws.out("info_telegram.csv")
+    if tpath.is_file():
+        tg = {t["topic_id"]: {k: t.get(k, "") for k in TELEGRAM} for t in csv.DictReader(open(tpath, encoding="utf-8"))}
+        for r in scored:
+            r.update(tg.get(r["topic_id"], {}))
     videos: dict[str, list[dict]] = {}
     vpath = ws.out("info_youtube_videos.csv")
     if vpath.is_file():
         for v in csv.DictReader(open(vpath, encoding="utf-8")):
             videos.setdefault(v["topic_id"], []).append(v)
     with open(ws.out("info_score.csv"), "w", newline="", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=COLS, extrasaction="ignore")
+        w = csv.DictWriter(fh, fieldnames=COLS + TELEGRAM_COLS, extrasaction="ignore")
         w.writeheader()
         w.writerows(scored)
     path = ws.report("info.md")

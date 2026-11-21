@@ -108,6 +108,7 @@ STAGES: list[Stage] = [
     Stage("info_discover", "info", market="ru"),
     Stage("info_suggest", "info"),
     Stage("info_youtube", "info"),
+    Stage("info_telegram", "info"),    # Telegram funnels behind the teaching Shorts: shown in info_score, no score effect
     Stage("info_ai", "info"),          # AI substitute probe: flag I:ai-answers in info_score, no effect on the score
     Stage("info_score", "info"),
     # Russian B2B module (software registry, public procurement, Bitrix24 Market, hh.ru, Wordstat)
@@ -124,7 +125,6 @@ GROUPS = list(dict.fromkeys(s.group for s in STAGES))
 
 
 def resolve(targets: list[str]) -> list[Stage]:
-    Stage("info_telegram", "info"),    # Telegram funnels behind the teaching Shorts: shown in info_score, no score effect
     """Stage names, group names (s0…s10, ru) or `all` → ordered unique stages."""
     picked: list[Stage] = []
     for t in targets:
