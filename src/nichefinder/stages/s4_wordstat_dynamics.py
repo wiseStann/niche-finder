@@ -1,7 +1,7 @@
 """Wordstat dynamics for the Russian anchor of every niche with geo both/ru: 36 months, monthly.
 
-Metrics as in the global trend stage: yoy (last 12 / previous 12 months, last-12 values capped at 3x the previous-year
-median), yoy_pre (compare year / base year averages, see config/wordstat.yaml), momentum (last 3 months / the same 3 months
+Metrics as in the global trend stage: yoy (last 12 / previous 12 months on the robust series: every month capped at
+3x the median of the 12 months before it, as in s3_metrics), yoy_pre (compare year / base year averages, see config/wordstat.yaml), momentum (last 3 months / the same 3 months
 a year earlier). Verdict UP/DOWN only when yoy and yoy_pre agree. Extra phrases (corrected anchors) are listed per niche in
 config/overrides_ru.yaml under `dynamics_phrases`.
 Output: data/out/wordstat_dynamics.csv. Key: YANDEX_API_KEY (only for requests not yet cached).
@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import statistics
 
 from nichefinder import keys, niches
 from nichefinder.sources import wordstat
@@ -36,9 +37,14 @@ def series_metrics(vals, base_year="2023", compare_year="2024"):
     if len(v) < 24:
         return {}
     last12, prev12 = v[-12:], v[-24:-12]
-    med = sorted(prev12)[len(prev12) // 2] or 1
-    robust = [min(x, 3 * med) for x in last12]
-    yoy = (sum(robust) / sum(prev12) - 1) if sum(prev12) else None
+    # Both years are capped by the same rule. Until 2026-11-21 only the last 12 months were capped (at 3x the previous
+    # year's median), so a flat seasonal series whose yearly peaks exceed 3x its median read as DOWN (-36 % in the test).
+    robust_all = []
+    for i, x in enumerate(v):
+        med = statistics.median(v[i - 12:i] if i >= 12 else v[:12])
+        robust_all.append(min(x, 3 * med) if med > 0 else x)
+    robust, base = robust_all[-12:], robust_all[-24:-12]
+    yoy = (sum(robust) / sum(base) - 1) if sum(base) else None
     mom = (sum(v[-3:]) / sum(v[-15:-12]) - 1) if sum(v[-15:-12]) else None
     by_year = {}
     for (m, x) in vals:

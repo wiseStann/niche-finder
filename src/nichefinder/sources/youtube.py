@@ -57,14 +57,22 @@ class Client:
         return data
 
     def search(self, q: str, *, lang: str, region: str, after: str, duration: str = "short",
-               order: str = "relevance", n: int = 50) -> list[str]:
-        """Video ids for a phrase: one page of up to 50 results, published after `after` (RFC 3339).
-        duration "short" is YouTube's under-4-minutes filter; there is no Shorts-only filter in the API."""
-        data = self._get("search", {
+               order: str = "relevance", n: int = 50, pages: int = 1) -> list[str]:
+        """Video ids for a phrase: `pages` pages of up to 50 results each (100 units a page), published after `after`
+        (RFC 3339). duration "short" is YouTube's under-4-minutes filter; there is no Shorts-only filter in the API.
+        The first page's request is the same for any `pages`, so a deeper run reuses its cache."""
+        params = {
             "part": "snippet", "type": "video", "q": q, "maxResults": n, "order": order, "publishedAfter": after,
             "relevanceLanguage": lang, "regionCode": region, "videoDuration": duration, "safeSearch": "none",
-        })
-        return [it["id"]["videoId"] for it in data.get("items", []) if (it.get("id") or {}).get("videoId")]
+        }
+        ids: list[str] = []
+        for _ in range(max(1, pages)):
+            data = self._get("search", params)
+            ids += [it["id"]["videoId"] for it in data.get("items", []) if (it.get("id") or {}).get("videoId")]
+            if not data.get("nextPageToken"):
+                break
+            params = {**params, "pageToken": data["nextPageToken"]}
+        return ids
 
     def _batched(self, method: str, part: str, ids: list[str]) -> list[dict]:
         out: list[dict] = []

@@ -14,8 +14,9 @@ flags.ai_answers: the chat gives the product's content away). Verdict: red on a 
 nf.yaml (70), yellow otherwise. While score_info.yaml has `status: draft` the report says so at the top: fix the
 weights before reading the ranking as a decision.
 
-Input: data/out/info_youtube.csv (required), info_youtube_videos.csv (examples in the report), info_ai.csv (optional,
-the AI substitute probe), config/info_topics.yaml, config/score_info.yaml. Output: data/out/info_score.csv, reports/info.md.
+All video metrics are over the teaching Shorts of a topic (info_youtube labels each video; entertainment and
+off-topic videos are left out). Input: data/out/info_youtube.csv (required), info_youtube_videos.csv (examples in
+the report, teaching videos only), info_ai.csv (optional, the AI substitute probe), config/info_topics.yaml, config/score_info.yaml. Output: data/out/info_score.csv, reports/info.md.
 """
 from __future__ import annotations
 
@@ -25,7 +26,7 @@ import csv
 from nichefinder import info
 from nichefinder.workspace import Workspace
 
-SUMMARY = "Score, verdict and report of the info cohort (draft weights until fixed)"
+SUMMARY = "Score, verdict and report of the info cohort"
 KEYS: tuple[str, ...] = ()
 NEEDS: tuple[str, ...] = ()
 
@@ -35,7 +36,7 @@ GATES = {"min_videos": 10, "min_views_median": 1000}
 FLAGS = {"top3_share": 0.6, "recent_ratio_low": 0.5, "ai_answers": 2}
 COLS = ["rank", "topic_id", "verdict", "score", "gates", "flags", "attention", "newcomers", "monetization", "spread",
         "trend", "n_videos", "views_median", "views_p90", "breakout_share", "small_share", "tg_channel_share",
-        "offer_share", "top3_share", "recent_ratio", "ai_covers", "who", "task", "product"]
+        "offer_share", "top3_share", "recent_ratio", "n_shorts", "teach_share", "ai_covers", "who", "task", "product"]
 
 
 def f(v):
@@ -117,6 +118,12 @@ def share(v) -> str:
     return "-" if x is None else f"{x:.0%}"
 
 
+def teach(r: dict) -> str:
+    if r.get("teach_share") in (None, ""):
+        return str(r.get("n_videos", ""))
+    return f"{r.get('n_videos')} / {r.get('n_shorts')}"
+
+
 def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str, list[dict]], cfg: dict,
            settings: dict) -> str:
     lines = ["# Info topics: short video -> Telegram -> micro product", ""]
@@ -125,16 +132,21 @@ def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str
                   "ranking as a decision; changing them after seeing it defeats the point of a score.", ""]
     lines += [f"Run {ws.today}; videos published since {scored[0]['window_from'] if scored else '-'}; "
               f"lang `{settings['lang']}`, region `{settings['region']}`; {len(scored)} topics scored. "
-              "Percentiles are within this run's topics: the score ranks topics against each other.", "",
+              "Percentiles are within this run's topics: the score ranks topics against each other. "
+              + ("Video metrics count teaching Shorts only: an LLM labels the most viewed Shorts and sketches, vlogs, "
+                 "fails and off-topic videos are left out (`kind` in info_youtube_videos.csv)."
+                 if any(str(r.get("classified")) == "1" for r in scored) else
+                 "**Videos are not labelled** (no LLM key in the info_youtube run): entertainment counts as attention."),
+              "",
               "| # | topic | verdict | score | attention | newcomers | money | spread | trend | median views | p90 views "
-              "| breakout | small channels | TG channels | offers | shorts | AI covers | gates / flags |",
+              "| breakout | small channels | TG channels | offers | teaching / all shorts | AI covers | gates / flags |",
               "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in scored:
         lines.append(f"| {r['rank']} | {r['topic_id']} | {r['verdict']} | {r['score']} | {r['attention']} | "
                      f"{r['newcomers']} | {r['monetization']} | {r['spread']} | {r['trend']} | "
                      f"{human(r.get('views_median'))} | {human(r.get('views_p90'))} | {share(r.get('breakout_share'))} | "
                      f"{share(r.get('small_share'))} | {share(r.get('tg_channel_share'))} | "
-                     f"{share(r.get('offer_share'))} | {r.get('n_videos')} | {r.get('ai_covers') if r.get('ai_covers') not in (None, '') else '-'} | "
+                     f"{share(r.get('offer_share'))} | {teach(r)} | {r.get('ai_covers') if r.get('ai_covers') not in (None, '') else '-'} | "
                      f"{' '.join(x for x in (r['gates'], r['flags']) if x)} |")
     if any(r.get("ai_covers") not in (None, "") for r in scored):
         lines += ["", "AI covers (info_ai, no effect on the score): how much of the micro product a free chatbot answer "
@@ -144,7 +156,7 @@ def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str
     if rest:
         why = {"global": "the most viewed top of the phrase is foreign-language; add a Russian-specific phrase",
                "quota": "not measured yet; re-run info_youtube after the quota reset (midnight Pacific time)",
-               "empty": "no Shorts passed the filters"}
+               "empty": "no teaching Shorts passed the filters"}
         lines += ["", "Not scored:"]
         lines += [f"- {r['topic_id']} ({r.get('status')}: {why.get(r.get('status'), '')})" for r in rest]
     for r in scored:
@@ -157,7 +169,7 @@ def report(ws: Workspace, scored: list[dict], rest: list[dict], videos: dict[str
             lines.append(f"- **free chatbot answer**: covers {r['ai_covers']} of 2 (votes {r.get('ai_votes') or '-'}) - "
                          f"{r.get('ai_reason', '')}"
                          + (f" The chat cannot give: {r['ai_missing']}." if r.get("ai_missing") else ""))
-        vs = videos.get(r["topic_id"], [])
+        vs = [x for x in videos.get(r["topic_id"], []) if x.get("kind", "") in ("T", "")]
         top = sorted(vs, key=lambda x: -(f(x["views"]) or 0))[:3]
         brk = sorted((x for x in vs if x.get("breakout") == "1" and x.get("small") == "1"),
                      key=lambda x: -(f(x["views"]) or 0))[:3]

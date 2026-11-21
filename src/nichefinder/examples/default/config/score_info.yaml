@@ -35,9 +35,13 @@ flags:
 
 # What info_youtube counts. Changing these changes the metrics, so the same rules apply as for the weights.
 measure:
-  # viewCount = the 50 most viewed videos of the window (the top of the attention pool). relevance mixes in fresh
+  # viewCount = the most viewed videos of the window (the top of the attention pool). relevance mixes in fresh
   # videos with a few hundred views and leans to the last months; see the info_youtube docstring.
   order: viewCount
+  pages: 2                    # search pages per phrase, 50 videos each (100 units and one of 100 daily search calls each)
+  # An LLM labels every kept Short: teaches / entertains / off topic; the metrics count teaching Shorts only.
+  # false (or no LLM_API_KEY) measures all kept Shorts, and the most viewed top of a broad subject is mostly comedy.
+  classify: true
   shorts_max_seconds: 180     # YouTube Shorts are up to 3 minutes; the API filter "short" is under 4 minutes
   breakout_ratio: 10          # views >= 10 x subscribers ...
   breakout_min_views: 10000   # ... and at least this many views

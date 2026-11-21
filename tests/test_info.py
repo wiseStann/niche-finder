@@ -26,7 +26,7 @@ def make_ws(tmp_path: Path, topics: list[dict], seeds: list[str] | None = None, 
         {"_settings": {"lang": "ru", "region": "RU", "window_months": 12, "seeds": seeds or []}, "topics": topics},
         allow_unicode=True), encoding="utf-8")
     cfg = yaml.safe_load(EXAMPLE_SCORE.read_text(encoding="utf-8"))
-    cfg["measure"].update(measure or {})
+    cfg["measure"].update({"classify": False, **(measure or {})})       # labels: tested on their own
     (tmp_path / "config" / "score_info.yaml").write_text(yaml.safe_dump(cfg, allow_unicode=True), encoding="utf-8")
     return Workspace(tmp_path)
 
@@ -130,6 +130,65 @@ def test_info_youtube_metrics(tmp_path, monkeypatch):
     assert no_sales["n_videos"] == "2"                                          # must_not drops v1 and v5
     vids = list(csv.DictReader(open(ws.out("info_youtube_videos.csv"), encoding="utf-8")))
     assert {v["video_id"] for v in vids if v["topic_id"] == "avito"} == {"v1", "v2", "v5", "v6"}
+
+
+def test_info_youtube_teaching_labels(tmp_path, monkeypatch):
+    """Metrics count only the videos the LLM labels as teaching; the report shows teaching examples only."""
+    from nichefinder import llm
+    ws = make_ws(tmp_path, [{"id": "avito", "q": ["авито"], "task": "продавать"}], measure={"classify": True})
+    monkeypatch.setenv("YOUTUBE_API_KEY", "k")
+    monkeypatch.setenv("LLM_API_KEY", "k")
+    monkeypatch.setattr(http, "request", FakeApi())
+    seen = []
+
+    def fake_chat(ws, messages, **kw):
+        seen.append(messages[1]["content"])
+        # kept order: v1, v2, v5, v6; v2 is a sketch, v6 off topic; v5 left unlabelled (counts as teaching)
+        return {"labels": {"1": "T", "2": "E", "4": "o"}}, False, None
+    monkeypatch.setattr(llm, "chat_json", fake_chat)
+    info_youtube.run(ws, argparse.Namespace(budget=1000, only=""))
+    (row,) = list(csv.DictReader(open(ws.out("info_youtube.csv"), encoding="utf-8")))
+    assert (row["n_shorts"], row["n_videos"], row["dropped_fun"], row["dropped_off"]) == ("4", "2", "1", "1")
+    assert row["teach_share"] == "0.5" and row["classified"] == "1"
+    assert float(row["views_median"]) == 104_000                                 # v1 200k and v5 8k
+    assert "Topic: avito" in seen[0] and "продавать" in seen[0] and "забирай гайд" in seen[0]
+    kinds = {v["video_id"]: v["kind"] for v in csv.DictReader(open(ws.out("info_youtube_videos.csv"), encoding="utf-8"))}
+    assert kinds == {"v1": "T", "v2": "E", "v5": "T", "v6": "O"}
+    info_score.run(ws, argparse.Namespace())
+    md = ws.report("info.md").read_text(encoding="utf-8")
+    assert "teaching Shorts only" in md and "| 2 / 4 |" in md
+    assert "Авито лайфхак" not in md                                               # the sketch is not an example
+
+
+def test_info_youtube_without_llm_key_measures_all(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path, [{"id": "avito", "q": ["авито"]}], measure={"classify": True})
+    monkeypatch.setenv("YOUTUBE_API_KEY", "k")
+    monkeypatch.delenv("LLM_API_KEY", raising=False)
+    monkeypatch.setattr(http, "request", FakeApi())
+    info_youtube.run(ws, argparse.Namespace(budget=1000, only=""))
+    (row,) = list(csv.DictReader(open(ws.out("info_youtube.csv"), encoding="utf-8")))
+    assert (row["n_videos"], row["classified"], row["teach_share"]) == ("4", "0", "")
+    info_score.run(ws, argparse.Namespace())
+    assert "Videos are not labelled" in ws.report("info.md").read_text(encoding="utf-8")
+
+
+def test_youtube_search_pages(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path, [])
+    monkeypatch.setenv("YOUTUBE_API_KEY", "k")
+    calls = []
+
+    def api(url, headers=None, **kw):
+        q = dict(urllib.parse.parse_qsl(urllib.parse.urlparse(url).query))
+        calls.append(q)
+        if "pageToken" not in q:
+            return http.Response(200, json.dumps({"items": [{"id": {"videoId": "a"}}], "nextPageToken": "P2"}))
+        return http.Response(200, json.dumps({"items": [{"id": {"videoId": "b"}}]}))
+    monkeypatch.setattr(http, "request", api)
+    yt = youtube.Client(ws)
+    assert yt.search("x", lang="ru", region="RU", after="2025-11-01T00:00:00Z") == ["a"]
+    assert yt.search("x", lang="ru", region="RU", after="2025-11-01T00:00:00Z", pages=3) == ["a", "b"]
+    assert len(calls) == 2 and calls[1]["pageToken"] == "P2"                # page 1 reused from the cache
+    assert yt.used == 200                                                    # no third page: no token
 
 
 def test_info_youtube_quota_keeps_measured_topics(tmp_path, monkeypatch):
