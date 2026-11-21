@@ -69,16 +69,56 @@ def apps_fixture(ws: Workspace) -> None:
     ], bom=True)
 
 
-def test_pick_apps_leading_relevant_russian_apps(tmp_path):
+def fake_fit(calls):
+    """A fake product check: every listed app fits unless its name has "Game" in it."""
+    def chat(ws, messages, **kw):
+        calls.append(messages[1]["content"])
+        lines = [x for x in messages[1]["content"].split("\n") if re.match(r"\d+: ", x)]
+        return {"apps": [{"k": int(x.split(":")[0]), "fit": "no" if "Game" in x else "yes", "why": "w"} for x in lines]}, False, None
+    return chat
+
+
+def test_pick_apps_leading_relevant_russian_apps(tmp_path, monkeypatch):
     ws = make_ws(tmp_path)
     apps_fixture(ws)
+    calls = []
+    monkeypatch.setattr(llm, "chat_json", fake_fit(calls))
     ids = fetch.target_niches(ws)
     assert ids == ["budget", "habits"]   # geo global is not measured
     st = {**fetch.DEFAULTS["fetch"], "apps_per_store": 1}
-    got = [(a["niche_id"], a["store"], a["app_id"]) for a in fetch.pick_apps(ws, ids, st)]
-    assert got == [("budget", "appstore", "111"), ("habits", "gplay", "com.habit")]
-    got = [a["app_id"] for a in fetch.pick_apps(ws, ids, fetch.DEFAULTS["fetch"])]
-    assert got == ["111", "112", "com.habit"]   # 113 has too few ratings, 114 is not relevant, 115 is the US store
+    apps, _ = fetch.pick_apps(ws, ids, st)
+    assert [(a["niche_id"], a["store"], a["app_id"]) for a in apps] == [("budget", "appstore", "111"), ("habits", "gplay", "com.habit")]
+    apps, fit = fetch.pick_apps(ws, ids, fetch.DEFAULTS["fetch"])
+    assert [a["app_id"] for a in apps] == ["111", "112", "com.habit"]   # 113 has too few ratings, 114 is not relevant, 115 is the US store
+    assert "Who: people" in calls[0] and "1: Money RU | A | -" in calls[0]   # one call per niche: the niche and the candidates
+    assert {(r["app_id"], r["fit"], r["by"]) for r in fit} == {("111", "yes", "llm"), ("112", "yes", "llm"), ("com.habit", "yes", "llm")}
+
+
+def test_product_check_drops_apps_and_config_overrides_it(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path)
+    write_csv(ws.out("appstore_apps.csv"), [
+        {"niche_id": "budget", "store": "ru", "track_id": "201", "name": "Cookie Game", "seller": "G", "ratings": 9000, "rating": 4.5,
+         "genre": "Games", "relevant": 1},
+        {"niche_id": "budget", "store": "ru", "track_id": "202", "name": "Money RU", "seller": "A", "ratings": 900, "rating": 4.5, "relevant": 1},
+        {"niche_id": "budget", "store": "ru", "track_id": "203", "name": "Coins", "seller": "B", "ratings": 300, "rating": 4.1, "relevant": 1},
+    ])
+    monkeypatch.setattr(llm, "chat_json", fake_fit([]))
+    apps, fit = fetch.pick_apps(ws, ["budget"], fetch.DEFAULTS["fetch"])
+    assert [a["app_id"] for a in apps] == ["202", "203"]   # the most-rated candidate is not a product of the niche
+    assert {r["app_id"]: r["fit"] for r in fit} == {"201": "no", "202": "yes", "203": "yes"}
+    (tmp_path / "config" / "ru_reviews.yaml").write_text(yaml.safe_dump({"apps": {"budget": {"keep": ["201"], "drop": [203]}}}), encoding="utf-8")
+    apps, fit = fetch.pick_apps(ws, ["budget"], fetch.DEFAULTS["fetch"])
+    assert [a["app_id"] for a in apps] == ["201", "202"]
+    assert {r["app_id"]: (r["fit"], r["by"]) for r in fit}["203"] == ("no", "config")
+
+
+def test_product_check_without_an_answer_keeps_no_app(tmp_path, monkeypatch, capsys):
+    ws = make_ws(tmp_path)
+    apps_fixture(ws)
+    monkeypatch.setattr(llm, "chat_json", lambda *a, **k: (None, False, None))
+    apps, fit = fetch.pick_apps(ws, ["budget"], fetch.DEFAULTS["fetch"])
+    assert apps == [] and {r["fit"] for r in fit} == {""}
+    assert "no answer for budget" in capsys.readouterr().out
 
 
 def test_fetch_reads_cached_pages_and_applies_the_window(tmp_path, monkeypatch):
@@ -99,9 +139,11 @@ def test_fetch_reads_cached_pages_and_applies_the_window(tmp_path, monkeypatch):
 
     monkeypatch.setattr(tools, "run_node", no_node)
     monkeypatch.setattr(http, "request", lambda *a, **k: pytest.fail("network call"))
+    monkeypatch.setattr(llm, "chat_json", fake_fit([]))
     fetch.run(ws, argparse.Namespace(niches=""))
     docs = [json.loads(x) for x in open(ws.out(fetch.DOCS), encoding="utf-8")]
     assert sorted(d["id"] for d in docs) == ["a1", "b1", "g1"]   # too old and empty text are dropped
+    assert len(list(csv.DictReader(open(ws.out(fetch.FIT), encoding="utf-8")))) == 3
     g1 = next(d for d in docs if d["id"] == "g1")
     assert (g1["niche_id"], g1["store"], g1["date"], g1["rating"]) == ("habits", "gplay", "2026-11-15", 2)
     apps = {r["app_id"]: r for r in csv.DictReader(open(ws.out(fetch.APPS), encoding="utf-8"))}
@@ -162,11 +204,11 @@ def test_classify_shares_over_reviews_about_the_app(tmp_path, monkeypatch):
     assert sum(a["n"] for a in themes["apps"].values()) == 4 and themes["about"]["service"] == 1
 
 
-def llm_row(nid, about_app=120, apps=3, unmet=0.1, quality=0.2, praise=0.3, unmet_low=None, low=60):
+def llm_row(nid, about_app=120, apps=3, unmet=0.1, quality=0.2, praise=0.3, unmet_low=None, low=60, price_low=0.0):
     """A ru_reviews_llm.csv row plus the unhappy-review fields the report adds; the gap share defaults to `unmet`."""
     return {"niche_id": nid, "about_app": about_app, "apps": apps, "unmet_share": unmet, "quality_share": quality, "praise_share": praise,
-            "missing_feature_share": unmet, "pricing_share": 0, "switching_share": 0,
-            "unmet_low_share": unmet if unmet_low is None else unmet_low, "low_reviews": low}
+            "missing_feature_share": unmet, "pricing_share": price_low, "switching_share": 0,
+            "unmet_low_share": unmet if unmet_low is None else unmet_low, "low_reviews": low, "price_low_share": price_low}
 
 
 def test_verdict_rule_is_relative_with_floors():
@@ -196,7 +238,7 @@ def test_gap_counts_only_unhappy_reviews_and_few_of_them_is_unmeasured():
         llm_row("few_low_bad", unmet=0.40, unmet_low=0.05, quality=0.5, low=10)]}
     v = report.reviews_verdicts(rows, cfg)
     assert v["wishlist"]["verdict"] == "🟡 content"
-    assert v["unhappy"]["verdict"] == "🟢 gap" and "in all reviews: 30%" in v["unhappy"]["reason"]
+    assert v["unhappy"]["verdict"] == "🟢 gap" and "in all reviews: features 30%" in v["unhappy"]["reason"]
     assert v["few_low"]["verdict"] == "⚪ unmeasured" and "only 10 of 120 reviews" in v["few_low"]["reason"]   # not "content"
     assert v["few_low_bad"]["verdict"] == "🟡 quality" and "cannot be read" in v["few_low_bad"]["reason"]
     assert v["few_low"]["unmet_pct"] == "" and v["unhappy"]["gap_cohort"] == 2
@@ -221,7 +263,22 @@ def test_unhappy_unmet_from_labeled_items(tmp_path):
         for about, rating, intent in recs:
             fh.write(json.dumps({"niche_id": "budget", "about": about, "rating": rating, "intent": intent}) + "\n")
     got = report.unhappy_unmet(ws, 3)["budget"]
-    assert got == {"low_reviews": 3, "unmet_low_share": round(2 / 6, 3)}   # 6 about the app, 3 rated <= 3, 2 of them unmet
+    # 6 about the app, 3 rated <= 3: one missing feature (the gap), one price complaint (the paywall share), one bug
+    assert got == {"low_reviews": 3, "unmet_low_share": round(1 / 6, 3), "price_low_share": round(1 / 6, 3)}
+
+
+def test_price_is_not_a_gap_but_a_paywall_mark():
+    cfg = fetch.DEFAULTS["verdict"]
+    rows = {r["niche_id"]: r for r in [
+        llm_row("clones", unmet=0.30, unmet_low=0.02, price_low=0.30, praise=0.2),   # a saturated clone market: paywall anger
+        llm_row("gap", unmet=0.25, unmet_low=0.20, price_low=0.05),
+        *(llm_row(f"m{i}", unmet=0.1, unmet_low=0.03, price_low=0.05) for i in range(4))]}
+    v = report.reviews_verdicts(rows, cfg)
+    assert v["clones"]["verdict"] == "🟡 mixed" and v["clones"]["paywall"] == report.PAYWALL and "a mark, not a gap" in v["clones"]["reason"]
+    assert v["gap"]["verdict"] == "🟢 gap" and v["gap"]["paywall"] == ""
+    assert v["m0"]["paywall"] == "" and v["clones"]["price_pct"] > 0.9
+    rows["few"] = llm_row("few", unmet_low=0.0, price_low=0.4, low=10)   # the paywall share needs readable unhappy reviews too
+    assert report.reviews_verdicts(rows, cfg)["few"]["paywall"] == ""
 
 
 def test_report_writes_verdicts_and_a_draft_banner(tmp_path):
@@ -235,18 +292,19 @@ def test_report_writes_verdicts_and_a_draft_banner(tmp_path):
     row = {**llm_row("budget", unmet=0.3), "sampled": 2, "classified": 2, "app_share": 1, "bug_share": 0, "ux_share": 0, "ads_share": 0,
            "support_share": 0, "too_expensive": 0, "worth_it": 0, "wants_free": 0, "cancelled": 0, "themes": 0, "top_theme": "",
            "top_theme_kind": "", "top_theme_count": "", "top_switch": ""}
-    row.pop("unmet_low_share"), row.pop("low_reviews")   # the report counts these from the labeled items
+    for k in ("unmet_low_share", "low_reviews", "price_low_share"):   # the report counts these from the labeled items
+        row.pop(k)
     write_csv(ws.out("ru_reviews_llm.csv"), [row])
     with open(ws.out("ru_reviews_items.jsonl"), "w", encoding="utf-8") as fh:
         for i in range(40):
             fh.write(json.dumps({"niche_id": "budget", "about": "app", "rating": 2 if i < 32 else 5,
-                                 "intent": "missing_feature" if i < 12 else "praise"}) + "\n")
+                                 "intent": "missing_feature" if i < 12 else "pricing" if i < 16 else "praise"}) + "\n")
     report.run(ws, argparse.Namespace())
     md = ws.report("S10-ru-reviews.md").read_text(encoding="utf-8")
     assert "DRAFT" in md and "Budget apps" in md and "| 2 (2) | 50% |" in md
     (v,) = csv.DictReader(open(ws.out("ru_reviews_verdict.csv"), encoding="utf-8"))
     assert v["verdict"] == "🟢 gap" and v["status"] == "draft"
-    assert (v["low_reviews"], v["unmet_low_share"]) == ("32", "0.3")
+    assert (v["low_reviews"], v["unmet_low_share"], v["price_low_share"]) == ("32", "0.3", "0.1")
 
 
 # ---- Startpack ----------------------------------------------------------------

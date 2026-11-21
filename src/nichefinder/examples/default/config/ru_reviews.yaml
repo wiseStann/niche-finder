@@ -16,17 +16,40 @@ changes:
       for cons; 90 % of Startpack reviews are five-star), and all 31 switches were arrivals from Trello, Jira or Asana,
       a sign that substitutes exist. Dropping feature wishes alone did not help (price + switching: still first in B2B, 15 %);
       counting only reviews of 3 stars or lower gives the control 2 %. The floors were not changed.
+  - date: 2026-11-21
+    what: "app store products pass an LLM product check before their reviews are read (fetch.fit_candidates, `apps` overrides)"
+    why: >-
+      First full-shortlist fetch (46 niches): the most-rated "relevant" apps of S5/S8 were often not products of the niche:
+      CookieRun games for cookie consent widgets, Instagram, WhatsApp and TikTok for transcription, the Wildberries, Ozon and
+      AliExpress shopper apps for marketplace seller analytics, Yandex Go for auto repair shops, score counters for invoices.
+      Their reviews would have been read as the voice of the niche's buyers. No verdict had been read yet.
+  - date: 2026-11-21
+    what: "price is no longer part of the gap (gap = missing feature + switching in unhappy reviews); price gets the paywall mark"
+    why: >-
+      Full-shortlist run (45 niches, after the product check): two of three saturated controls got gap, document scanners
+      (B2C, 27 %, of which price 25 %, missing features 2 %) and website builders (B2B, 16 %, price 10 %, features 6 %);
+      the AI-song control (Suno and 12 clones) topped the B2C gap at 55 %, price 52 %. In unhappy app store reviews the
+      unmet share was almost all paywall anger (up to 52 %), missing features 0-6 % in every niche with enough reviews.
+      The hardest paywalls are in saturated clone markets, the opposite of a gap. The gap floor and percentile were not
+      changed; the paywall mark reuses them (15 %, 0.67). Chosen by the owner over lowering the gap floor to fit the data.
 
 fetch:
   window_months: 12       # reviews older than this, counted back from the run date, are dropped
   apps_per_store: 8       # per niche and store: the relevant apps with the most ratings
   min_ratings: 20         # skip apps with fewer store ratings (no review history to speak of)
+  fit_candidates: 30      # per niche and store, the most-rated candidates the LLM product check sees; the relevance of
+                          # S5/S8 is loose, so of these only the products these users would choose for the task are kept
   appstore_pages: 10      # App Store RSS: 50 newest reviews a page; Apple serves 10 pages at most
   gplay_reviews: 500      # Google Play: newest Russian reviews per app
   startpack_window_months: 36   # Startpack: B2B products collect reviews slowly; in a 24-month window half of the B2B
                                 # niches tried on 2026-11-20 had fewer than 80 reviews
   startpack_pages: 4      # Startpack: 50 newest reviews a page
   startpack_min_reviews: 5   # Startpack products taken from `categories` need at least this many reviews
+
+# Human corrections of the LLM product check, per niche: app ids (App Store track id, Google Play package) among the
+# candidates that are always kept or always dropped. The check's decisions and reasons: data/out/ru_reviews_fit.csv.
+apps: {}
+#  some-niche: {keep: [com.example.app], drop: ["1234567890"]}
 
 sample:
   max_reviews: 240        # per niche, taken round-robin over its apps; the LLM labels 12 reviews per call
@@ -36,8 +59,9 @@ sample:
 # Written reviews lean negative (the unhappy user is the one who writes), so the rule compares niches with each other:
 # a share must be in the top third of the cohort (mid-rank percentile) AND above an absolute floor. Cohorts are per segment
 # (B2C + prosumer, B2B), because the sources differ: app stores for B2C, mostly Startpack for B2B, which leans positive.
-# The gap share counts an unmet need (missing feature, price, switching) only in an unhappy review (low_rating or lower),
-# over all reviews about the app: a wish in a five-star review is a wishlist, a switch in one is an arrival from a rival.
+# The gap share counts a missing feature or a switch only in an unhappy review (low_rating or lower), over all reviews
+# about the app: a wish in a five-star review is a wishlist, a switch in one is an arrival from a rival. Price is not part
+# of the gap (in unhappy reviews it is paywall anger, highest in saturated clone markets); it gets the paywall mark.
 verdict:
   min_app_reviews: 80     # quiet: fewer classified reviews about the app itself
   min_apps: 2             # quiet: fewer apps with substantive reviews in the sample
@@ -45,8 +69,12 @@ verdict:
   low_rating: 3           # an unhappy review: rated this many stars or fewer
   min_low_reviews: 30     # unmeasured: fewer unhappy reviews about the app; the gap cannot be read (not "content"), and
                           # the niche is left out of the gap percentiles. Startpack reviews are 90 % five-star
-  gap_pct: 0.67           # gap: unmet needs in unhappy reviews, as a share of all reviews about the app, in the top third...
+  gap_pct: 0.67           # gap: missing features and switches in unhappy reviews, as a share of all reviews about the app,
+                          # in the top third...
   gap_floor: 0.15         # ...and at least this share
+  paywall_pct: 0.67       # paywall mark (beside any verdict, never changes it): price complaints in unhappy reviews in the
+                          # top third...
+  paywall_floor: 0.15     # ...and at least this share
   quality_pct: 0.67       # quality: complaints about bugs, UX, ads and support in the top third...
   quality_floor: 0.30     # ...and at least this share
   content_praise: 0.50    # content: praise at least this share, the gap readable, and neither gap nor quality

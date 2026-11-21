@@ -4,6 +4,12 @@ Which products: per niche (geo `both` or `ru`) and store, at most `fetch.apps_pe
 - App Store RU: the relevant apps with the most ratings (at least `fetch.min_ratings`) from data/out/appstore_apps.csv
   (s5_appstore; store ru, relevant=1, after the manual edits in config/appstore_relevance.yaml);
 - Google Play RU: the same from data/out/gplay_apps.csv (s8_gplay_details; country ru, the relevant set of s8_gplay_filter);
+- the product check: the relevance of S5 and S8 is loose (a top search position, a substring such as "cookie" in
+  CookieRun), and the most-rated candidates are often giants where the task is a side feature (Instagram for
+  transcription, the Wildberries shopper app for seller analytics). So an LLM gets the niche (who, task, product) and the
+  `fetch.fit_candidates` most-rated candidates per store (name, developer, store genre) and answers per app whether it
+  is a product these users would choose or compare for the task. Only those are kept; `apps` in config/ru_reviews.yaml
+  overrides it per niche (`keep` / `drop` lists of app ids). Every decision with its reason: data/out/ru_reviews_fit.csv;
 - Startpack (startpack.ru, business software - the voice of B2B buyers that app stores do not have): the products listed
   for the niche in config/startpack_map.yaml (`apps`, in that order), then the products of its `categories` with the most
   reviews (at least `fetch.startpack_min_reviews`), minus `exclude`. Niches without an entry are not looked up.
@@ -18,8 +24,9 @@ Reviews keep coming, so the run month is part of every cache key: a re-run in th
 the next month fetches fresh reviews. Cache: data/cache/ru_reviews/ (App Store pages), data/cache/gplay_reviews/ (Node),
 data/cache/startpack/ (HTML).
 Output: data/out/ru_reviews_docs.jsonl (one line per review and niche: niche_id, store, app_id, app, id, date, rating,
-title, text, version, thumbs) and data/out/ru_reviews_apps.csv (per niche and app: store ratings, reviews fetched and
-kept, the oldest kept review, status). A run with --niches replaces only those niches in both files.
+title, text, version, thumbs), data/out/ru_reviews_apps.csv (per niche and app: store ratings, reviews fetched and
+kept, the oldest kept review, status) and data/out/ru_reviews_fit.csv (the product check). A run with --niches replaces
+only those niches in these files. The product check needs LLM_API_KEY (cached in data/cache/llm/, one call per niche).
 Usage: nf run s10_ru_reviews_fetch -- [--niches a,b]
 """
 from __future__ import annotations
@@ -31,28 +38,39 @@ import os
 import subprocess
 from collections import Counter, defaultdict
 
-from nichefinder import http, niches, tools
+from nichefinder import http, llm, niches, tools
 from nichefinder.sources import startpack
 from nichefinder.stages.s10_reddit_fetch import months_back
 from nichefinder.workspace import Workspace
 
 SUMMARY = "Russian reviews of each niche's leading products: App Store, Google Play, Startpack"
-KEYS: tuple[str, ...] = ()
+KEYS: tuple[str, ...] = ("LLM_API_KEY",)   # the product check of app store candidates
 NEEDS: tuple[str, ...] = ()   # Node is optional: without it the Google Play part is skipped
 
 CONFIG = "ru_reviews.yaml"
 STARTPACK_MAP = "startpack_map.yaml"
 DEFAULTS = {
-    "fetch": {"window_months": 12, "apps_per_store": 8, "min_ratings": 20, "appstore_pages": 10, "gplay_reviews": 500,
-              "startpack_window_months": 36, "startpack_pages": 4, "startpack_min_reviews": 5},
+    "fetch": {"window_months": 12, "apps_per_store": 8, "min_ratings": 20, "fit_candidates": 30, "appstore_pages": 10,
+              "gplay_reviews": 500, "startpack_window_months": 36, "startpack_pages": 4, "startpack_min_reviews": 5},
     "sample": {"max_reviews": 240, "min_chars": 40},
     "verdict": {"min_app_reviews": 80, "min_apps": 2, "min_cohort": 6, "low_rating": 3, "min_low_reviews": 30, "gap_pct": 0.67,
-                "gap_floor": 0.15, "quality_pct": 0.67, "quality_floor": 0.30, "content_praise": 0.50, "top_app_warn": 0.60},
+                "gap_floor": 0.15, "paywall_pct": 0.67, "paywall_floor": 0.15, "quality_pct": 0.67, "quality_floor": 0.30,
+                "content_praise": 0.50, "top_app_warn": 0.60},
 }
 RSS = "https://itunes.apple.com/ru/rss/customerreviews/page={page}/id={app_id}/sortby=mostrecent/json"
 STORE_NAME = {"appstore": "App Store", "gplay": "Google Play", "startpack": "Startpack"}
-DOCS, APPS, GPLAY_PLAN = "ru_reviews_docs.jsonl", "ru_reviews_apps.csv", "ru_reviews_gplay_plan.json"
+DOCS, APPS, FIT, GPLAY_PLAN = "ru_reviews_docs.jsonl", "ru_reviews_apps.csv", "ru_reviews_fit.csv", "ru_reviews_gplay_plan.json"
 APP_COLS = ["niche_id", "store", "app_id", "app", "developer", "ratings", "rating", "fetched", "kept", "oldest", "status"]
+FIT_COLS = ["niche_id", "store", "app_id", "app", "developer", "genre", "ratings", "fit", "by", "why"]
+FIT_SYSTEM = (
+    "You check which apps belong to a market niche. A niche is who x task x product. You get the niche and a numbered list of "
+    "apps that app store search returned for its queries (name | developer | store genre). For each app decide fit: "
+    "yes = a product these users would choose or compare for this task: built for it, or a direct substitute they weigh against it; "
+    "no = anything else: games and simulators; apps for the other side of a market (shoppers, guests, tenants, couriers, drivers, "
+    "car owners or club members when the niche serves the business, the host or the seller); big general apps where the task is "
+    "only a side feature (social networks, messengers, browsers, marketplaces, voice assistants, search engines, e-book readers); "
+    "apps that only share a word with the niche. Judge by who the users are as much as by the task. "
+    'Output JSON: {"apps": [{"k": <number>, "fit": "yes" or "no", "why": "<5-12 words>"}]} with every number.')
 
 
 def settings(ws: Workspace, section: str) -> dict:
@@ -82,30 +100,76 @@ def target_niches(ws: Workspace, only: str = "") -> list[str]:
     return ids
 
 
-def pick_apps(ws: Workspace, ids: list[str], st: dict) -> list[dict]:
-    """The leading relevant apps per niche and store: at most apps_per_store, each with at least min_ratings ratings."""
+def app_fit(ws: Workspace, niche: dict, cands: list[dict]) -> dict[tuple[str, str], tuple[str, str]]:
+    """The LLM product check of one niche's candidates: (store, app_id) -> (fit, why); fit is "yes", "no", or "" when
+    the model gave no answer for the app."""
+    lines = [f"{k}: {c['app']} | {c['developer'] or '-'} | {c.get('genre') or '-'}" for k, c in enumerate(cands, 1)]
+    user = (f"Niche: {niche.get('name') or niche.get('id', '')}\nWho: {niche.get('who', '')}\nTask: {niche.get('task', '')}\n"
+            f"Product: {niche.get('product', '')}\n\nApps:\n" + "\n".join(lines))
+    content, _, _ = llm.chat_json(ws, [{"role": "system", "content": FIT_SYSTEM}, {"role": "user", "content": user}],
+                                  max_tokens=4000, temperature=0.0)
+    got: dict[int, tuple[str, str]] = {}
+    for it in (content or {}).get("apps") or []:
+        try:
+            k = int(it.get("k"))
+        except (TypeError, ValueError, AttributeError):
+            continue
+        fit = str(it.get("fit") or "").strip().lower()
+        got[k] = ("yes" if fit == "yes" else "no", str(it.get("why") or "").strip()[:160])
+    return {(c["store"], c["app_id"]): got.get(k, ("", "no answer from the model")) for k, c in enumerate(cands, 1)}
+
+
+def pick_apps(ws: Workspace, ids: list[str], st: dict) -> tuple[list[dict], list[dict]]:
+    """The leading apps per niche and store that pass the product check: of the fit_candidates most-rated relevant apps
+    with at least min_ratings ratings, the apps_per_store most-rated that fit. Returns (apps, product check rows)."""
     want, cand = set(ids), []
     p = ws.out("appstore_apps.csv")
     if p.is_file():
         for r in csv.DictReader(open(p, encoding="utf-8-sig")):
             if r["store"] == "ru" and r["relevant"] == "1" and r["niche_id"] in want:
                 cand.append({"niche_id": r["niche_id"], "store": "appstore", "app_id": r["track_id"], "app": r["name"],
-                             "developer": r["seller"], "ratings": int(num(r["ratings"])), "rating": num(r["rating"])})
+                             "developer": r["seller"], "genre": r.get("genre", ""), "ratings": int(num(r["ratings"])),
+                             "rating": num(r["rating"])})
     p = ws.out("gplay_apps.csv")
     if p.is_file():
         for r in csv.DictReader(open(p, encoding="utf-8-sig")):
             if r["country"] == "ru" and r["niche_id"] in want:
                 cand.append({"niche_id": r["niche_id"], "store": "gplay", "app_id": r["appId"], "app": r["title"],
-                             "developer": r["developer"], "ratings": int(num(r["ratings"])), "rating": num(r["score"])})
+                             "developer": r["developer"], "genre": r.get("genre", ""), "ratings": int(num(r["ratings"])),
+                             "rating": num(r["score"])})
     by = defaultdict(dict)
     for c in cand:
         if c["ratings"] >= st["min_ratings"]:
             by[(c["niche_id"], c["store"])].setdefault(c["app_id"], c)
-    order = {nid: i for i, nid in enumerate(ids)}
-    out = []
-    for key in sorted(by, key=lambda k: (order[k[0]], k[1])):
-        out += sorted(by[key].values(), key=lambda c: -c["ratings"])[: int(st["apps_per_store"])]
-    return out
+    meta = {n["id"]: n for n in niches.load_niches(ws)}
+    manual = (ws.load_config(CONFIG, {}) or {}).get("apps") or {}
+    out, fit_rows, unanswered = [], [], []
+    for nid in ids:
+        pools = {s: sorted(by[(nid, s)].values(), key=lambda c: -c["ratings"])[: int(st["fit_candidates"])]
+                 for s in ("appstore", "gplay") if (nid, s) in by}
+        cands = [c for pool in pools.values() for c in pool]
+        if not cands:
+            continue
+        m = manual.get(nid) or {}
+        keep, drop = {str(x) for x in m.get("keep") or []}, {str(x) for x in m.get("drop") or []}
+        checked = app_fit(ws, meta.get(nid, {"id": nid}), cands)
+        if all(fit == "" for fit, _ in checked.values()):
+            unanswered.append(nid)
+        for c in cands:
+            fit, why = checked[(c["store"], c["app_id"])]
+            by_whom = "llm"
+            if c["app_id"] in keep or c["app_id"] in drop:
+                fit, by_whom, why = ("yes" if c["app_id"] in keep else "no"), "config", "config/ru_reviews.yaml apps"
+            c["fit"] = fit
+            fit_rows.append({k: c.get(k, "") for k in FIT_COLS if k not in ("by", "why")} | {"by": by_whom, "why": why})
+        for pool in pools.values():
+            out += [c for c in pool if c["fit"] == "yes"][: int(st["apps_per_store"])]
+    if fit_rows:
+        print(f"product check: {sum(r['fit'] == 'yes' for r in fit_rows)} of {len(fit_rows)} app store candidates fit their niche "
+              f"(reasons in {FIT})")
+    if unanswered:
+        print(f"!! the product check got no answer for {', '.join(unanswered)}: no app store reviews for them; run the stage again")
+    return out, fit_rows
 
 
 def startpack_apps(ws: Workspace, ids: list[str], st: dict, month: str) -> list[dict]:
@@ -206,19 +270,22 @@ def gplay_reviews(ws: Workspace, apps: list[dict], num_reviews: int, month: str)
     return out
 
 
-def merge_write(ws: Workspace, ids: list[str], docs: list[dict], apps: list[dict], partial: bool) -> None:
-    """Write both outputs; a partial run keeps the rows of the niches it did not touch."""
+def merge_write(ws: Workspace, ids: list[str], docs: list[dict], apps: list[dict], partial: bool,
+                fit_rows: list[dict] | None = None) -> None:
+    """Write the outputs; a partial run keeps the rows of the niches it did not touch."""
     redo = set(ids)
-    dp, ap = ws.out(DOCS), ws.out(APPS)
+    dp = ws.out(DOCS)
     old_docs = [json.loads(x) for x in open(dp, encoding="utf-8")] if partial and dp.is_file() else []
-    old_apps = list(csv.DictReader(open(ap, encoding="utf-8"))) if partial and ap.is_file() else []
     with open(dp, "w", encoding="utf-8") as fh:
         for r in [x for x in old_docs if x["niche_id"] not in redo] + docs:
             fh.write(json.dumps(r, ensure_ascii=False) + "\n")
-    with open(ap, "w", newline="", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=APP_COLS)
-        w.writeheader()
-        w.writerows([x for x in old_apps if x["niche_id"] not in redo] + apps)
+    for name, cols, rows in ((APPS, APP_COLS, apps), (FIT, FIT_COLS, fit_rows or [])):
+        p = ws.out(name)
+        old = list(csv.DictReader(open(p, encoding="utf-8"))) if partial and p.is_file() else []
+        with open(p, "w", newline="", encoding="utf-8") as fh:
+            w = csv.DictWriter(fh, fieldnames=cols)
+            w.writeheader()
+            w.writerows([x for x in old if x["niche_id"] not in redo] + rows)
 
 
 def add_arguments(parser: argparse.ArgumentParser) -> None:
@@ -233,7 +300,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         return
     ids = target_niches(ws, args.niches)
     month = f"{ws.today:%Y-%m}"
-    apps = pick_apps(ws, ids, st) + startpack_apps(ws, ids, st, month)
+    store_apps, fit_rows = pick_apps(ws, ids, st)
+    apps = store_apps + startpack_apps(ws, ids, st, month)
     if not apps:
         print(f"no Russian apps with >= {st['min_ratings']} ratings and no Startpack products for {len(ids)} niches with geo both/ru")
         return
@@ -276,6 +344,6 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         if nid in per_niche:
             c = per_niche[nid]
             print(f"  {nid:36} App Store {c['appstore']:5}  Google Play {c['gplay']:5}  Startpack {c['startpack']:5}")
-    merge_write(ws, ids, docs, app_rows, partial=bool(args.niches))
+    merge_write(ws, ids, docs, app_rows, partial=bool(args.niches), fit_rows=fit_rows)
     bad = [r for r in app_rows if r["status"] != "ok"]
     print(f"-> {DOCS} ({len(docs)} reviews), {APPS} ({len(app_rows)} apps" + (f", {len(bad)} not fetched in full" if bad else "") + ")")

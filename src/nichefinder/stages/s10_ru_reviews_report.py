@@ -13,10 +13,14 @@ separate because their sources differ: app stores for B2C, mostly Startpack for 
 than `verdict.min_cohort` measured niches in a segment the floors alone decide. While config/ru_reviews.yaml has
 `status: draft` the report says so at the top.
 
-The gap counts an unmet need (missing feature, price, switching) only in a review rated `verdict.low_rating` stars or
-lower (counted from ru_reviews_items.jsonl): a feature wish in a five-star review is a wishlist, not an unmet need. A niche
-with fewer than `verdict.min_low_reviews` such reviews is "unmeasured" rather than "content", since few unhappy reviews
-on Startpack say more about the source than about the market. Reasons: methodology, "Russian buyer voice: reviews".
+The gap counts a missing feature or a switch only in a review rated `verdict.low_rating` stars or lower (counted from
+ru_reviews_items.jsonl): a feature wish in a five-star review is a wishlist, not an unmet need. A niche with fewer than
+`verdict.min_low_reviews` such reviews is "unmeasured" rather than "content", since few unhappy reviews on Startpack say
+more about the source than about the market. Price complaints are not part of the gap: in unhappy app store reviews they
+are mostly anger at a paywall, and the hardest paywalls are in saturated clone markets (the controls ctrl-document-scanner
+and ctrl-ai-song-generator topped the gap when price counted). They get a separate mark, "💰 paywall", by the same
+percentile + floor rule (`paywall_pct`, `paywall_floor`), which never changes the verdict. Reasons: methodology,
+"Russian buyer voice: reviews".
 """
 from __future__ import annotations
 
@@ -27,17 +31,19 @@ from collections import Counter, defaultdict
 
 from nichefinder import niches
 from nichefinder.stages.info_score import pct
-from nichefinder.stages.s10_ru_reviews_classify import UNMET
 from nichefinder.stages.s10_ru_reviews_fetch import APPS, DOCS, STORE_NAME, config_status, settings
 from nichefinder.workspace import Workspace
 
-SUMMARY = "Report: Russian review voice per niche (verdict rule within B2C/B2B, gap from unhappy reviews, pain themes, switches)"
+SUMMARY = "Report: Russian review voice per niche (verdict rule within B2C/B2B, gap from unhappy reviews, paywall mark, pain themes)"
 KEYS: tuple[str, ...] = ()
 NEEDS: tuple[str, ...] = ()
 
 VERD = {"green": "🟢", "yellow": "🟡", "red": "🔴"}
-VERDICT_COLS = ["niche_id", "verdict", "reason", "about_app", "apps", "unmet_share", "low_reviews", "unmet_low_share", "unmet_pct",
-                "quality_share", "quality_pct", "praise_share", "segment", "cohort", "gap_cohort", "status"]
+GAP_INTENTS = ("missing_feature", "switching")   # price is not a gap: see the module docstring
+PAYWALL = "💰 paywall"
+VERDICT_COLS = ["niche_id", "verdict", "paywall", "reason", "about_app", "apps", "unmet_share", "low_reviews", "unmet_low_share",
+                "unmet_pct", "price_low_share", "price_pct", "quality_share", "quality_pct", "praise_share", "segment", "cohort",
+                "gap_cohort", "status"]
 
 
 def f(x, d=None):
@@ -58,8 +64,9 @@ def segment(side: str) -> str:
 
 
 def unhappy_unmet(ws: Workspace, low_rating: int) -> dict[str, dict]:
-    """niche_id -> {low_reviews, unmet_low_share} from ru_reviews_items.jsonl: reviews about the app rated `low_rating` stars
-    or lower, and the share of all reviews about the app that are such a review with an unmet-need intent."""
+    """niche_id -> {low_reviews, unmet_low_share, price_low_share} from ru_reviews_items.jsonl: reviews about the app rated
+    `low_rating` stars or lower, and the shares of all reviews about the app that are such a review asking for a missing
+    feature or switching (the gap), or complaining about price (the paywall mark)."""
     c = defaultdict(Counter)
     p = ws.out("ru_reviews_items.jsonl")
     if p.is_file():
@@ -72,18 +79,22 @@ def unhappy_unmet(ws: Workspace, low_rating: int) -> dict[str, dict]:
             stars = f(r.get("rating"))
             if stars is not None and stars <= low_rating:
                 k["low"] += 1
-                k["unmet_low"] += r.get("intent") in UNMET
-    return {nid: {"low_reviews": k["low"], "unmet_low_share": round(k["unmet_low"] / k["app"], 3)} for nid, k in c.items() if k["app"]}
+                k["unmet_low"] += r.get("intent") in GAP_INTENTS
+                k["price_low"] += r.get("intent") == "pricing"
+    return {nid: {"low_reviews": k["low"], "unmet_low_share": round(k["unmet_low"] / k["app"], 3),
+                  "price_low_share": round(k["price_low"] / k["app"], 3)} for nid, k in c.items() if k["app"]}
 
 
 def reviews_verdicts(llm_rows: dict[str, dict], cfg: dict, segments: dict[str, str] | None = None) -> dict[str, dict]:
-    """niche_id -> {verdict, reason, unmet_pct, quality_pct, segment, cohort}. Labels: 🟢 gap, 🟡 quality, 🟡 content, 🟡 mixed,
-    ⚪ unmeasured, ⚪ quiet. `llm_rows` are rows of ru_reviews_llm.csv plus `low_reviews` and `unmet_low_share` (unhappy_unmet());
+    """niche_id -> {verdict, paywall, reason, unmet_pct, price_pct, quality_pct, segment, cohort, gap_cohort}. Labels: 🟢 gap,
+    🟡 quality, 🟡 content, 🟡 mixed, ⚪ unmeasured, ⚪ quiet; `paywall` is PAYWALL or "", a mark beside any measured verdict.
+    `llm_rows` are rows of ru_reviews_llm.csv plus `low_reviews`, `unmet_low_share` and `price_low_share` (unhappy_unmet());
     `cfg` is the `verdict` block of config/ru_reviews.yaml; `segments` maps niche_id to its cohort (percentiles are taken
     within it; one cohort when omitted).
-    The gap share is unmet_low_share: an unmet need counts only in a review rated cfg["low_rating"] or lower. It is ranked
-    among the niches of the segment where it can be read (at least cfg["min_low_reviews"] such reviews); elsewhere the gap
-    is unmeasured, and a niche that is not "quality" gets "unmeasured" instead of "content" or "mixed"."""
+    The gap share is unmet_low_share: a missing feature or a switch counts only in a review rated cfg["low_rating"] or lower.
+    It is ranked among the niches of the segment where it can be read (at least cfg["min_low_reviews"] such reviews);
+    elsewhere the gap is unmeasured, and a niche that is not "quality" gets "unmeasured" instead of "content" or "mixed".
+    The paywall mark ranks price_low_share the same way (paywall_pct, paywall_floor)."""
     seg = {nid: (segments or {}).get(nid, "all") for nid in llm_rows}
     measured = {nid: r for nid, r in llm_rows.items()
                 if (f(r.get("about_app"), 0) or 0) >= cfg["min_app_reviews"] and (f(r.get("apps"), 0) or 0) >= cfg["min_apps"]}
@@ -92,7 +103,7 @@ def reviews_verdicts(llm_rows: dict[str, dict], cfg: dict, segments: dict[str, s
     for nid, r in llm_rows.items():
         peers = [m for m in measured if seg[m] == seg[nid]]
         if nid not in measured:
-            out[nid] = {"verdict": "⚪ quiet", "unmet_pct": "", "quality_pct": "", "segment": seg[nid], "cohort": len(peers),
+            out[nid] = {"verdict": "⚪ quiet", "paywall": "", "unmet_pct": "", "price_pct": "", "quality_pct": "", "segment": seg[nid], "cohort": len(peers),
                         "gap_cohort": sum(1 for m in peers if m in readable),
                         "reason": f"{int(f(r.get('about_app'), 0) or 0)} labeled reviews about the app from {int(f(r.get('apps'), 0) or 0)} apps "
                                   f"(needs {cfg['min_app_reviews']} and {cfg['min_apps']}) - Russian reviews say too little about this niche"}
@@ -102,9 +113,12 @@ def reviews_verdicts(llm_rows: dict[str, dict], cfg: dict, segments: dict[str, s
         u_floors_only = len(gap_peers) < cfg["min_cohort"]
         qu = [f(measured[m]["quality_share"], 0) for m in peers]
         un = [f(measured[m].get("unmet_low_share"), 0) for m in gap_peers]
-        ul, u, q, p = f(r.get("unmet_low_share"), 0), f(r["unmet_share"], 0), f(r["quality_share"], 0), f(r["praise_share"], 0)
+        pr = [f(measured[m].get("price_low_share"), 0) for m in gap_peers]
+        ul, q, p = f(r.get("unmet_low_share"), 0), f(r["quality_share"], 0), f(r["praise_share"], 0)
+        pl = f(r.get("price_low_share"), 0)
         low, stars = int(f(r.get("low_reviews"), 0) or 0), cfg["low_rating"]
         pu = pct(un, ul) if nid in readable else None
+        pp = pct(pr, pl) if nid in readable else None
         pq = pct(qu, q)
         top_u = nid in readable and (u_floors_only or pu >= cfg["gap_pct"])
         top_q = q_floors_only or pq >= cfg["quality_pct"]
@@ -112,9 +126,8 @@ def reviews_verdicts(llm_rows: dict[str, dict], cfg: dict, segments: dict[str, s
         unread = (f"only {low} of {int(f(r['about_app'], 0) or 0)} reviews about the app are rated {stars} stars or lower (needs "
                   f"{cfg['min_low_reviews']}), and an unmet need counts only in such a review, so a gap cannot be read here")
         if top_u and ul >= cfg["gap_floor"]:
-            v, why = "🟢 gap", (f"{ul:.0%} of reviews about the app are rated {stars} stars or lower and ask for a missing feature, complain about "
-                                f"price or switch (in all reviews: {u:.0%}; features {pc(r['missing_feature_share'])}, price {pc(r['pricing_share'])}, "
-                                f"switching {pc(r['switching_share'])}){rank}")
+            v, why = "🟢 gap", (f"{ul:.0%} of reviews about the app are rated {stars} stars or lower and ask for a missing feature or "
+                                f"switch (in all reviews: features {pc(r['missing_feature_share'])}, switching {pc(r['switching_share'])}){rank}")
         elif q >= cfg["quality_floor"] and top_q:
             v, why = "🟡 quality", (f"{q:.0%} complain about bugs, UX, ads or support of existing apps{'' if q_floors_only else f', percentile {pq:.0%}'}, "
                                     + (f"but unmet needs in reviews of {stars} stars or lower are {ul:.0%}: the wedge is doing the same job better, not a new job"
@@ -127,10 +140,15 @@ def reviews_verdicts(llm_rows: dict[str, dict], cfg: dict, segments: dict[str, s
         else:
             v, why = "🟡 mixed", (f"unmet needs in reviews of {stars} stars or lower {ul:.0%}, quality complaints {q:.0%}, praise {p:.0%} - "
                                   "no share stands out against the cohort")
+        paywall = nid in readable and pl >= cfg["paywall_floor"] and (u_floors_only or pp >= cfg["paywall_pct"])
+        if paywall:
+            why += (f"; {PAYWALL}: {pl:.0%} of reviews about the app are rated {stars} stars or lower and complain about price or the paywall"
+                    + ("" if u_floors_only else f" (percentile {pp:.0%})") + " - a mark, not a gap: hard paywalls are common in saturated clone markets")
         top = f(r.get("top_app_share"), 0) or 0
         if top > cfg["top_app_warn"]:
             why += f"; caution: {top:.0%} of these reviews are about one product ({str(r.get('top_app', '')).split(':', 1)[-1]}), so this is mostly its users' voice"
-        out[nid] = {"verdict": v, "reason": why, "unmet_pct": "" if pu is None else round(pu, 3), "quality_pct": round(pq, 3),
+        out[nid] = {"verdict": v, "paywall": PAYWALL if paywall else "", "reason": why, "unmet_pct": "" if pu is None else round(pu, 3),
+                    "price_pct": "" if pp is None else round(pp, 3), "quality_pct": round(pq, 3),
                     "segment": seg[nid], "cohort": len(peers), "gap_cohort": len(gap_peers)}
     return out
 
@@ -169,7 +187,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     llm = {r["niche_id"]: r for r in rd("ru_reviews_llm.csv")}
     unhappy = unhappy_unmet(ws, int(vcfg["low_rating"]))
     for nid, r in llm.items():
-        r.update(unhappy.get(nid) or {"low_reviews": "", "unmet_low_share": ""})
+        r.update(unhappy.get(nid) or {"low_reviews": "", "unmet_low_share": "", "price_low_share": ""})
     if llm and not unhappy:
         print(f"{ws.out('ru_reviews_items.jsonl')} not found - the gap cannot be read; re-run s10_ru_reviews_classify (cached, free)")
     tp = ws.out("ru_reviews_themes.json")
@@ -183,8 +201,10 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         w.writeheader()
         for nid, v in verdicts.items():
             r = llm[nid]
-            w.writerow({"niche_id": nid, **{k: v[k] for k in ("verdict", "reason", "unmet_pct", "quality_pct", "segment", "cohort", "gap_cohort")},
-                        **{k: r.get(k, "") for k in ("about_app", "apps", "unmet_share", "low_reviews", "unmet_low_share", "quality_share", "praise_share")},
+            w.writerow({"niche_id": nid, **{k: v[k] for k in ("verdict", "paywall", "reason", "unmet_pct", "price_pct", "quality_pct", "segment",
+                                                                "cohort", "gap_cohort")},
+                        **{k: r.get(k, "") for k in ("about_app", "apps", "unmet_share", "low_reviews", "unmet_low_share", "price_low_share",
+                                                     "quality_share", "praise_share")},
                         "status": status})
 
     ids = list(dict.fromkeys(r["niche_id"] for r in apps))
@@ -211,47 +231,55 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
           f"**What is measured.** A sample of up to {scfg['max_reviews']} reviews per niche with at least {scfg['min_chars']} characters, drawn evenly "
           "across apps, is labeled by an LLM: whether the review is about the app or the service behind it, the intent (bug, UX, missing feature, price, "
           "ads, support, switching, praise), the pain, the switch \"from -> to\", willingness to pay and a quote. Shares are over reviews about the app: "
-          "**unmet needs** = missing feature + price + switching (what a new product could offer), **quality** = bugs + UX + ads + support "
-          f"(the incumbents do the job badly). For the gap an unmet need counts only in a review rated {stars} stars or lower: a feature wish in a "
-          "five-star review is a wishlist (Startpack asks every reviewer for cons), and a switch in a happy review is usually an arrival from a "
-          "competitor, a sign that substitutes exist. Pains are then clustered into themes.", "",
+          "**unmet needs** = missing feature + price + switching, **quality** = bugs + UX + ads + support (the incumbents do the job badly). "
+          f"**The gap** counts a missing feature or a switch only in a review rated {stars} stars or lower: a feature wish in a five-star review is a "
+          "wishlist (Startpack asks every reviewer for cons), and a switch in a happy review is usually an arrival from a competitor, a sign that "
+          f"substitutes exist. **Price** is not part of the gap: in unhappy reviews it is mostly anger at a paywall, and the hardest paywalls are in "
+          "saturated clone markets (the document-scanner and AI-song controls topped the gap while price counted), so it gets its own mark. "
+          "Pains are then clustered into themes.", "",
           "**Limits.** Reviews come from users of existing apps: they show what is missing in what people already use, not demand from people "
           "who have no app yet. Stores bias the sample (apps ask happy users for ratings; angry users write). Startpack leans positive: vendors run "
           "review campaigns (bursts of same-day five-star reviews from new accounts), which is why B2B niches form their own cohort. RuStore is not "
           "covered, and a B2B niche without mobile apps or Startpack products is quiet here. App Store RSS serves at most 500 newest reviews per app, so "
           "for big apps the window is days or weeks, not a year. LLM labels and themes are not hand-validated.", "",
-          f"**Verdict (a rule, not a score; it does not change S6):** 🟢 \"gap\" - unmet needs in reviews of {stars} stars or lower >= "
+          f"**Verdict (a rule, not a score; it does not change S6):** 🟢 \"gap\" - missing features and switches in reviews of {stars} stars or lower >= "
           f"{vcfg['gap_floor']:.0%} of reviews about the app and in the top of the cohort (percentile >= {vcfg['gap_pct']:.0%}); 🟡 \"quality\" - not a gap, "
           f"but bug/UX/ads/support complaints >= {vcfg['quality_floor']:.0%} and percentile >= {vcfg['quality_pct']:.0%}; ⚪ \"unmeasured\" - not quality, "
           f"and fewer than {vcfg['min_low_reviews']} reviews of {stars} stars or lower, so the gap cannot be read (not a signal either way); "
           f"🟡 \"content\" - praise >= {vcfg['content_praise']:.0%}; 🟡 \"mixed\" - the rest; ⚪ \"quiet\" - fewer than {vcfg['min_app_reviews']} labeled "
-          f"reviews about the app or fewer than {vcfg['min_apps']} apps. "
+          f"reviews about the app or fewer than {vcfg['min_apps']} apps. A separate mark, {PAYWALL}, beside any measured verdict: price complaints "
+          f"in reviews of {stars} stars or lower >= {vcfg['paywall_floor']:.0%} of reviews about the app and percentile >= {vcfg['paywall_pct']:.0%}. "
           "Written reviews lean negative, so an absolute complaint threshold would pass nearly every niche; the rule compares niches with each other, "
           f"within their segment (B2C + prosumer, B2B - the sources and their biases differ). **Cohorts: {cohort_note or 'none'}.**", "",
           "## 1. Summary", "",
-          f"| # | Niche | S6 | Score | Reviews verdict | Products AS / GP / SP | Reviews (substantive) | 1-2 stars | Unmet: feature / price / switch | Unmet in <= {stars} stars (n) | Quality | Praise | Pain theme #1 | Switch #1 |",
-          "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+          f"| # | Niche | S6 | Score | Reviews verdict | Products AS / GP / SP | Reviews (substantive) | 1-2 stars | Unmet, all reviews: feature / price / switch | Gap: feature + switch in <= {stars} stars (n) | Price in <= {stars} stars | Quality | Praise | Pain theme #1 | Switch #1 |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for k, nid in enumerate(ids, 1):
         s, c, l, v = score.get(nid, {}), per_n[nid], llm.get(nid), verdicts.get(nid)
         n_as, n_gp, n_sp = (sum(1 for r in by_app[nid] if r["store"] == st) for st in ("appstore", "gplay", "startpack"))
         low = f"{c['low'] / c['n']:.0%}" if c["n"] else "-"
         if l:
             unmet = (f"{pc(l['unmet_share'])}: {pc(l['missing_feature_share'])} / {pc(l['pricing_share'])} / {pc(l['switching_share'])} | "
-                     f"**{pc(l['unmet_low_share'])}** ({l['low_reviews'] if l['low_reviews'] != '' else '-'})")
+                     f"**{pc(l['unmet_low_share'])}** ({l['low_reviews'] if l['low_reviews'] != '' else '-'}) | {pc(l['price_low_share'])}")
             rest = f"{pc(l['quality_share'])} | {pc(l['praise_share'])} | {l['top_theme'] or '-'} ({l['top_theme_count']}) | {l['top_switch'] or '-'}"
         else:
-            unmet, rest = "- | -", "- | - | - | -"
-        L.append(f"| {k} | {names.get(nid, nid)} | {VERD.get(s.get('verdict'), '')} | {s.get('score', '')} | {v['verdict'] if v else '- (no LLM labels)'} | "
+            unmet, rest = "- | - | -", "- | - | - | -"
+        shown = (v["verdict"] + (f" · {v['paywall']}" if v["paywall"] else "")) if v else "- (no LLM labels)"
+        L.append(f"| {k} | {names.get(nid, nid)} | {VERD.get(s.get('verdict'), '')} | {s.get('score', '')} | {shown} | "
                  f"{n_as} / {n_gp} / {n_sp} | {c['n']} ({c['subst']}) | {low} | {unmet} | {rest} |")
     groups = defaultdict(list)
     for nid in ids:
         if nid in verdicts:
             groups[verdicts[nid]["verdict"]].append(nid)
     by_unmet = lambda xs: sorted(xs, key=lambda x: -(f(llm[x]["unmet_low_share"], 0) or 0))  # noqa: E731
+    paywalled = sorted((x for x in ids if (verdicts.get(x) or {}).get("paywall")), key=lambda x: -(f(llm[x]["price_low_share"], 0) or 0))
     L += ["", "## 2. What this says", "",
           f"- **🟢 gap ({len(groups['🟢 gap'])})**: " + (", ".join(f"{names.get(x, x)} ({pc(llm[x]['unmet_low_share'])})" for x in by_unmet(groups["🟢 gap"])) or "-")
-          + ". Unhappy users of the existing apps ask for what is missing, argue about price or leave more than in other niches: a concrete wedge for "
+          + ". Unhappy users of the existing apps ask for what is missing or leave more than in other niches: a concrete wedge for "
           "a new product. Read the unmet themes below before believing it.",
+          f"- **{PAYWALL} ({len(paywalled)})**: " + (", ".join(f"{names.get(x, x)} ({pc(llm[x]['price_low_share'])})" for x in paywalled) or "-")
+          + ". Unhappy users complain about price or the paywall more than in other niches. A mark, not a wedge by itself: hard paywalls are "
+          "common in saturated clone markets (document scanners, AI songs). A cheaper or fairer model helps only if the product is not a commodity.",
           f"- **🟡 quality ({len(groups['🟡 quality'])})**: " + (", ".join(names.get(x, x) for x in groups["🟡 quality"]) or "-")
           + ". The apps do the job, but badly (crashes, clumsy UX, ads, silent support): entering means out-executing incumbents.",
           f"- **⚪ unmeasured ({len(groups['⚪ unmeasured'])})**: " + (", ".join(names.get(x, x) for x in groups["⚪ unmeasured"]) or "-")
@@ -264,7 +292,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
           "## 3. By niche", ""]
     for k, nid in enumerate(ids, 1):
         s, c, l, v, t = score.get(nid, {}), per_n[nid], llm.get(nid), verdicts.get(nid), themes.get(nid) or {}
-        L += [f"### {k}. {names.get(nid, nid)} - {v['verdict'] if v else 'no LLM labels'}", "",
+        L += [f"### {k}. {names.get(nid, nid)} - {(v['verdict'] + (f' · {PAYWALL}' if v['paywall'] else '')) if v else 'no LLM labels'}", "",
               f"S6: {VERD.get(s.get('verdict'), '')} score {s.get('score', '-')}." + (f" Reviews verdict: {v['reason']}." if v else ""), "",
               "| Store | App | Ratings | Stars | Reviews kept | 1-2 stars | Oldest kept | LLM: unmet / quality / praise |", "|---|---|---|---|---|---|---|---|"]
         for r in sorted(by_app[nid], key=lambda r: (r["store"], -(f(r["ratings"], 0) or 0))):
@@ -280,8 +308,9 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                       f"price {pc(l['pricing_share'])}, switching {pc(l['switching_share'])}, bugs {pc(l['bug_share'])}, UX {pc(l['ux_share'])}, ads {pc(l['ads_share'])}, "
                       f"support {pc(l['support_share'])}, praise {pc(l['praise_share'])}; willingness to pay: \"too expensive\" {l['too_expensive']}, "
                       f"\"worth the money\" {l['worth_it']}, \"want it free\" {l['wants_free']}, \"cancelled\" {l['cancelled']}. "
-                      f"Rated {stars} stars or lower: {l['low_reviews'] if l['low_reviews'] != '' else '-'} reviews about the app; unmet needs among them "
-                      f"make {pc(l['unmet_low_share'])} of all reviews about the app (the gap share)."]
+                      f"Rated {stars} stars or lower: {l['low_reviews'] if l['low_reviews'] != '' else '-'} reviews about the app; missing features and "
+                      f"switches among them make {pc(l['unmet_low_share'])} of all reviews about the app (the gap share), price complaints "
+                      f"{pc(l['price_low_share'])} (the paywall share)."]
         if t.get("themes"):
             L += ["", "**Pain themes** (LLM clustering, descending):", ""]
             for th in t["themes"][:10]:
@@ -295,4 +324,5 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
           "Data: `data/out/ru_reviews_docs.jsonl`, `ru_reviews_apps.csv`, `ru_reviews_items.jsonl`, `ru_reviews_llm.csv`, `ru_reviews_themes.json`, "
           "`ru_reviews_verdict.csv`._", ""]
     ws.report("S10-ru-reviews.md").write_text("\n".join(L), encoding="utf-8")
-    print(f"-> reports/S10-ru-reviews.md, ru_reviews_verdict.csv: {len(ids)} niches;", dict(Counter(v["verdict"] for v in verdicts.values())))
+    print(f"-> reports/S10-ru-reviews.md, ru_reviews_verdict.csv: {len(ids)} niches;", dict(Counter(v["verdict"] for v in verdicts.values())),
+          f"{PAYWALL}: {len(paywalled)}")

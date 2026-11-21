@@ -282,8 +282,10 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             if qrl:
                 L.append(f"- **LLM labels** ({qrl['classified']} reviews, {qrl['about_app']} about the app): unmet needs {qp('unmet_share')} (missing feature {qp('missing_feature_share')}, "
                          f"price {qp('pricing_share')}, switching {qp('switching_share')}), quality complaints {qp('quality_share')} (bugs, UX, ads, support), praise {qp('praise_share')}."
-                         + (f" Gap share (unmet needs in low-rated reviews, of all reviews about the app): {float(qr['unmet_low_share']):.0%}, "
-                            f"from {qr.get('low_reviews') or 0} low-rated reviews." if qr.get("unmet_low_share") not in ("", None) else ""))
+                         + (f" Gap share (missing features and switches in low-rated reviews, of all reviews about the app): "
+                            f"{float(qr['unmet_low_share']):.0%}, from {qr.get('low_reviews') or 0} low-rated reviews"
+                            + (f"; price complaints in them: {float(qr['price_low_share']):.0%}" if qr.get("price_low_share") not in ("", None) else "")
+                            + "." if qr.get("unmet_low_share") not in ("", None) else ""))
             if qrt.get("themes"):
                 L += ["", "**Pain themes in Russian reviews** (LLM clustering, by frequency):", ""]
                 for th in qrt["themes"][:8]:
