@@ -303,3 +303,33 @@ def test_evidence_blocks_render(tmp_path):
     tags = ev.tags("salons")
     assert "R:ai-overview" in tags and "W:switch-high" in tags and "who:100,000" in tags
     assert ev.who_lines("gyms") == [] and ev.yt_lines("salons") == [] and ev.freelance_line("salons") == []
+
+
+def test_dataforseo_account_refusal_is_a_clear_error(monkeypatch):
+    monkeypatch.setattr(dfs, "_raw_request", lambda *a, **k: {"status_code": 40104, "status_message": "Please verify your account", "tasks": None})
+    try:
+        dfs._request("POST", "/serp/google/organic/live/advanced", [{}])
+        raise AssertionError("expected RuntimeError")
+    except RuntimeError as e:
+        assert "40104" in str(e) and "verify" in str(e)
+
+
+def test_serp_stops_at_the_first_account_error(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path)
+    calls = []
+
+    def refused(ws_, q, **kw):
+        calls.append(q)
+        raise dfs.AccountError("DataForSEO serp 40201: paused")
+
+    monkeypatch.setattr(dfs, "serp", refused)
+    monkeypatch.setattr(dfs, "serp_cached", lambda *a, **k: True)
+    monkeypatch.setattr(dfs, "keyword_difficulty_cached", lambda *a, **k: True)
+    monkeypatch.setattr(dfs, "keyword_difficulty", lambda ws_, kws, **k: ({}, 0.0))
+    try:
+        s5_serp.run(ws, argparse.Namespace(per_niche=2, dry=False, niches=["salons", "gyms"]))
+        raise AssertionError("expected SystemExit")
+    except SystemExit as e:
+        assert "40201" in str(e)
+    assert len(calls) == 1
+    assert isinstance(dfs._fail(40104, "verify"), dfs.AccountError) and not isinstance(dfs._fail(40501, "bad"), dfs.AccountError)

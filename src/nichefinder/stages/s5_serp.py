@@ -139,6 +139,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     for b in kd_batches:
         try:
             kd.update(dfs.keyword_difficulty(ws, b)[0])
+        except dfs.AccountError as e:
+            raise SystemExit(f"{e} - the account cannot run paid tasks; fix it at https://app.dataforseo.com/ and re-run")
         except RuntimeError as e:
             print(f"  keyword difficulty unavailable: {e}")
     groups = ws.load_config("serp_domains.yaml", {}) or {}
@@ -149,6 +151,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         for q in qs:
             try:
                 serps[q] = dfs.serp(ws, q)[0]
+            except dfs.AccountError as e:
+                raise SystemExit(f"{e} - the account cannot run paid tasks; fix it at https://app.dataforseo.com/ and re-run")
             except RuntimeError as e:
                 print(f"  {nid}: {q!r}: {e}")
         if not serps:
