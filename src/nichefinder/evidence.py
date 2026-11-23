@@ -5,6 +5,7 @@ One place reads their outputs, so s6_passports and s7_html stay small and show t
   serp_ownership.csv (s5_serp), advertisers.csv (s5_advertisers), ecosystems_metrics.csv (s5_ecosystems),
   oss_substitutes.csv (s5_oss),
   wayback.csv (s9_wayback), freelance.csv (s8_freelance), yt_comments_voice.csv (s10_yt_comments_report),
+  tg_voice.csv (s10_tg_report),
   deals.csv TrustMRR columns (s0_trustmrr via s5_deals).
 Every file is optional: a missing file means its block is skipped.
 """
@@ -54,6 +55,7 @@ class Evidence:
         self.wb = _rows(o("wayback.csv"))
         self.free = _rows(o("freelance.csv"))
         self.yt = _rows(o("yt_comments_voice.csv"))
+        self.tg = _rows(o("tg_voice.csv"))
         self.deals = _rows(o("deals.csv"))
         self.tmrr = {k: [r for r in v if r.get("source") == "trustmrr"] for k, v in _group(o("deals_matches.csv")).items()}
 
@@ -208,6 +210,23 @@ class Evidence:
                 + (f"; {shares}" if shares else "") + (f". Top theme: {y['top_theme']}" if y.get("top_theme") else "")
                 + (f". Products named: {prods}" if prods else "") + ". Details: `S10-yt-comments.md`.", ""]
 
+    # ---- buyer voice in Telegram chats -----------------------------------------------
+    def tg_lines(self, nid: str) -> list[str]:
+        y = self.tg.get(nid)
+        if not y:
+            return []
+        names = {"unmet_share": "unmet needs + price", "pain_share": "pain", "product_request_share": "asks for a product",
+                 "question_share": "how-to questions", "praise_share": "praise"}
+        shares = ", ".join(f"{label} {_n(y[k], '{:.0%}')}" for k, label in names.items() if y.get(k) not in (None, ""))
+        prods = "; ".join((y.get("products") or "").split("; ")[:3])
+        return ["## Buyer voice (Telegram chats, S10)", "",
+                f"**Telegram chats verdict: {y.get('verdict', '—')}**" + (f" - {y['reason'].rstrip('.')}." if y.get("reason") else ".")
+                + (" _The thresholds are a draft (`config/tg_voice.yaml`)._" if y.get("status") == "draft" else "")
+                + f" {y.get('about_niche') or '—'} messages about the niche in {y.get('niche_chats') or '—'} chats"
+                + (f" ({_n(y['niche_share'], '{:.0%}')} of the labelled messages; ads {y.get('about_ad') or 0})" if y.get("niche_share") else "")
+                + (f"; {shares}" if shares else "") + (f". Top theme: {y['top_theme']}" if y.get("top_theme") else "")
+                + (f". Products named: {prods}" if prods else "") + ". Details: `S10-telegram.md`.", ""]
+
     # ---- leaderboard -----------------------------------------------------------------
     def tags(self, nid: str) -> list[str]:
         t = []
@@ -227,4 +246,8 @@ class Evidence:
 
     def yt_verdict(self, nid: str) -> tuple[str, str]:
         y = self.yt.get(nid) or {}
+        return y.get("verdict", ""), y.get("reason", "")
+
+    def tg_verdict(self, nid: str) -> tuple[str, str]:
+        y = self.tg.get(nid) or {}
         return y.get("verdict", ""), y.get("reason", "")

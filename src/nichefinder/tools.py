@@ -1,4 +1,4 @@
-"""Optional external tools: Node.js (Google Play helpers) and the trendspy package (Google Trends)."""
+"""Optional external tools: Node.js (Google Play helpers), the trendspy package (Google Trends) and a Telegram session."""
 from __future__ import annotations
 
 import importlib.util
@@ -40,6 +40,9 @@ def check(name: str, ws: Workspace) -> str | None:
         return None
     if name == "curl":
         return None if shutil.which("curl") else "curl is required for some sources: install it and put it on PATH"
+    if name == "telegram":
+        from nichefinder import telegram
+        return telegram.problem(ws)
     return f"unknown tool {name}"
 
 

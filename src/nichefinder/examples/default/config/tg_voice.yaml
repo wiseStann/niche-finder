@@ -1,0 +1,55 @@
+# Telegram chats (S10): what a niche's users write to each other in public group chats (owners, practitioners, users of
+# its tools), in Russian. Read by s10_tg_fetch (`fetch`, `niches`), s10_tg_classify (`sample`) and s10_tg_report (`verdict`).
+# Rationale: docs/methodology.md section 9. Like the Reddit, reviews and YouTube verdicts, this one never changes the S6 verdict.
+# Needs TG_API_ID / TG_API_HASH (https://my.telegram.org) and a session: `nf setup telegram` (QR code). Read-only, no chat is joined.
+#
+# status: draft until the thresholds are fixed. Fix them BEFORE reading the first real verdicts (set `status: fixed`
+# and `fixed_on`); after that every change needs a written reason in `changes`, never to rescue a favourite niche.
+status: draft
+fixed_on:
+# Collection settings were tuned on a 4-niche trial (2026-11-23) before any full run and before any verdict was read:
+# the terms "service", "bot" and "automation" mostly found vendor ads (96 of 248 labeled messages in the auto repair owners'
+# chats were ads), and 12 months gave under 40 messages about the niche even in the largest owners' chat, so the window is
+# 24 months and the terms ask what peers use ("which do you use", "accounting").
+changes: []
+
+fetch:
+  window_months: 24       # messages from the first day of the month this many months before the run month
+  phrases_llm: 10         # chat search phrases the LLM writes per niche (who the users are, as chat titles name them)
+  min_members: 300        # candidate chats need at least this many members
+  check_candidates: 40    # the largest candidates the LLM chat check sees per niche
+  chats: 5                # per niche: the kept chats with the most members are read
+  confirm: true           # check the 2 x chats largest kept chats again with their own description (one call per chat)
+  terms: [программа, приложение, crm, срм, учет, таблица, excel, пользуетесь, посоветуйте, подскажите, порекомендуйте]
+  brands: true            # also search the brand names of the niche's Russian brand queries
+  max_per_term: 200       # messages per chat and term (newest first, within the window)
+  pace_s: 1.5             # seconds between live Telegram calls
+  max_flood_wait: 120     # a longer FloodWait stops live calls; a re-run resumes from the cache
+
+# Hand settings per niche: extra chat search phrases, and chats to keep or drop whatever the LLM check says.
+#   auto-repair-shops: {phrases: [владельцы автосервисов], keep: ["@avtoconf"], drop: ["@some_ads_chat"]}
+niches: {}
+
+sample:
+  max_messages: 300       # per niche, taken round-robin over its chats; the LLM labels 25 messages per call
+  min_chars: 25           # shorter messages name no need and are not sent to the LLM
+
+# Verdict: the rule of the YouTube comments with its own thresholds. Shares are over messages about the niche (its task,
+# its problem or its tools), not over ads or small talk. The search terms pick tool talk, so the rule compares niches with
+# each other: a share must be in the top third of the cohort (mid-rank percentile among the measured niches of the same
+# segment, B2C + prosumer or B2B) AND above an absolute floor. Labels are tried in order: gap, pain, seeking, how-to,
+# content, mixed.
+verdict:
+  min_niche_messages: 40  # quiet: fewer labeled messages about the niche
+  min_chats: 2            # quiet: fewer chats with messages about the niche
+  min_cohort: 6           # with fewer measured niches in a segment percentiles mean nothing: the floors alone decide
+  gap_pct: 0.67           # gap: unmet needs + price objections in the top third...
+  gap_floor: 0.10         # ...and at least this share
+  pain_pct: 0.67          # pain: complaints about the task or the existing tools in the top third...
+  pain_floor: 0.20        # ...and at least this share
+  seek_pct: 0.67          # seeking: "which app do you use?" in the top third (users compare, they do not flee)...
+  seek_floor: 0.12        # ...and at least this share
+  howto_pct: 0.67         # how-to: questions on how to do the task in the top third...
+  howto_floor: 0.20       # ...and at least this share
+  content_praise: 0.25    # content: praise of a product or of the current way at least this share, none of the above
+  top_chat_warn: 0.60     # a caution in the reason (not a gate) when one chat gives more of the niche's messages than this

@@ -115,6 +115,10 @@ STAGES: list[Stage] = [
     Stage("s10_yt_comments_fetch", "s10"),
     Stage("s10_yt_comments_classify", "s10"),
     Stage("s10_yt_comments_report", "s10"),
+    # S10 - buyer voice in Telegram group chats (Russian owners and practitioners): a separate column, never the S6 verdict
+    Stage("s10_tg_fetch", "s10", market="ru"),
+    Stage("s10_tg_classify", "s10", market="ru"),
+    Stage("s10_tg_report", "s10", market="ru"),
     # S6 — final score, ceiling, passports; S7 — leaderboard
     Stage("s6_rescore", "s6"),
     Stage("s6_ru", "s6", market="ru"),

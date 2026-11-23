@@ -39,6 +39,12 @@ GROUPS: dict[str, dict] = {
                 "the stage reads a public snapshot of ~1,000 top earners. Free with an account.",
         "where": "https://trustmrr.com (account settings, API key)",
     },
+    "telegram": {
+        "keys": ("TG_API_ID", "TG_API_HASH"),
+        "what": "Telegram API: public group chats of each niche's users for the Russian buyer voice (s10_tg_*). Free; then log in "
+                "once with `nf setup telegram` (QR code). Read-only: no chat is joined.",
+        "where": "https://my.telegram.org (API development tools)",
+    },
     "github": {
         "keys": ("GITHUB_TOKEN",),
         "what": "Optional: raises the GitHub search limit for s5_oss from 10 to 30 requests a minute. A token with no scopes is enough.",

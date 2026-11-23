@@ -59,16 +59,23 @@ def pc(x) -> str:
     return "-" if v is None else f"{v:.0%}"
 
 
-def voice_verdicts(rows: dict[str, dict], cfg: dict, segments: dict[str, str] | None = None) -> dict[str, dict]:
+# Words and column / config names of one voice source; s10_tg_report passes its own (chats, messages).
+YT_WORDS = {"items": "comments", "unit": "video", "units": "videos", "source": "YouTube comments", "stage": "s10_yt_comments_classify",
+            "min_items": "min_niche_comments", "min_units": "min_videos", "warn": "top_video_warn", "where": "under"}
+
+
+def voice_verdicts(rows: dict[str, dict], cfg: dict, segments: dict[str, str] | None = None, words: dict | None = None) -> dict[str, dict]:
     """niche_id -> {verdict, reason, unmet_pct, pain_pct, seek_pct, question_pct, segment, cohort}. Labels: 🟢 gap,
     🟡 pain, 🟡 seeking, 🟡 how-to, 🟡 content, 🟡 mixed, ⚪ quiet, ⚪ incomplete (some LLM batches gave no answer: the
     shares would be over a part of the sample, so the niche stays out of the verdict and the cohort). `rows` are rows of
     yt_comments_llm.csv; `cfg` is the `verdict` block of config/yt_comments.yaml; `segments` maps niche_id to its
-    cohort (one cohort when omitted)."""
+    cohort (one cohort when omitted); `words` names the source's items, units and settings (YT_WORDS by default)."""
+    w = {**YT_WORDS, **(words or {})}
+    n_units, top_share = f"niche_{w['units']}", f"top_{w['unit']}_share"
     seg = {nid: (segments or {}).get(nid, "all") for nid in rows}
     complete = {nid for nid, r in rows.items() if not (f(r.get("failed_batches"), 0) or 0)}
     measured = {nid: r for nid, r in rows.items() if nid in complete
-                and (f(r.get("about_niche"), 0) or 0) >= cfg["min_niche_comments"] and (f(r.get("niche_videos"), 0) or 0) >= cfg["min_videos"]}
+                and (f(r.get("about_niche"), 0) or 0) >= cfg[w["min_items"]] and (f(r.get(n_units), 0) or 0) >= cfg[w["min_units"]]}
     out = {}
     for nid, r in rows.items():
         peers = [m for m in measured if seg[m] == seg[nid]]
@@ -76,13 +83,13 @@ def voice_verdicts(rows: dict[str, dict], cfg: dict, segments: dict[str, str] | 
         if nid not in complete:
             out[nid] = {**base, "verdict": "⚪ incomplete", "unmet_pct": "", "pain_pct": "", "seek_pct": "", "question_pct": "",
                         "reason": f"{int(f(r.get('failed_batches'), 0) or 0)} LLM batches gave no answer ({r.get('classified', 0)} of "
-                                  f"{r.get('sampled', '?')} sampled comments labeled); re-run s10_yt_comments_classify (labeled batches are cached)"}
+                                  f"{r.get('sampled', '?')} sampled {w['items']} labeled); re-run {w['stage']} (labeled batches are cached)"}
             continue
         if nid not in measured:
             out[nid] = {**base, "verdict": "⚪ quiet", "unmet_pct": "", "pain_pct": "", "seek_pct": "", "question_pct": "",
-                        "reason": f"{int(f(r.get('about_niche'), 0) or 0)} labeled comments about the niche under "
-                                  f"{int(f(r.get('niche_videos'), 0) or 0)} videos (needs {cfg['min_niche_comments']} and {cfg['min_videos']}) - "
-                                  "YouTube comments say too little about this niche"}
+                        "reason": f"{int(f(r.get('about_niche'), 0) or 0)} labeled {w['items']} about the niche {w['where']} "
+                                  f"{int(f(r.get(n_units), 0) or 0)} {w['units']} (needs {cfg[w['min_items']]} and {cfg[w['min_units']]}) - "
+                                  f"{w['source']} say too little about this niche"}
             continue
         floors_only = len(peers) < cfg["min_cohort"]
 
@@ -100,7 +107,7 @@ def voice_verdicts(rows: dict[str, dict], cfg: dict, segments: dict[str, str] | 
 
         rest = f"unmet needs + price {u:.0%}, pain {p:.0%}, asks for a product {s:.0%}, how-to {q:.0%}, praise {pr:.0%}"
         if u >= cfg["gap_floor"] and top(pu, "gap_pct"):
-            v, why = "🟢 gap", (f"{u:.0%} of comments about the niche name something missing or object to the price "
+            v, why = "🟢 gap", (f"{u:.0%} of {w['items']} about the niche name something missing or object to the price "
                                f"(missing {pc(r.get('unmet_need_share'))}, price {pc(r.get('price_share'))}){where(pu)}")
         elif p >= cfg["pain_floor"] and top(pp, "pain_pct"):
             v, why = "🟡 pain", (f"{p:.0%} complain about the task or the existing tools{where(pp)}, while unmet needs + price are {u:.0%}: "
@@ -115,26 +122,30 @@ def voice_verdicts(rows: dict[str, dict], cfg: dict, segments: dict[str, str] | 
             v, why = "🟡 content", f"praise {pr:.0%}, no buyer signal stands out against the cohort ({rest})"
         else:
             v, why = "🟡 mixed", f"no share stands out against the cohort: {rest}"
-        tv = f(r.get("top_video_share"), 0) or 0
-        if tv > cfg["top_video_warn"]:
-            why += f"; caution: {tv:.0%} of these comments come from one video, so this is mostly its audience's voice"
+        tv = f(r.get(top_share), 0) or 0
+        if tv > cfg[w["warn"]]:
+            why += f"; caution: {tv:.0%} of these {w['items']} come from one {w['unit']}, so this is mostly its audience's voice"
         out[nid] = {**base, "verdict": v, "reason": why, "unmet_pct": round(pu, 3), "pain_pct": round(pp, 3),
                     "seek_pct": round(ps, 3), "question_pct": round(pq, 3)}
     return out
 
 
-def theme_prompt(name: str, lang: str, stmts: list[dict]) -> str:
-    return (f"Niche: {name}. Below are {len(stmts)} needs extracted from {LANG_NAME.get(lang, lang)} YouTube comments under the niche's "
-            "how-to and review videos, one per line as 'k: [kind] need | comment'. Group them into 4-10 themes (distinct needs or "
+def theme_prompt(name: str, lang: str, stmts: list[dict], source: str = "", item: str = "comment") -> str:
+    """`source` says where the texts come from (default: YouTube comments under the niche's how-to and review videos)."""
+    source = source or f"{LANG_NAME.get(lang, lang)} YouTube comments under the niche's how-to and review videos"
+    return (f"Niche: {name}. Below are {len(stmts)} needs extracted from {source}, one per line as 'k: [kind] need | {item}'. "
+            "Group them into 4-10 themes (distinct needs or "
             "complaints). For each theme return: theme (short English name), kind (unmet = something missing or a price objection; "
             "pain = a complaint about the task or the existing tools; seeking = asks which product to use), description (one sentence), "
-            "ids (list of k), quotes (2 best verbatim fragments up to 140 characters from the comments, in the original language). "
+            f"ids (list of k), quotes (2 best verbatim fragments up to 140 characters from the {item}s, in the original language). "
             'Output JSON {"themes": [...]}, largest theme first.\n\n'
             + "\n".join(f"{k}: [{r['kind']}] {r['pain']} | {r['text'][:160]}" for k, r in enumerate(stmts)))
 
 
-def build_themes(ws: Workspace, lang: str, items: dict[str, list[dict]], names: dict[str, str], workers: int = 6) -> dict[str, dict]:
-    """niche_id -> {themes, statements, kinds, products}. Themes are counted from the ids the model returns."""
+def build_themes(ws: Workspace, lang: str, items: dict[str, list[dict]], names: dict[str, str], workers: int = 6,
+                 source: str = "", item: str = "comment") -> dict[str, dict]:
+    """niche_id -> {themes, statements, kinds, products}. Themes are counted from the ids the model returns. `source` and
+    `item` describe the texts in the prompt (YouTube comments by default)."""
     jobs = {}
     for nid, recs in items.items():
         stmts = [r for r in recs if r["about"] == "niche" and r["kind"] in VOICE and r.get("pain")][:200]
@@ -145,7 +156,8 @@ def build_themes(ws: Workspace, lang: str, items: dict[str, list[dict]], names: 
     def call(nid):
         try:
             return llm.chat_json(ws, [{"role": "system", "content": THEME_SYSTEM},
-                                      {"role": "user", "content": theme_prompt(names.get(nid, nid), lang, jobs[nid])}], max_tokens=4000)
+                                      {"role": "user", "content": theme_prompt(names.get(nid, nid), lang, jobs[nid], source, item)}],
+                                  max_tokens=4000)
         except keys.MissingKey:
             missing.append(nid)
             return None, False, None

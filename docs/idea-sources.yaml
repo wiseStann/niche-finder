@@ -1854,23 +1854,56 @@ sources:
     geo: ru
     url: https://dev.vk.com/
     role: [voice, evaluation]
-    signals: ["groups.search with members_count - size of professional communities (salon owners, auto shops); wall posts and comments - Russian buyer voice where Russian SMB actually talks"]
+    signals: ["groups.search with members_count - size of communities per niche topic (a Russian analogue of subreddit sizes); wall posts and comments of open communities"]
     stages: [s8, s10]
     feeds: []
     freshness: daily
     status: planned
     adapter: null
-    priority: P2
+    priority: P3
     access:
       - method: api
-        endpoint: "https://api.vk.com/method/groups.search?q=...&v=5.199"
-        auth: "a user access token (free, a VK ID application)"
+        endpoint: "https://api.vk.com/method/<method>?v=5.199 (token in the POST body)"
+        auth: "service key of a VK mini app (dev.vk.com, new panel; no business verification): wall.get, wall.search, wall.getComments, groups.getById (members_count), board.getTopics, newsfeed.search work; groups.search does not (error 15)"
         cost: $0
-        limits: "3 requests/s"
-        probe: {date: 2026-11-21, http: 200, note: "error 15 'Access denied: token required'"}
-    caveats: ["Group names are noisy; member counts include bots"]
-    plan: "Add a VK_TOKEN key and a stage beside s8_subreddit_stats"
+        limits: "newsfeed.search with a service key sees only the ~60 newest posts, start_time / end_time windows return nothing, quotes do not make a phrase exact"
+        probe: {date: 2026-11-23, http: 200, note: "the service key reads whole community walls and comments"}
+      - method: api
+        endpoint: "https://oauth.vk.com/authorize?client_id=<app>&scope=groups&response_type=token (implicit flow) -> groups.search"
+        auth: "user token of the same mini app (scope groups; offline is an invalid scope for it, so the token lives about a day)"
+        cost: $0
+        limits: "groups.search works; results are mostly single businesses' pages and personal blogs"
+        probe: {date: 2026-11-23, http: 200, note: "'owners of auto services': 1,530 groups, nearly all single auto services; 'nail masters': 24,599 groups of single masters"}
+    caveats:
+      - "No small-business voice: the largest beauty communities (0.5-2.8 M members) are picture feeds that name YCLIENTS 0-1 times in their history; 'auto service business' finds vendor and franchise pages. In VK a business runs its own page for its clients; owners talk in Telegram (telegram_chats)"
+      - "Group names are noisy; member counts include bots"
+    plan: "Not a voice source. Maybe an audience-size signal for B2C topics (members of the largest relevant communities, LLM-checked), beside s8_subreddit_stats; needs a fresh user token for each discovery run"
 
+  - id: telegram_chats
+    name: Telegram group chats (own session)
+    group: community
+    geo: ru
+    url: https://core.telegram.org/api
+    role: [voice]
+    signals: ["s10: messages in public group chats of a niche's users (owners, practitioners, users of its tools) that name tools: which app to use, switching, missing integrations, price - the Russian small-business voice that reviews and VK lack"]
+    stages: [s10]
+    feeds: ["data/out/tg_docs.jsonl, tg_chats.csv, tg_fetch.csv, tg_items.jsonl, tg_llm.csv, tg_themes.json, tg_voice.csv; reports/S10-telegram.md"]
+    freshness: daily
+    status: in_pipeline
+    adapter: s10_tg_fetch
+    priority: P1
+    access:
+      - method: api
+        endpoint: "MTProto through Telethon with the user's own session: contacts.search (public chats by keyword), channels.getFullChannel (a chat's description), messages.search inside a public chat"
+        auth: "TG_API_ID / TG_API_HASH from my.telegram.org and a session file (`nf setup telegram`: QR login; login codes for new API applications often never arrive)"
+        cost: $0
+        limits: "read-only, no chat joined; 1.5 s between live calls; FloodWait over 120 s stops live calls and a re-run resumes from the month cache; contacts.search returns only a handful of chats per phrase"
+        probe: {date: 2026-11-23, http: 200, note: "salon owners' chat 28.7 K members (DIKIDI vs YCLIENTS, Avito sync); auto service owners' chat 4 K (AvtoDiler, 1C, '5-bay shop software'); nail masters' chat 31 K ('a booking app other than YCLIENTS')"}
+    caveats:
+      - "The session file gives full access to the account: kept in the workspace, never copied"
+      - "Recall depends on the chat-title phrases; consumer niches seldom have chats of their own"
+      - "Vendor ads are common (96 of 248 labelled messages in the auto repair owners' chats on the trial): labelled `ad` and left out of the shares"
+    plan: "Done (2026-11-23): s10_tg_fetch / s10_tg_classify / s10_tg_report; the labels and verdict rule of the YouTube comments; thresholds draft in config/tg_voice.yaml"
   - id: upwork
     name: Upwork
     group: hiring

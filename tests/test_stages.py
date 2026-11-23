@@ -17,7 +17,7 @@ def test_stage_contract(stage):
     assert isinstance(getattr(mod, "SUMMARY", None), str) and mod.SUMMARY
     assert callable(getattr(mod, "run", None))
     assert isinstance(getattr(mod, "KEYS", ()), tuple)
-    assert set(getattr(mod, "NEEDS", ())) <= {"node", "trendspy", "curl"}
+    assert set(getattr(mod, "NEEDS", ())) <= {"node", "trendspy", "curl", "telegram"}
     if hasattr(mod, "add_arguments"):
         mod.add_arguments(argparse.ArgumentParser())
 

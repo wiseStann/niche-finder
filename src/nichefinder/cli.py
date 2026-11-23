@@ -11,6 +11,7 @@
     nf -p west-b2b run all         run under a profile
     nf ui                          local web console: parameters, stage progress, results
     nf setup node                  install the Google Play scraper for Node-based stages
+    nf setup telegram              log in to Telegram by QR code (session for the s10_tg_* stages)
 """
 from __future__ import annotations
 
@@ -65,7 +66,7 @@ def cmd_doctor(args) -> None:
         ok = keys.have(*g["keys"])
         print(f"  {'ok ' if ok else '-- '} {name:<11} {', '.join(g['keys'])}" + ("" if ok else f"  — {g['where']}"))
     print("\ntools:")
-    for t in ("trendspy", "node", "curl"):
+    for t in ("trendspy", "node", "curl", "telegram"):
         problem = tools.check(t, ws)
         print(f"  {'ok ' if not problem else '-- '} {t:<11} {problem or ''}")
     errors, warns, stats = niches.validate(ws)
@@ -216,6 +217,9 @@ def cmd_setup(args) -> None:
     if args.what == "node":
         tools.setup_node(ws)
         print("google-play-scraper installed into", ws.root / "node_modules")
+    elif args.what == "telegram":
+        from nichefinder import telegram
+        telegram.login(ws)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -262,8 +266,8 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--no-browser", action="store_true", help="do not open a browser tab")
     p.set_defaults(fn=cmd_ui)
 
-    p = sub.add_parser("setup", help="install optional tools")
-    p.add_argument("what", choices=["node"])
+    p = sub.add_parser("setup", help="install optional tools, or log in to Telegram")
+    p.add_argument("what", choices=["node", "telegram"])
     p.set_defaults(fn=cmd_setup)
 
     args = ap.parse_args(argv)

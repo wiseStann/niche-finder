@@ -55,6 +55,25 @@ LLM_COLS = ["niche_id", "lang", "videos", "comments", "sampled", "classified", "
             *[f"{k}_share" for k in KINDS], "unmet_share", "voice_share", "niche_videos", "top_video", "top_video_share", "products",
             "failed_batches"]
 
+def label_rules(other: str) -> str:
+    """The kind / pain / products part of the labelling prompt; `other` is the non-niche `about` value besides off_topic
+    (video here, ad for Telegram). Shared with s10_tg_classify so both sources label kinds the same way."""
+    return (
+        "kind (for about=niche one of: pain = a complaint or difficulty: the task is hard, a product or tool fails, is inconvenient, buggy, "
+        "blocked or gone, support does not help; unmet_need = names something missing: wishes for a product, feature or option the tools "
+        "they know lack, or says there is no good tool for it; price = price, subscription, paywall, too expensive, wants a free option, "
+        "cancelled over price; product_request = asks which product, app, service or tool to use, or for a recommendation; "
+        "question = asks how to do the task or how to use a product, not which product to choose; praise = satisfied with a product, a "
+        "tool or their current way of doing the task, or recommends one; other = about the niche but none of the above: a story, an "
+        f"opinion, advice without a product. For about={other} or off_topic use other. When a comment mixes kinds, the first of this "
+        "order wins: unmet_need, price, pain, product_request, question, praise, other); "
+        "pain (for pain, unmet_need, price and product_request: a short English phrase naming the need from the commenter's "
+        "perspective, e.g. 'no app tracks supersets', 'subscription too expensive', 'looking for a simple offline budget app'; "
+        "empty string otherwise); "
+        "products (products, apps, services, tools or brands named, normalized, lowercase; empty list if none). "
+        'Output only a JSON object {"items": [...]}.')
+
+
 SYSTEM = (
     "You label YouTube comments (mostly in Russian) left under videos about a market niche: how-to videos for its task and reviews "
     "of its products. A niche is who x task x product. For each comment return strict JSON with the fields: "
@@ -62,19 +81,7 @@ SYSTEM = (
     "about (niche = the commenter speaks about the niche's task, its problem, or the products and tools for it, including their own "
     "experience; video = only a reaction to the video or its author: thanks, compliments, critique of the presenter or the editing; "
     "off_topic = anything else: jokes, politics, spam, self-promotion, links, unintelligible); "
-    "kind (for about=niche one of: pain = a complaint or difficulty: the task is hard, a product or tool fails, is inconvenient, buggy, "
-    "blocked or gone, support does not help; unmet_need = names something missing: wishes for a product, feature or option the tools "
-    "they know lack, or says there is no good tool for it; price = price, subscription, paywall, too expensive, wants a free option, "
-    "cancelled over price; product_request = asks which product, app, service or tool to use, or for a recommendation; "
-    "question = asks how to do the task or how to use a product, not which product to choose; praise = satisfied with a product, a "
-    "tool or their current way of doing the task, or recommends one; other = about the niche but none of the above: a story, an "
-    "opinion, advice without a product. For about=video or off_topic use other. When a comment mixes kinds, the first of this "
-    "order wins: unmet_need, price, pain, product_request, question, praise, other); "
-    "pain (for pain, unmet_need, price and product_request: a short English phrase naming the need from the commenter's "
-    "perspective, e.g. 'no app tracks supersets', 'subscription too expensive', 'looking for a simple offline budget app'; "
-    "empty string otherwise); "
-    "products (products, apps, services, tools or brands named, normalized, lowercase; empty list if none). "
-    'Output only a JSON object {"items": [...]}.')
+    + label_rules("video"))
 
 
 def load_docs(ws: Workspace, lang: str) -> dict[str, list[dict]]:
@@ -88,17 +95,17 @@ def norm(text: str) -> str:
     return re.sub(r"\W+", " ", text.lower()).strip()
 
 
-def sample(docs: list[dict], n: int, min_chars: int, seed: int = 7) -> list[dict]:
-    """Round-robin over videos, each video's substantive comments in a seeded random order, repeated texts dropped; at
-    most n."""
+def sample(docs: list[dict], n: int, min_chars: int, seed: int = 7, group: str = "video_id") -> list[dict]:
+    """Round-robin over videos (or another `group` key, e.g. chat_id), each group's substantive texts in a seeded random
+    order, repeated texts dropped; at most n."""
     by = defaultdict(list)
     seen: set[str] = set()
-    for d in sorted(docs, key=lambda d: (d["video_id"], str(d["id"]))):
+    for d in sorted(docs, key=lambda d: (str(d[group]), str(d["id"]))):
         t = norm(d.get("text") or "")
         if len(d.get("text") or "") < min_chars or t in seen:
             continue
         seen.add(t)
-        by[d["video_id"]].append(d)
+        by[d[group]].append(d)
     rnd = random.Random(seed)
     queues = []
     for vid in sorted(by):
@@ -132,21 +139,22 @@ def label(it: dict, d: dict, nid: str) -> dict:
             "text": (d.get("text") or "")[:300]}
 
 
-def shares(recs: list[dict]) -> dict:
-    """Kind shares over comments about the niche, plus the about split, videos and products."""
+def shares(recs: list[dict], group: str = "video_id", unit: str = "video", other: str = "video") -> dict:
+    """Kind shares over the texts about the niche, plus the about split, the groups (videos, or chats with unit=chat)
+    and the products. `other` is the non-niche about value besides off_topic (video, or ad for Telegram)."""
     nic = [r for r in recs if r["about"] == "niche"]
     n = max(1, len(nic))
     c = Counter(r["kind"] for r in nic)
-    per_video = Counter(r["video_id"] for r in nic)
-    top = per_video.most_common(1)[0] if per_video else ("", 0)
+    per_group = Counter(r[group] for r in nic)
+    top = per_group.most_common(1)[0] if per_group else ("", 0)
     prods = Counter(p for r in nic for p in dict.fromkeys(r["products"]))
     ab = Counter(r["about"] for r in recs)
-    return {"classified": len(recs), "about_niche": len(nic), "about_video": ab.get("video", 0), "off_topic": ab.get("off_topic", 0),
+    return {"classified": len(recs), "about_niche": len(nic), f"about_{other}": ab.get(other, 0), "off_topic": ab.get("off_topic", 0),
             "niche_share": round(len(nic) / max(1, len(recs)), 3),
             **{f"{k}_share": round(c.get(k, 0) / n, 3) for k in KINDS},
             "unmet_share": round(sum(c.get(k, 0) for k in UNMET) / n, 3),
             "voice_share": round(sum(c.get(k, 0) for k in VOICE) / n, 3),
-            "niche_videos": len(per_video), "top_video": top[0], "top_video_share": round(top[1] / n, 3) if nic else 0,
+            f"niche_{unit}s": len(per_group), f"top_{unit}": top[0], f"top_{unit}_share": round(top[1] / n, 3) if nic else 0,
             "products": "; ".join(f"{p} ({k})" for p, k in prods.most_common(8))}
 
 
