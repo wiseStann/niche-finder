@@ -39,6 +39,12 @@ GROUPS: dict[str, dict] = {
                 "the stage reads a public snapshot of ~1,000 top earners. Free with an account.",
         "where": "https://trustmrr.com (account settings, API key)",
     },
+    "vk": {
+        "keys": ("VK_SERVICE_TOKEN", "VK_USER_TOKEN"),
+        "what": "VK API: community sizes around each niche's topic (s8_vk_audience, evidence). The service key of a VK mini app "
+                "never expires; the user token (only for groups.search) lives about a day - see sources/vk.py for the link.",
+        "where": "https://dev.vk.com (new panel: create a mini app, Development > Access keys)",
+    },
     "telegram": {
         "keys": ("TG_API_ID", "TG_API_HASH"),
         "what": "Telegram API: public group chats of each niche's users for the Russian buyer voice (s10_tg_*). Free; then log in "

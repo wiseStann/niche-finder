@@ -5,7 +5,7 @@ One place reads their outputs, so s6_passports and s7_html stay small and show t
   serp_ownership.csv (s5_serp), advertisers.csv (s5_advertisers), ecosystems_metrics.csv (s5_ecosystems),
   oss_substitutes.csv (s5_oss),
   wayback.csv (s9_wayback), freelance.csv (s8_freelance), yt_comments_voice.csv (s10_yt_comments_report),
-  tg_voice.csv (s10_tg_report),
+  tg_voice.csv (s10_tg_report), vk_audience.csv (s8_vk_audience),
   deals.csv TrustMRR columns (s0_trustmrr via s5_deals).
 Every file is optional: a missing file means its block is skipped.
 """
@@ -56,6 +56,7 @@ class Evidence:
         self.free = _rows(o("freelance.csv"))
         self.yt = _rows(o("yt_comments_voice.csv"))
         self.tg = _rows(o("tg_voice.csv"))
+        self.vk = _rows(o("vk_audience.csv"))
         self.deals = _rows(o("deals.csv"))
         self.tmrr = {k: [r for r in v if r.get("source") == "trustmrr"] for k, v in _group(o("deals_matches.csv")).items()}
 
@@ -210,6 +211,20 @@ class Evidence:
                 + (f"; {shares}" if shares else "") + (f". Top theme: {y['top_theme']}" if y.get("top_theme") else "")
                 + (f". Products named: {prods}" if prods else "") + ". Details: `S10-yt-comments.md`.", ""]
 
+    # ---- audience in VK communities ------------------------------------------------
+    def vk_lines(self, nid: str) -> list[str]:
+        v = self.vk.get(nid)
+        if not v or v.get("status") not in ("ok", "no communities"):
+            return []
+        if v.get("status") == "no communities":
+            return ["## Audience in VK communities (S8, evidence)", "",
+                    f"No VK community about the niche's topic or trade passed the check (searched: {v.get('phrases') or '-'}).", ""]
+        return ["## Audience in VK communities (S8, evidence)", "",
+                f"{v['communities']} communities about the niche's topic or trade; the 10 largest have **{_n(v['members_top10'])} members** "
+                f"(an upper bound: people join several, counts include bots); the largest is \"{v['top1']}\" ({_n(v['top1_members'])}); "
+                f"{v['n_100k']} communities above 100k members and {v['n_10k']} above 10k. Searched: {v.get('phrases') or '-'}. "
+                "Not in the score.", ""]
+
     # ---- buyer voice in Telegram chats -----------------------------------------------
     def tg_lines(self, nid: str) -> list[str]:
         y = self.tg.get(nid)
@@ -242,6 +257,10 @@ class Evidence:
         w = self.who.get(nid) or {}
         if w.get("us_est"):
             t.append(f"who:{int(float(w['us_est'])):,}")
+        v = self.vk.get(nid) or {}
+        m = _f(v.get("members_top10"))
+        if v.get("status") == "ok" and m:
+            t.append(f"vk:{m / 1e6:.1f}M" if m >= 1e6 else f"vk:{m / 1e3:.0f}k")
         return t
 
     def yt_verdict(self, nid: str) -> tuple[str, str]:

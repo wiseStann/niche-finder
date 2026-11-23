@@ -95,6 +95,7 @@ STAGES: list[Stage] = [
     Stage("ru_msp_counts", "ru", market="ru"),
     Stage("s8_who_counts", "s8"),      # how many target businesses exist (US Census; Russian SME register via ru_msp_counts)
     Stage("s8_freelance", "s8"),       # paid demand on freelance exchanges
+    Stage("s8_vk_audience", "s8", market="ru"),   # evidence: VK community sizes around the niche's topic or trade
     Stage("s8_offsearch", "s8"),
     # S9 — supply over time
     Stage("s9_snapshot", "s9", in_all=False),

@@ -1,0 +1,13 @@
+# VK communities per niche (s8_vk_audience): the audience around a niche's topic or trade in VK, as evidence only
+# (never the score, a gate or a verdict). Rationale and limits: docs/methodology.md section 5 (S8) and sources/vk.py.
+# Keys: VK_SERVICE_TOKEN (a VK mini app's service key) and VK_USER_TOKEN (for groups.search; lives about a day).
+
+phrases_llm: 5            # community-name phrases the LLM writes per niche (topic, people, trade)
+per_phrase: 100           # groups.search results per phrase
+min_members: 1000         # smaller communities are left out
+check_candidates: 120     # the largest candidates the LLM check sees per niche (60 per call)
+top_n: 10                 # members_top10 sums the members of this many largest kept communities
+
+# Hand settings per niche: extra phrases, and communities (screen names or ids) to keep or drop whatever the check says.
+#   personal-budgeting-apps: {phrases: [семейный бюджет], keep: [club12345], drop: [some_shop]}
+niches: {}

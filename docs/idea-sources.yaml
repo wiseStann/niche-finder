@@ -1855,11 +1855,11 @@ sources:
     url: https://dev.vk.com/
     role: [voice, evaluation]
     signals: ["groups.search with members_count - size of communities per niche topic (a Russian analogue of subreddit sizes); wall posts and comments of open communities"]
-    stages: [s8, s10]
-    feeds: []
+    stages: [s8]
+    feeds: ["data/out/vk_groups.csv, vk_audience.csv"]
     freshness: daily
-    status: planned
-    adapter: null
+    status: in_pipeline
+    adapter: s8_vk_audience
     priority: P3
     access:
       - method: api
@@ -1877,7 +1877,7 @@ sources:
     caveats:
       - "No small-business voice: the largest beauty communities (0.5-2.8 M members) are picture feeds that name YCLIENTS 0-1 times in their history; 'auto service business' finds vendor and franchise pages. In VK a business runs its own page for its clients; owners talk in Telegram (telegram_chats)"
       - "Group names are noisy; member counts include bots"
-    plan: "Not a voice source. Maybe an audience-size signal for B2C topics (members of the largest relevant communities, LLM-checked), beside s8_subreddit_stats; needs a fresh user token for each discovery run"
+    plan: "Done (2026-11-23): s8_vk_audience, an evidence block (members of the 10 largest LLM-checked communities) beside s8_subreddit_stats; not a voice source; a fresh user token for each discovery run"
 
   - id: telegram_chats
     name: Telegram group chats (own session)

@@ -92,7 +92,7 @@ The generated registry follows.
 
 Generated from [`idea-sources.yaml`](idea-sources.yaml) by `scripts/render_idea_sources.py`. Edit only the YAML.
 
-**87 sources, 131 access methods:** ✅ in_pipeline - 44, 🛠 planned - 14, ✋ manual - 7, ⛔ blocked - 17, 💰 paid - 5.  
+**87 sources, 131 access methods:** ✅ in_pipeline - 45, 🛠 planned - 13, ✋ manual - 7, ⛔ blocked - 17, 💰 paid - 5.  
 Priorities: P1 - 11, P2 - 31, P3 - 30, none - 15.
 
 Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implemented) · ✋ by hand / browser only · ⛔ closed from the probing network · 💰 paid only. **Probe:** the HTTP code of a keyless curl probe (date). **Role:** discovery = entities for the universe, evaluation = a metric for a niche, voice = buyer voice, trend = dynamics over time.
@@ -109,7 +109,6 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | P2 | Portfolios of top funds (a16z, Sequoia, Accel, Index, NEA, Greylock, ...) | vc_portfolio | not implemented | s0, s6 | A stage for the 5 SSR funds (a16z JSON, Index, NEA, Greylock, Accel) -> a CSV (fund, name, one_liner, category, url); a snapshot every quarter; a VC:crowded flag at >= 3 portfolio companies in a niche goes into the passport |
 | P3 | Otvety Mail.ru (Q&A) | community | not implemented | s10 | Not worth a stage for now: Russian B2C voice is covered by app reviews (thousands per niche), and Otvety is nearly empty for B2B. Revisit only as a qualitative block (questions, recommended products) for B2C or info-product topics |
 | P3 | vc.ru (Osnova) | community | not implemented | s10 | Not a buyer-voice source; maybe a supply signal (vendor content intensity, indie builders posting launches) |
-| P3 | VK API (groups and walls) | community | not implemented | s8, s10 | Not a voice source. Maybe an audience-size signal for B2C topics (members of the largest relevant communities, LLM-checked), beside s8_subreddit_stats; needs a fresh user token for each discovery run |
 | P3 | Pikabu | community | not implemented | s10 | Reuse the YouTube-comments classifier if Russian voice stays thin |
 | P3 | Remote OK (API) | hiring | not implemented | s8 | A daily accumulator into a cache folder; match monthly |
 | P3 | Etsy (digital downloads) | info_market | not implemented | s8 | Add an ETSY_API_KEY and extend info_paid |
@@ -137,7 +136,7 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **X (Twitter) API v2** (`x_twitter`) | community | global | voice, trend | realtime | api · bearer token of an X developer app; prepaid credits in the Developer Console · $0.010 per request (Counts: All), $0.005 per request (Counts: Recent) | 401 (2026-11-21) | 💰 paid | none | s4, s10 |
 | **Threads (Meta Threads API)** (`threads`) | community | both | voice | realtime | manual · a Threads account (Instagram login); in Russia only through a VPN · $0 | 200 (2026-11-21) | ✋ manual | P3 | s10 |
 | **vc.ru (Osnova)** (`vc_ru`) | community | ru | voice | daily | api · none · $0 | 200 (2026-11-20) | 🛠 planned | P3 | s10 |
-| **VK API (groups and walls)** (`vk_api`) | community | ru | voice, evaluation | daily | api · service key of a VK mini app (dev.vk.com, new panel; no business verification): wall.get, wall.search, wall.getComments, groups.getById (members_count), board.getTopics, newsfeed.search work; groups.search does not (error 15) · $0 | 200 (2026-11-23) | 🛠 planned | P3 | s8, s10 |
+| **VK API (groups and walls)** (`vk_api`) | community | ru | voice, evaluation | daily | api · service key of a VK mini app (dev.vk.com, new panel; no business verification): wall.get, wall.search, wall.getComments, groups.getById (members_count), board.getTopics, newsfeed.search work; groups.search does not (error 15) · $0 | 200 (2026-11-23) | ✅ in_pipeline | P3 | s8 |
 | **Telegram group chats (own session)** (`telegram_chats`) | community | ru | voice | daily | api · TG_API_ID / TG_API_HASH from my.telegram.org and a session file (`nf setup telegram`: QR login; login codes for new API applications often never arrive) · $0 | 200 (2026-11-23) | ✅ in_pipeline | P1 | s10 |
 | **TikTok Creative Center** (`tiktok_creative_center`) | community | global | trend | daily | html · none · $0 | 200 (2026-11-21) | ⛔ blocked | P3 | s4 |
 | **Pikabu** (`pikabu`) | community | ru | voice | daily | html · none · $0 | 200 (2026-11-21) | 🛠 planned | P3 | s10 |
@@ -558,12 +557,14 @@ Traps:
 
 Plan: Not a buyer-voice source; maybe a supply signal (vendor content intensity, indie builders posting launches)
 
-#### 🛠 VK API (groups and walls) (`vk_api`) - P3
+#### ✅ VK API (groups and walls) (`vk_api`) - P3
 
-https://dev.vk.com/ · geo ru · role voice, evaluation · freshness daily · stage groups s8, s10 · stage not implemented
+https://dev.vk.com/ · geo ru · role voice, evaluation · freshness daily · stage groups s8 · stage `s8_vk_audience`
 
 Signals:
 - groups.search with members_count - size of communities per niche topic (a Russian analogue of subreddit sizes); wall posts and comments of open communities
+
+Feeds: `data/out/vk_groups.csv, vk_audience.csv`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
@@ -574,7 +575,7 @@ Traps:
 - No small-business voice: the largest beauty communities (0.5-2.8 M members) are picture feeds that name YCLIENTS 0-1 times in their history; 'auto service business' finds vendor and franchise pages. In VK a business runs its own page for its clients; owners talk in Telegram (telegram_chats)
 - Group names are noisy; member counts include bots
 
-Plan: Not a voice source. Maybe an audience-size signal for B2C topics (members of the largest relevant communities, LLM-checked), beside s8_subreddit_stats; needs a fresh user token for each discovery run
+Plan: Done (2026-11-23): s8_vk_audience, an evidence block (members of the 10 largest LLM-checked communities) beside s8_subreddit_stats; not a voice source; a fresh user token for each discovery run
 
 #### ✅ Telegram group chats (own session) (`telegram_chats`) - P1
 
