@@ -15,7 +15,8 @@ Search volume is taken from the clean base year (demand_2023 column) when Keywor
 (or a Q:step2025 / Q:hump2024 flag is set) and Google Trends does not confirm it (FLAT / DOWN); flag D:2023-base.
 
 Gates (any failure = red): G3 platform_risk = 2; G5 feasibility score >= 2; S5 supply concentration (top-1 > 50% or too few
-players) - PASS when the Google Play leader holds <= 50% with >= 8 players above 100k installs (PASS:android); unmeasured
+players) - for B2C / prosumer niches PASS when the Google Play leader holds <= 50% with >= 8 players above 100k installs
+(PASS:android; B2B products are not bought in app stores, so a second store is no second signal for them); unmeasured
 supply passes only with a manual supply estimate (PASS*, flag S5:manual); without one it fails S5:unmeasured.
 
 Verdict: gates failed -> red; otherwise green when score >= nf.yaml `verdict.green_min_score` (default 70), else yellow.
@@ -72,11 +73,13 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     rows = list(csv.DictReader(open(_need(ws.out("supply_deep.csv"), "run the S5 stages first"), encoding="utf-8")))
     # S8 -> S5 gate "second platform": the App Store is one concentration signal; when the iOS top-1 holds > 50% but the
     # Google Play US leader holds <= 50% with >= 8 players above 100k installs, the market is not a monopoly: gate = PASS:android.
+    # B2C / prosumer only (2026-11-22): for a B2B niche the app stores are a fallback proxy, and the control
+    # ctrl-website-builder (App Store top-1 56%) passed through Google Play on mobile site-builder apps.
     off = _read(ws.out("offsearch.csv"), "niche_id")
     for r in rows:
         o = off.get(r["niche_id"], {})
         gp_top1, gp_players = f(o.get("gp_us_top1_share")), f(o.get("gp_us_players_100k"))
-        if r["gate_s5"] == "FAIL:top1" and gp_top1 is not None and gp_top1 <= 0.5 and (gp_players or 0) >= 8:
+        if r["gate_s5"] == "FAIL:top1" and r["side"] in ("b2c", "prosumer") and gp_top1 is not None and gp_top1 <= 0.5 and (gp_players or 0) >= 8:
             r["gate_s5"] = "PASS:android"
     # New-entrant survival in the App Store (s9_entrants): flags E:churn / E:traction, weights untouched.
     ent = _read(ws.out("entrant_survival.csv"), "niche_id")

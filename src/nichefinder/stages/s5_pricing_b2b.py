@@ -18,6 +18,7 @@ import time
 from collections import defaultdict
 
 from nichefinder import http
+from nichefinder.stages.s5_capterra import blocked   # GetApp sits behind the same anti-bot check as Capterra
 from nichefinder.workspace import Workspace
 
 SUMMARY = "B2B pricing of top Capterra products from GetApp cards"
@@ -35,16 +36,25 @@ OVERRIDE = {
 }
 
 
+class Blocked(Exception):
+    """GetApp answered with an anti-bot page: the whole site is closed to scripts, so the stage stops."""
+
+
 def fetch(ws: Workspace, url: str, name: str) -> str:
     path = ws.cache("getapp") / name
     if path.exists() and path.stat().st_size > 5000:
-        return path.read_text(encoding="utf-8", errors="ignore")
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        if not blocked(text):
+            return text
+        path.unlink()   # a block page cached by an earlier version is not data
     for attempt in range(3):
         try:
             text = http.request(url, backend="curl", timeout=60, headers={"Accept": "text/html"},
                                 tries=1, raise_for_status=False).text
         except OSError:
             text = ""
+        if blocked(text):
+            raise Blocked(url)
         if len(text) > 5000 and "Page Not Found" not in text[:3000]:
             path.write_text(text, encoding="utf-8")
             time.sleep(1.2)
@@ -127,6 +137,25 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     for r in prods:
         if r["generic"] == "0":
             by_slug[r["slug"]].append(r)
+    try:
+        rows = price_products(ws, cmap, gcats, by_slug)
+    except Blocked as e:
+        # 2026-11-21: GetApp, like Capterra, answers scripts with a Cloudflare "Security Check" page. Retrying every URL
+        # cost ~40 s each and ended with a pricing_b2b.csv of empty prices (0 % public prices, a false switching signal).
+        print(f"GetApp answered {e} with an anti-bot page - B2B pricing is not measured; nothing written "
+              "(s5_merge treats the niches as unpriced: neutral switching inputs)")
+        return
+    if not rows:
+        print("no products priced - nothing written")
+        return
+    out = ws.out("pricing_b2b.csv")
+    with open(out, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
+    print("->", out, len(rows))
+    aggregate(ws)
+
+
+def price_products(ws: Workspace, cmap: dict, gcats: dict, by_slug: dict) -> list[dict]:
     rows = []
     for nid, cfg in cmap.items():
         for cslug in cfg["slugs"]:
@@ -148,14 +177,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                              "getapp_slug": gslug, "matched": int(gslug in listing), **{k: pr.get(k, "") for k in
                              ("price", "period", "model", "no_pricing_info", "free_trial", "free_version")}})
                 print(f"{nid:34} {r['product'][:28]:28} rev={r['reviews']:>5} -> {gslug[:30]:30} price={pr.get('price')} {pr.get('period','')} {pr.get('model','')[:12]} trial={pr.get('free_trial')} free={pr.get('free_version')}")
-    if not rows:
-        print("no products priced - nothing written")
-        return
-    out = ws.out("pricing_b2b.csv")
-    with open(out, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
-    print("->", out, len(rows))
-    aggregate(ws)
+    return rows
 
 
 def aggregate(ws: Workspace) -> None:

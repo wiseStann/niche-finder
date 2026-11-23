@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 
 from nichefinder import appfit, http, keys, llm
-from nichefinder.stages import s5_appstore, s5_capterra, s5_merge
+from nichefinder.stages import s5_appstore, s5_capterra, s5_merge, s5_pricing_b2b, s8_gplay_filter
 from nichefinder.workspace import Workspace
 
 
@@ -124,24 +124,86 @@ def test_capterra_block_pages_are_not_data_and_not_cached(tmp_path, monkeypatch)
     assert s5_capterra.parse(s5_capterra.fetch(ws, "x-software", 1))[0] == 321 and cached.exists()
 
 
-def test_s5_manual_flag_only_with_a_manual_estimate(tmp_path):
-    from nichefinder.stages import s6_score
-    ws = make_ws(tmp_path, side="b2b-smb")
+def score_inputs(tmp_path: Path, ws: Workspace, sides: dict, **supply) -> None:
+    """score.yaml, metrics_quick.csv and supply_deep.csv for s6_score; `sides` maps niche id -> side."""
     (tmp_path / "config" / "score.yaml").write_text(yaml.safe_dump({
         "cpc_band": {"en": [0.5, 8.0], "en_b2b": [1.0, 1000.0]}, "cpc_below": 0.3, "cpc_above": 0.6,
         "trend_up": 0.05, "trend_down": -0.05}), encoding="utf-8")
-    (tmp_path / "config" / "overrides.yaml").write_text(yaml.safe_dump({"budget": {"supply_manual": "ten players, no leader"}}),
-                                                       encoding="utf-8")
-    write_csv(ws.out("metrics_quick.csv"), [{"id": nid, "us_yoy": 0.1, "us_momentum": 1.0, "us_cagr_3y": 0.05} for nid in ("budget", "crm")])
-    base = {"tier": "A", "side": "b2b-smb", "geo": "global", "demand_us": 1000, "demand_2023": 900, "gates_s3": "", "trend_kp": "FLAT",
+    write_csv(ws.out("metrics_quick.csv"), [{"id": nid, "us_yoy": 0.1, "us_momentum": 1.0, "us_cagr_3y": 0.05} for nid in sides])
+    base = {"tier": "A", "geo": "global", "demand_us": 1000, "demand_2023": 900, "gates_s3": "", "trend_kp": "FLAT",
             "trend_gt": "FLAT", "comp_idx": 50, "tinyseed": 0, "ph_12m": 1, "yc": 0, "topgross_us": 0, "cpc": 5, "hhi_brand": 0.3,
             "b2b_price_public": 0.5, "b2b_under100": 0.5, "b2c_with_monthly": 0, "b2c_n": 0, "expertise_flag": 0,
             "b2c_median_monthly": "", "b2b_median_monthly": 60, "gate_s5": "NA:proxy", "supply_src": "capterra",
-            "supply_players": 3, "supply_top1": "Big", "supply_top1_share": 0.6, "supply_top3_share": 0.8}
-    write_csv(ws.out("supply_deep.csv"), [{"niche_id": nid, **base} for nid in ("budget", "crm")])
+            "supply_players": 3, "supply_top1": "Big", "supply_top1_share": 0.6, "supply_top3_share": 0.8, **supply}
+    write_csv(ws.out("supply_deep.csv"), [{"niche_id": nid, **base, "side": side} for nid, side in sides.items()])
+
+
+def test_s5_manual_flag_only_with_a_manual_estimate(tmp_path):
+    from nichefinder.stages import s6_score
+    ws = make_ws(tmp_path, side="b2b-smb")
+    (tmp_path / "config" / "overrides.yaml").write_text(yaml.safe_dump({"budget": {"supply_manual": "ten players, no leader"}}),
+                                                       encoding="utf-8")
+    score_inputs(tmp_path, ws, {"budget": "b2b-smb", "crm": "b2b-smb"})
     s6_score.run(ws, argparse.Namespace())
     rows = {r["niche_id"]: r for r in csv.DictReader(open(ws.out("score_final.csv"), encoding="utf-8"))}
     assert (rows["budget"]["gate_s5"], rows["budget"]["flags"], rows["budget"]["gates_failed"]) == ("PASS*", "S5:manual", "")
     assert (rows["crm"]["gate_s5"], rows["crm"]["gates_failed"], rows["crm"]["verdict"]) == ("NA", "S5:unmeasured", "red")
     assert "S5:manual" not in rows["crm"]["flags"]   # no manual estimate: the flag would read "manual estimate" in passports
     assert rows["budget"]["s_frag"] == rows["crm"]["s_frag"]   # both get the neutral half-credit for players / top-3
+
+
+
+def test_second_platform_rule_only_for_consumer_niches(tmp_path):
+    from nichefinder.stages import s6_score
+    ws = make_ws(tmp_path)
+    score_inputs(tmp_path, ws, {"budget": "b2c", "crm": "b2b-smb"}, gate_s5="FAIL:top1", supply_src="appstore")
+    # Google Play US: leader at 30 %, 10 apps above 100k installs, for both niches
+    write_csv(ws.out("offsearch.csv"), [{"niche_id": nid, "gp_us_top1_share": 0.3, "gp_us_players_100k": 10} for nid in ("budget", "crm")])
+    s6_score.run(ws, argparse.Namespace())
+    rows = {r["niche_id"]: r for r in csv.DictReader(open(ws.out("score_final.csv"), encoding="utf-8"))}
+    assert (rows["budget"]["gate_s5"], rows["budget"]["flags"], rows["budget"]["gates_failed"]) == ("PASS:android", "S5:android", "")
+    assert (rows["crm"]["gate_s5"], rows["crm"]["gates_failed"], rows["crm"]["verdict"]) == ("FAIL:top1", "S5:top1", "red")
+
+
+def test_gplay_filter_product_check_frees_places_and_keep_wins(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path)
+    (tmp_path / "config" / "deal_keywords.yaml").write_text(yaml.safe_dump({"budget": "budget|money"}), encoding="utf-8")
+    (tmp_path / "config" / "coverage_keywords.yaml").write_text(yaml.safe_dump({}), encoding="utf-8")
+    monkeypatch.setattr(s8_gplay_filter, "MAX_APPS", 2)
+    search = [{"niche_id": "budget", "country": "us", "query": "budget app", "pos": pos, "appId": aid, "title": title, "developer": "D",
+               "score": 4.5, "priceText": "", "free": "true", "summary": summary}
+              for pos, aid, title, summary in [(1, "g.cookie", "Money Game", "idle budget tycoon"), (2, "a.one", "Budget One", "track money"),
+                                               (3, "a.two", "Budget Two", "plan money"), (4, "x.off", "Weather", "rain radar")]]
+    write_csv(ws.out("gplay_search.csv"), search)
+    monkeypatch.setattr(keys, "get", lambda name, *a, **k: "key" if name == "LLM_API_KEY" else None)
+    calls = []
+    monkeypatch.setattr(llm, "chat_json", fake_fit(calls))
+    s8_gplay_filter.run(ws, argparse.Namespace())
+    match = [r["appId"] for r in csv.DictReader(open(ws.out("gplay_match.csv"), encoding="utf-8"))]
+    assert match == ["a.one", "a.two"]   # the game left, so the second real product got its place
+    assert calls[0][0] == "1: Money Game | D | - | idle budget tycoon" and len(calls[0]) == 3   # the off-topic app is not a candidate
+    fit = {r["appId"]: r for r in csv.DictReader(open(ws.out("gplay_fit.csv"), encoding="utf-8"))}
+    assert (fit["g.cookie"]["fit"], fit["g.cookie"]["by"]) == ("no", "llm")
+    (tmp_path / "config" / "gplay_keep.yaml").write_text(yaml.safe_dump({"budget": ["g.cookie"]}), encoding="utf-8")
+    s8_gplay_filter.run(ws, argparse.Namespace())
+    match = [r["appId"] for r in csv.DictReader(open(ws.out("gplay_match.csv"), encoding="utf-8"))]
+    assert match == ["g.cookie", "a.one"]   # a manual keep wins over the check
+    monkeypatch.setattr(keys, "get", lambda name, *a, **k: None)
+    (tmp_path / "config" / "gplay_keep.yaml").unlink()
+    s8_gplay_filter.run(ws, argparse.Namespace())
+    match = [r["appId"] for r in csv.DictReader(open(ws.out("gplay_match.csv"), encoding="utf-8"))]
+    assert match == ["g.cookie", "a.one"]   # without a key: regex and position only
+
+
+def test_getapp_block_page_stops_b2b_pricing_without_output(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path, side="b2b-smb")
+    (tmp_path / "config" / "capterra_map.yaml").write_text(yaml.safe_dump({"crm": {"slugs": ["crm-software"]}}), encoding="utf-8")
+    (tmp_path / "config" / "getapp_categories.yaml").write_text(yaml.safe_dump({"crm": "customer-management-software"}), encoding="utf-8")
+    write_csv(ws.out("capterra_products.csv"), [{"slug": "crm-software", "product": "Leads", "reviews": 500, "generic": "0"}])
+    calls = []
+    monkeypatch.setattr(s5_pricing_b2b.time, "sleep", lambda s: None)
+    monkeypatch.setattr(http, "request", lambda *a, **k: calls.append(a[0]) or Resp(BLOCK))
+    s5_pricing_b2b.run(ws, argparse.Namespace(agg=False))
+    assert len(calls) == 1   # no retries: the first block page stops the stage
+    assert not ws.out("pricing_b2b.csv").exists() and not ws.out("pricing_b2b_niche.csv").exists()
+    assert not any(ws.cache("getapp").iterdir())
