@@ -94,6 +94,24 @@ def test_pick_apps_leading_relevant_russian_apps(tmp_path, monkeypatch):
     assert {(r["app_id"], r["fit"], r["by"]) for r in fit} == {("111", "yes", "llm"), ("112", "yes", "llm"), ("com.habit", "yes", "llm")}
 
 
+
+def test_product_check_sees_the_store_descriptions(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path)
+    write_csv(ws.out("appstore_apps.csv"), [
+        {"niche_id": "budget", "store": "ru", "track_id": "111", "name": "Money RU", "seller": "A", "ratings": 900, "rating": 4.5,
+         "relevant": 1, "about": "Plan a family budget"}])
+    write_csv(ws.out("gplay_apps.csv"), [
+        {"niche_id": "habits", "country": "ru", "appId": "com.habit", "title": "Habit", "developer": "G", "ratings": 5000, "score": 4.2}], bom=True)
+    write_csv(ws.out("gplay_search.csv"), [
+        {"niche_id": "habits", "country": "ru", "query": "q", "pos": 1, "appId": "com.habit", "title": "Habit", "developer": "G",
+         "summary": "Track daily   habits"}], bom=True)
+    calls = []
+    monkeypatch.setattr(llm, "chat_json", fake_fit(calls))
+    _, fit = fetch.pick_apps(ws, fetch.target_niches(ws), fetch.DEFAULTS["fetch"])
+    assert "1: Money RU | A | - | Plan a family budget" in calls[0] and "store description" in calls[0]
+    assert "1: Habit | G | - | Track daily habits" in calls[1]   # the S8 search summary, whitespace collapsed
+    assert {r["app_id"]: r["about"] for r in fit} == {"111": "Plan a family budget", "com.habit": "Track daily habits"}
+
 def test_product_check_drops_apps_and_config_overrides_it(tmp_path, monkeypatch):
     ws = make_ws(tmp_path)
     write_csv(ws.out("appstore_apps.csv"), [

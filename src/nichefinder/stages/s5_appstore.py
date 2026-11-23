@@ -10,7 +10,8 @@ LLM product check (appfit.py, columns `fit` and `fit_why`): an app the model cal
 LLM_API_KEY the check is skipped with a note. config/appstore_relevance.yaml then adds manual `exclude` / `include`
 lists of trackIds per niche and store; `include` wins over the check.
 Inputs: niches.yaml, queries/*.yaml, config/shortlist.yaml, config/appstore_relevance.yaml.
-Outputs: data/out/appstore_apps.csv (all apps), data/out/appstore_review.md (top 25 per niche for an eyeball check, and
+Outputs: data/out/appstore_apps.csv (all apps; `about` = the start of the store description, for the product check of
+s10_ru_reviews_fetch), data/out/appstore_review.md (top 25 per niche for an eyeball check, and
 the most-rated apps the product check dropped).
 Calls the free iTunes Search API (no key); responses are cached in data/cache/appstore/. The product check costs LLM
 tokens (one call per 60 candidates, cached in data/cache/llm/).
@@ -111,6 +112,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                     "release": (a.get("releaseDate") or "")[:10], "updated": (a.get("currentVersionReleaseDate") or "")[:10],
                     "genre": a.get("primaryGenreName", ""), "hits": rec["hits"], "best_pos": rec["best_pos"], "auto": int(auto), "relevant": int(relevant),
                     "queries": " | ".join(rec["qs"]), "fit": f_fit, "fit_why": f_why,
+                    "about": " ".join(str(a.get("description") or "").split())[:200],
                 })
             top = sorted([r for r in rows if r["niche_id"] == nid and r["store"] == country and r["relevant"]], key=lambda r: -r["ratings"])[:25]
             review.append(f"\n## {nid} - {country} ({len(apps)} apps, queries: {', '.join(cats)})\n")

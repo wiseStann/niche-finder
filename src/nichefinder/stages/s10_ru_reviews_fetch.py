@@ -7,7 +7,8 @@ Which products: per niche (geo `both` or `ru`) and store, at most `fetch.apps_pe
 - the product check: the relevance of S5 and S8 is loose (a top search position, a substring such as "cookie" in
   CookieRun), and the most-rated candidates are often giants where the task is a side feature (Instagram for
   transcription, the Wildberries shopper app for seller analytics). So an LLM gets the niche (who, task, product) and the
-  `fetch.fit_candidates` most-rated candidates per store (name, developer, store genre) and answers per app whether it
+  `fetch.fit_candidates` most-rated candidates per store (name, developer, store genre and the start of the store
+  description: `about` of appstore_apps.csv, the search summary of gplay_search.csv) and answers per app whether it
   is a product these users would choose or compare for the task. Only those are kept; `apps` in config/ru_reviews.yaml
   overrides it per niche (`keep` / `drop` lists of app ids). Every decision with its reason: data/out/ru_reviews_fit.csv;
 - Startpack (startpack.ru, business software - the voice of B2B buyers that app stores do not have): the products listed
@@ -61,7 +62,7 @@ RSS = "https://itunes.apple.com/ru/rss/customerreviews/page={page}/id={app_id}/s
 STORE_NAME = {"appstore": "App Store", "gplay": "Google Play", "startpack": "Startpack"}
 DOCS, APPS, FIT, GPLAY_PLAN = "ru_reviews_docs.jsonl", "ru_reviews_apps.csv", "ru_reviews_fit.csv", "ru_reviews_gplay_plan.json"
 APP_COLS = ["niche_id", "store", "app_id", "app", "developer", "ratings", "rating", "fetched", "kept", "oldest", "status"]
-FIT_COLS = ["niche_id", "store", "app_id", "app", "developer", "genre", "ratings", "fit", "by", "why"]
+FIT_COLS = ["niche_id", "store", "app_id", "app", "developer", "genre", "ratings", "fit", "by", "why", "about"]
 
 
 def settings(ws: Workspace, section: str) -> dict:
@@ -107,14 +108,21 @@ def pick_apps(ws: Workspace, ids: list[str], st: dict) -> tuple[list[dict], list
             if r["store"] == "ru" and r["relevant"] == "1" and r["niche_id"] in want:
                 cand.append({"niche_id": r["niche_id"], "store": "appstore", "app_id": r["track_id"], "app": r["name"],
                              "developer": r["seller"], "genre": r.get("genre", ""), "ratings": int(num(r["ratings"])),
-                             "rating": num(r["rating"])})
+                             "rating": num(r["rating"]), "about": r.get("about", "")})
+    # Google Play cards carry no description; the search results (s8_gplay_search) do: the same text the S8 check saw
+    summary: dict[tuple[str, str], str] = {}
+    sp = ws.out("gplay_search.csv")
+    if sp.is_file():
+        for r in csv.DictReader(open(sp, encoding="utf-8-sig")):
+            if r.get("country") == "ru":
+                summary.setdefault((r["niche_id"], r["appId"]), " ".join(str(r.get("summary") or "").split())[:200])
     p = ws.out("gplay_apps.csv")
     if p.is_file():
         for r in csv.DictReader(open(p, encoding="utf-8-sig")):
             if r["country"] == "ru" and r["niche_id"] in want:
                 cand.append({"niche_id": r["niche_id"], "store": "gplay", "app_id": r["appId"], "app": r["title"],
                              "developer": r["developer"], "genre": r.get("genre", ""), "ratings": int(num(r["ratings"])),
-                             "rating": num(r["score"])})
+                             "rating": num(r["score"]), "about": summary.get((r["niche_id"], r["appId"]), "")})
     by = defaultdict(dict)
     for c in cand:
         if c["ratings"] >= st["min_ratings"]:
@@ -140,6 +148,7 @@ def pick_apps(ws: Workspace, ids: list[str], st: dict) -> tuple[list[dict], list
                 fit, by_whom, why = ("yes" if c["app_id"] in keep else "no"), "config", "config/ru_reviews.yaml apps"
             c["fit"] = fit
             fit_rows.append({k: c.get(k, "") for k in FIT_COLS if k not in ("by", "why")} | {"by": by_whom, "why": why})
+            fit_rows[-1]["about"] = str(c.get("about") or "")[:120]
         for pool in pools.values():
             out += [c for c in pool if c["fit"] == "yes"][: int(st["apps_per_store"])]
     if fit_rows:
