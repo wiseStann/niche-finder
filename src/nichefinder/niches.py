@@ -35,8 +35,34 @@ MIN_PER_INTENT = {"category": 3, "problem": 1, "brand": 2}
 GEO_LANGS = {"global": ["en"], "ru": ["ru"], "both": ["en", "ru"]}
 
 
-def load_niches(ws: Workspace) -> list[dict]:
-    return yaml.safe_load(ws.niches_file.read_text(encoding="utf-8")) or []
+B2C_SIDES = ("b2c", "prosumer")   # scored in the B2C cohort (s6_score); every other side is B2B
+MARKET_LANG = {"us": "en", "ww": "en", "ru": "ru"}
+
+
+def in_scope(ws: Workspace, niche: dict) -> bool:
+    """Whether a niche belongs to the active run profile (always true without one): its side, tier and geo are among the
+    profile's, and the profile's markets measure at least one of the languages its geo requires (a global niche has no
+    Russian queries, so a Russian-only run has nothing to measure for it)."""
+    spec = ws.profile_spec
+    if not spec:
+        return True
+    for key, default in (("side", ""), ("tier", ""), ("geo", "global")):
+        allowed = spec.get(key)
+        if allowed and str(niche.get(key) or default) not in {str(a) for a in allowed}:
+            return False
+    langs = {MARKET_LANG[m] for m in spec.get("markets") or () if m in MARKET_LANG}
+    return not langs or bool(langs & set(GEO_LANGS.get(niche.get("geo", "global"), ["en"])))
+
+
+def load_niches(ws: Workspace, scoped: bool = True) -> list[dict]:
+    """niches.yaml; under a run profile only the niches in its scope unless `scoped` is False (validation)."""
+    items = yaml.safe_load(ws.niches_file.read_text(encoding="utf-8")) or []
+    return [n for n in items if in_scope(ws, n)] if scoped and ws.profile_spec else items
+
+
+def scope_ids(ws: Workspace) -> set[str] | None:
+    """Ids of the niches in the run profile's scope, or None without a profile (everything is in scope)."""
+    return {n["id"] for n in load_niches(ws) if "id" in n} if ws.profile_spec else None
 
 
 def load_queries(ws: Workspace) -> dict[str, dict]:
@@ -50,8 +76,12 @@ def load_queries(ws: Workspace) -> dict[str, dict]:
     return queries
 
 
-def load(ws: Workspace) -> tuple[list[dict], dict[str, dict]]:
-    return load_niches(ws), load_queries(ws)
+def load(ws: Workspace, scoped: bool = True) -> tuple[list[dict], dict[str, dict]]:
+    ns, qs = load_niches(ws, scoped), load_queries(ws)
+    if scoped and ws.profile_spec:
+        ids = {n.get("id") for n in ns}
+        qs = {k: v for k, v in qs.items() if k in ids}
+    return ns, qs
 
 
 def niche_names(ws: Workspace) -> dict[str, str]:
@@ -63,8 +93,8 @@ def langs_required(niche: dict) -> list[str]:
 
 
 def validate(ws: Workspace) -> tuple[list[str], list[str], Counter]:
-    """Check niches.yaml and queries/*.yaml. Returns (errors, warnings, stats)."""
-    niches, queries = load(ws)
+    """Check niches.yaml and queries/*.yaml (all of them, whatever the run profile). Returns (errors, warnings, stats)."""
+    niches, queries = load(ws, scoped=False)
     errors: list[str] = []
     warns: list[str] = []
     by_id: dict[str, dict] = {}
@@ -139,14 +169,16 @@ def shortlist(ws: Workspace) -> dict[str, list[dict]]:
 
 
 def shortlist_ids(ws: Workspace) -> list[str]:
-    """Niches that go through deep measurement (S4, S5, S8, S9): the union of all shortlist tiers, in file order."""
+    """Niches that go through deep measurement (S4, S5, S8, S9): the union of all shortlist tiers, in file order,
+    limited to the run profile's scope."""
+    scope = scope_ids(ws)
     ids: list[str] = []
     for tier, items in shortlist(ws).items():
         if tier == "ru" or not isinstance(items, list):
             continue
         for it in items:
             nid = it["id"] if isinstance(it, dict) else it
-            if nid not in ids:
+            if nid not in ids and (scope is None or nid in scope):
                 ids.append(nid)
     return ids
 
@@ -182,6 +214,9 @@ def text_matchers(ws: Workspace, ids: list[str] | None = None, *, with_coverage:
     config/coverage_keywords.yaml. with_coverage=True also accepts the coverage phrases of every niche that has them:
     the deal regexes are English, so Russian-language text needs the phrases."""
     kw = dict(ws.load_config("deal_keywords.yaml", {}) or {})
+    scope = scope_ids(ws)
+    if scope is not None:
+        kw = {k: v for k, v in kw.items() if k in scope}
     cov = ws.load_config("coverage_keywords.yaml", {}) or {}
     fallback = set()
     for nid in (shortlist_ids(ws) if ids is None else ids):

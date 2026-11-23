@@ -24,7 +24,7 @@ nf = "nichefinder.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-nichefinder = ["node/*.mjs", "examples/**/*", "examples/*/.env.example"]
+nichefinder = ["node/*.mjs", "ui/*.html", "examples/**/*", "examples/*/.env.example"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

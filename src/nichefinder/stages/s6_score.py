@@ -71,6 +71,11 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     green_min = float(ws.setting("verdict.green_min_score", 70))
     quick = _read(_need(ws.out("metrics_quick.csv"), "run the S3 stages first"), "id")
     rows = list(csv.DictReader(open(_need(ws.out("supply_deep.csv"), "run the S5 stages first"), encoding="utf-8")))
+    scope = nf_niches.scope_ids(ws)
+    if scope is not None:
+        # A run profile scores only its own niches, so the percentiles are those of its cohort even when the S5 output
+        # was seeded from the full run and not measured again.
+        rows = [r for r in rows if r["niche_id"] in scope]
     # S8 -> S5 gate "second platform": the App Store is one concentration signal; when the iOS top-1 holds > 50% but the
     # Google Play US leader holds <= 50% with >= 8 players above 100k installs, the market is not a monopoly: gate = PASS:android.
     # B2C / prosumer only (2026-11-22): for a B2B niche the app stores are a fallback proxy, and the control

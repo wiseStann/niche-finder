@@ -25,6 +25,9 @@ nf list                           # stages in run order, with readiness
 nf run all                        # stages with a missing key/tool are skipped, not failed
 nf run s3                         # one group
 nf run s3_report -- --help        # one stage; args after `--` go to that stage only
+nf profile west-b2b --markets us,ww --side b2b-smb,b2b-mid   # create/update a run profile; `nf profile` lists them
+nf -p west-b2b run s6 s7          # run under a profile (also $NF_PROFILE)
+nf ui [--port 8765]               # local web console: parameters, live stage progress, results, history
 nf setup node                     # npm-installs google-play-scraper into the workspace
 python scripts/render_idea_sources.py   # regenerate docs/idea-sources.md from docs/idea-sources.yaml (never edit the .md)
 ```
@@ -46,6 +49,12 @@ CI (`.github/workflows/ci.yml`) runs pytest on Linux/Windows/macOS × Python 3.1
 Code lives in this repo. All research state lives in a **workspace**: a folder with `nf.yaml`, found through `-w`, `$NF_WORKSPACE`, or the nearest parent folder that has `nf.yaml`. `Workspace` (`src/nichefinder/workspace.py`) is the only way stages get paths, settings and dates: `ws.out()`, `ws.raw()`, `ws.report()`, `ws.cache(namespace)`, `ws.load_config()`, `ws.setting("a.b")` and `ws.today`. `ws.today` honours `as_of` in `nf.yaml`, so a past run can be reproduced from cache. Don't hardcode paths or use `date.today()` in data logic.
 
 `src/nichefinder/examples/default/` is package data that `nf init` copies. Editing it changes only workspaces created later. To change the actual research, edit the workspace's `niches.yaml`, `queries/` and `config/`.
+
+### Run profiles and the console
+
+A run profile (`src/nichefinder/profiles.py`) narrows a run: `profiles/<name>/profile.yaml` lists `markets`, `side`, `tier` and `geo` (a missing key means all; the full run needs no profile). It is active through `-p`, `$NF_PROFILE`, or the parameters of `nf ui`. Under a profile `ws.markets` is the profile's, `niches.load_niches` / `load` / `keyword_rows` / `shortlist_ids` / `text_matchers` keep only the niches in scope (`niches.in_scope`: side, tier, geo, and a picked market must measure one of the niche's languages), and `ws.out()`, `ws.report()` and `ws.snapshots()` point into `profiles/<name>/`. `nf.yaml`, `config/` (including the shortlist), `.env`, `data/raw/` and `data/cache/` are shared. `niches.validate` and anything else that needs the whole catalog pass `scoped=False`. The name is derived from the spec (`west-b2b`, `ru-b2c`). A new profile is seeded with a copy of `data/out/` and `data/snapshots/` in which the rows (CSV `niche_id`, `id` in `metrics_quick.csv`, JSON lines, niche-keyed JSON) of niches out of scope are dropped: incremental stages keep their state (a re-batched DataForSEO request would miss the cache and be paid again) and report stages never meet a niche the profile does not load. A stage that iterates a config list or an output file of niche ids must skip ids outside `niches.scope_ids(ws)` (`s5_merge` does for the shortlist tiers, `s6_score` for `supply_deep.csv`). `s6_score` reads US demand, so a profile without `us` has no demand signal there; its leaderboard is `s6_ru`.
+
+`nf ui` (`src/nichefinder/ui/`, stdlib `http.server` plus one `index.html`) serves the console on 127.0.0.1. A run is a child process `nf [-p profile] run <targets>` with `$NF_EVENTS` set, so `cmd_run` prints `@@nf {...}` progress lines (`plan`, `start`, `done`, `skip`, `fail`, `end`) that the server turns into Server-Sent Events next to the stages' own output. One run at a time; history and per-stage timings (the ETA) are in `logs/ui/`. It checks the Host header and requires the page's per-start token on every POST, so another tab cannot start a paid run. With `-k`, a stage that stops itself with `SystemExit` fails and the run goes on; without it the run ends there, as before.
 
 ### Stages
 

@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>niche-finder console</title>
+<style>
+:root {
+  --bg: #f5f6f8; --panel: #ffffff; --panel2: #f0f2f5; --line: #e2e5ea; --line2: #d3d8df;
+  --text: #1a1d23; --muted: #5f6b7a; --faint: #97a0ad;
+  --accent: #3355d1; --accent-soft: #e8edfd; --accent-text: #ffffff;
+  --ok: #18794e; --ok-soft: #e2f3ea; --bad: #c4321f; --bad-soft: #fbe8e5; --warn: #a65d00; --warn-soft: #fcefdc;
+  --skip: #8a93a0; --skip-soft: #eceef1;
+  --v-green: #2b9a4a; --v-yellow: #d49a00; --v-red: #d63a2f;
+  --mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, Menlo, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --r: 10px; --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .05);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1014; --panel: #161920; --panel2: #1c2028; --line: #272c36; --line2: #343a46;
+    --text: #e5e7eb; --muted: #9aa3af; --faint: #69717e;
+    --accent: #7d95ff; --accent-soft: #1f2744; --accent-text: #0e1014;
+    --ok: #4cc38a; --ok-soft: #13271d; --bad: #ff6b5b; --bad-soft: #2c1715; --warn: #f2a450; --warn-soft: #2a1f12;
+    --skip: #7d8592; --skip-soft: #20242c;
+    --v-green: #46c26b; --v-yellow: #e6b429; --v-red: #ff5d52;
+    --shadow: none; color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--bg); color: var(--text); font: 14px/1.45 var(--sans); }
+button, input, select { font: inherit; color: inherit; }
+code, .mono { font-family: var(--mono); font-size: 12.5px; }
+[hidden] { display: none !important; }
+
+/* top bar */
+.top { height: 52px; display: flex; align-items: center; gap: 18px; padding: 0 18px; background: var(--panel);
+  border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+.brand { font-weight: 650; letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.brand .logo { width: 22px; height: 22px; border-radius: 6px; background: var(--accent); display: inline-grid; place-items: center;
+  color: var(--accent-text); font-size: 12px; }
+.brand .sub { color: var(--muted); font-weight: 450; }
+.ws { color: var(--muted); font-family: var(--mono); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.keys { margin-left: auto; display: flex; gap: 6px; flex-wrap: nowrap; overflow: hidden; }
+.key { font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--panel2); color: var(--muted); white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 5px; }
+.key::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--faint); }
+.key.on::before { background: var(--ok); }
+.conn { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); flex: none; }
+.conn.on { background: var(--ok); }
+
+/* layout */
+.layout { display: grid; grid-template-columns: 330px minmax(0, 1fr); gap: 16px; padding: 16px; height: calc(100vh - 52px); }
+.setup { overflow: auto; min-height: 0; display: flex; flex-direction: column; gap: 12px; padding-right: 2px; }
+main { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 12px; min-height: 0; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow); }
+.setup .card { padding: 14px; }
+h2 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; font-weight: 600;
+  display: flex; align-items: center; justify-content: space-between; }
+
+/* chips and presets */
+.presets { display: flex; gap: 4px; background: var(--panel2); padding: 3px; border-radius: 8px; margin-bottom: 10px; }
+.presets button { flex: 1; border: 0; background: transparent; padding: 5px 6px; border-radius: 6px; cursor: pointer; color: var(--muted);
+  font-size: 12.5px; white-space: nowrap; }
+.presets button.on { background: var(--panel); color: var(--text); box-shadow: var(--shadow); font-weight: 550; }
+@media (prefers-color-scheme: dark) { .presets button.on { background: var(--line2); } }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line2); border-radius: 999px; padding: 4px 10px 4px 8px;
+  cursor: pointer; user-select: none; font-size: 13px; background: var(--panel); }
+.chip input { display: none; }
+.chip .box { width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid var(--line2); display: inline-grid; place-items: center; }
+.chip.on { border-color: var(--accent); background: var(--accent-soft); }
+.chip.on .box { background: var(--accent); border-color: var(--accent); }
+.chip.on .box::after { content: ""; width: 7px; height: 4px; border: 2px solid var(--accent-text); border-top: 0; border-right: 0;
+  transform: translateY(-1px) rotate(-45deg); }
+.chip .n { color: var(--muted); font-size: 12px; }
+.chip.dis { opacity: .5; cursor: default; }
+.hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+/* scope */
+.scope .big { display: flex; align-items: baseline; gap: 8px; }
+.scope .num { font-size: 28px; font-weight: 650; letter-spacing: -.02em; }
+.scope .of { color: var(--muted); }
+.scope .prof { display: flex; align-items: center; gap: 8px; margin: 2px 0 8px; flex-wrap: wrap; }
+.tag { font-size: 11.5px; padding: 1px 7px; border-radius: 999px; background: var(--panel2); color: var(--muted); white-space: nowrap; }
+.tag.accent { background: var(--accent-soft); color: var(--accent); }
+.tag.warn { background: var(--warn-soft); color: var(--warn); }
+.tag.bad { background: var(--bad-soft); color: var(--bad); }
+.tag.ok { background: var(--ok-soft); color: var(--ok); }
+.split { display: flex; height: 6px; border-radius: 99px; overflow: hidden; background: var(--panel2); margin: 8px 0 6px; }
+.split i { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; background: var(--c); }
+.warns { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.warns li { font-size: 12.5px; color: var(--warn); background: var(--warn-soft); border-radius: 7px; padding: 6px 9px; }
+.warns li.bad { color: var(--bad); background: var(--bad-soft); }
+.outpath { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-top: 8px; word-break: break-all; }
+
+/* run box */
+.opt { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 10px; cursor: pointer; }
+.args { margin-top: 10px; }
+.args label { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 4px; }
+.args input { width: 100%; padding: 6px 9px; border: 1px solid var(--line2); border-radius: 7px; background: var(--panel); font-family: var(--mono); font-size: 12.5px; }
+.linkbtn { border: 0; background: none; color: var(--accent); cursor: pointer; padding: 0; font-size: 12px; }
+.actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; position: sticky; bottom: 0; background: var(--bg); padding-top: 4px; }
+.btn { border: 1px solid var(--line2); background: var(--panel); border-radius: 9px; padding: 9px 14px; cursor: pointer; font-weight: 550; }
+.btn:hover { border-color: var(--faint); }
+.btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; }
+.btn.primary small { font-weight: 450; opacity: .85; font-size: 11.5px; }
+.btn.primary:hover { filter: brightness(1.07); }
+.btn.danger { color: var(--bad); }
+.btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* tabs */
+.tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button { border: 0; background: none; padding: 8px 12px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent;
+  margin-bottom: -1px; font-weight: 550; }
+.tabs button.on { color: var(--text); border-bottom-color: var(--accent); }
+.tabs .sp { flex: 1; }
+.content { overflow: auto; min-height: 0; padding-right: 2px; }
+
+/* progress */
+.prog { padding: 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.prog-h { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.prog-h .title { font-weight: 650; font-size: 15px; }
+.prog-h .cmd { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-left: auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%; }
+.bar { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: var(--panel2); }
+.bar i { display: block; height: 100%; transition: width .3s ease; }
+.bar .b-done { background: var(--ok); } .bar .b-skip { background: var(--skip); } .bar .b-fail { background: var(--bad); }
+.bar .b-run { background: repeating-linear-gradient(45deg, var(--accent) 0 6px, color-mix(in srgb, var(--accent) 70%, transparent) 6px 12px);
+  background-size: 17px 17px; animation: slide 1s linear infinite; }
+@keyframes slide { to { background-position: 17px 0; } }
+.stats { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.stats b { color: var(--text); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* pipeline map */
+.map { display: flex; align-items: center; gap: 4px; overflow-x: auto; padding: 12px 2px 4px; scrollbar-width: thin; }
+.pill { flex: none; border: 1px solid var(--line); background: var(--panel); border-radius: 9px; padding: 6px 9px 7px; cursor: pointer; min-width: 56px;
+  text-align: left; display: grid; gap: 4px; }
+.pill .k { font-weight: 650; font-size: 12.5px; }
+.pill .c { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pill .mini { height: 3px; border-radius: 9px; background: var(--panel2); overflow: hidden; display: flex; }
+.pill .mini i { height: 100%; }
+.pill.off { opacity: .45; }
+.pill.run { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.pill.fail { border-color: var(--bad); }
+.arrow { color: var(--faint); font-size: 12px; flex: none; }
+
+/* stages */
+.seg { margin-top: 12px; overflow: hidden; }
+.seg-h { display: flex; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer; user-select: none; }
+.seg-h .gk { font-weight: 700; font-size: 12.5px; background: var(--panel2); border-radius: 6px; padding: 1px 7px; font-family: var(--mono); }
+.seg-h .gt { font-weight: 600; }
+.seg-h .gs { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.seg-h .fold { color: var(--faint); transition: transform .15s; width: 14px; text-align: center; }
+.seg.folded .fold { transform: rotate(-90deg); }
+.seg.folded .seg-b { display: none; }
+.seg-b { border-top: 1px solid var(--line); }
+.cbx { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; cursor: pointer; flex: none; }
+.st { display: grid; grid-template-columns: 16px 20px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 7px 12px; border-top: 1px solid var(--line); cursor: pointer; }
+.st:first-child { border-top: 0; }
+.st:hover { background: var(--panel2); }
+.st.flt { background: var(--accent-soft); }
+.st .cbx { margin-top: 2px; }
+.st .ico { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; margin-top: 1px; }
+.st .l1 { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.st .nm { font-weight: 600; white-space: nowrap; }
+.st .sum { color: var(--muted); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.st .l2 { font-family: var(--mono); font-size: 11.5px; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st .l2:empty { display: none; }
+.st .tm { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; padding-top: 1px; }
+.bd { font-size: 10.5px; padding: 0 6px; border-radius: 5px; background: var(--panel2); color: var(--muted); white-space: nowrap; line-height: 17px; flex: none; }
+.bd.paid { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+.bd.ru { background: var(--accent-soft); color: var(--accent); }
+.bd.na { background: transparent; border: 1px dashed var(--line2); }
+/* stage states */
+.st .ico { border: 1.5px solid var(--line2); }
+.st.s-off { opacity: .55; }
+.st.s-off .nm { font-weight: 500; }
+.st.s-pending .ico { border-style: dashed; border-color: var(--faint); }
+.st.s-running { background: var(--accent-soft); }
+.st.s-running .ico { border: 2px solid var(--accent); border-right-color: transparent; animation: spin .8s linear infinite; }
+.st.s-running .l2 { color: var(--accent); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.st.s-done .ico { background: var(--ok); border-color: var(--ok); color: #fff; }
+.st.s-done .ico::after { content: "\2713"; }
+.st.s-skipped .ico { background: var(--skip-soft); border-color: var(--skip); color: var(--skip); }
+.st.s-skipped .ico::after { content: "\2013"; }
+.st.s-failed .ico { background: var(--bad); border-color: var(--bad); color: #fff; }
+.st.s-failed .ico::after { content: "\2715"; }
+.st.s-failed .l2 { color: var(--bad); }
+.st.s-stopped .ico { background: var(--warn); border-color: var(--warn); color: #fff; }
+.st.s-stopped .ico::after { content: "\25A0"; font-size: 8px; }
+.st.s-notrun .ico { border-color: var(--line); }
+
+/* log */
+.logp { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 32vh; min-height: 120px; resize: vertical; overflow: hidden; }
+.logp-h { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.logp-h .t { font-weight: 600; font-size: 13px; }
+.logp-h .sp { flex: 1; }
+.log { margin: 0; overflow: auto; padding: 8px 0; font-family: var(--mono); font-size: 12px; line-height: 1.5; }
+.ln { padding: 0 12px; white-space: pre-wrap; word-break: break-word; }
+.ln .s { color: var(--faint); display: inline-block; min-width: 170px; }
+.ln.h { color: var(--accent); font-weight: 600; margin-top: 4px; }
+.ln.e { color: var(--bad); }
+.ln.k { color: var(--ok); }
+.ln.m { color: var(--muted); }
+.empty { color: var(--faint); padding: 18px 12px; font-family: var(--sans); font-size: 13px; }
+
+/* results */
+.res-h { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 0; }
+.res-h select, .res-h input { padding: 6px 9px; border: 1px solid var(--line2); border-radius: 7px; background: var(--panel); }
+.res-h input { width: 220px; }
+.vchips { display: flex; gap: 6px; }
+.vchip { border: 1px solid var(--line2); border-radius: 999px; padding: 3px 10px; cursor: pointer; background: var(--panel); font-size: 12.5px;
+  display: inline-flex; gap: 6px; align-items: center; }
+.vchip.on { border-color: var(--accent); background: var(--accent-soft); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; background: var(--faint); flex: none; }
+.dot.green { background: var(--v-green); } .dot.yellow { background: var(--v-yellow); } .dot.red { background: var(--v-red); }
+.reps { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 12px; }
+.rep { border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 4px 10px; cursor: pointer; font-size: 12.5px; }
+.rep:hover { border-color: var(--accent); }
+.rep.main { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.t th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600;
+  padding: 9px 10px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); }
+table.t td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.t tr:last-child td { border-bottom: 0; }
+table.t .id { color: var(--faint); font-family: var(--mono); font-size: 11.5px; }
+table.t .num { text-align: right; font-variant-numeric: tabular-nums; }
+.sbar { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.sbar .tr { flex: 1; height: 6px; background: var(--panel2); border-radius: 9px; overflow: hidden; }
+.sbar .tr i { display: block; height: 100%; background: var(--accent); border-radius: 9px; }
+.sbar b { font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; font-weight: 600; }
+.flags { font-family: var(--mono); font-size: 11px; color: var(--muted); max-width: 300px; }
+
+/* drawer */
+.drawer { position: fixed; inset: 0 0 0 auto; width: min(920px, 92vw); background: var(--panel); border-left: 1px solid var(--line);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, .18); z-index: 20; display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.drawer-h { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.drawer-h .t { font-weight: 650; font-family: var(--mono); font-size: 13px; }
+.drawer-h .sp { flex: 1; }
+.drawer-b { overflow: auto; padding: 16px 22px 40px; }
+.drawer-b pre.plain { white-space: pre-wrap; font-family: var(--mono); font-size: 12.5px; margin: 0; }
+.md h1 { font-size: 22px; margin: .2em 0 .6em; } .md h2 { font-size: 17px; text-transform: none; letter-spacing: 0; color: var(--text); margin: 1.4em 0 .5em; display: block; }
+.md h3 { font-size: 15px; margin: 1.2em 0 .4em; } .md h4 { font-size: 14px; }
+.md table { border-collapse: collapse; font-size: 12.5px; margin: 10px 0; display: block; overflow-x: auto; }
+.md th, .md td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
+.md th { background: var(--panel2); }
+.md code { background: var(--panel2); padding: 1px 4px; border-radius: 4px; }
+.md pre { background: var(--panel2); padding: 10px 12px; border-radius: 8px; overflow: auto; }
+.md pre code { background: none; padding: 0; }
+.md blockquote { margin: 8px 0; padding: 4px 12px; border-left: 3px solid var(--line2); color: var(--muted); }
+.md a { color: var(--accent); }
+.scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, .25); z-index: 19; }
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 14px;
+  border-radius: 9px; z-index: 30; font-size: 13px; max-width: 80vw; }
+
+.layout > *, .setup > *, main > * { min-width: 0; }
+#restable { overflow-x: auto; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); height: auto; padding: 12px 16px; }
+  .setup { overflow: visible; }
+  main { grid-template-rows: auto auto auto; }
+  .content { overflow: visible; }
+  .keys, .ws { display: none; }
+  .presets { flex-wrap: wrap; }
+  .presets button { flex: 1 1 auto; }
+  .prog-h .cmd { max-width: 100%; margin-left: 0; }
+  .st .sum { display: none; }
+  .logp { height: 45vh; }
+  .res-h input { width: 100%; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">nf</span>niche-finder <span class="sub">console</span></div>
+  <span class="conn" id="conn" title="live connection"></span>
+  <div class="ws" id="ws"></div>
+  <div class="keys" id="keys"></div>
+</header>
+
+<div class="layout">
+  <aside class="setup">
+    <section class="card">
+      <h2>Market</h2>
+      <div class="presets" id="mk-pre"></div>
+      <div class="chips" id="mk"></div>
+      <div class="hint">Demand pools. A niche stays in the run when a picked market measures its language.</div>
+    </section>
+    <section class="card">
+      <h2>Segment</h2>
+      <div class="presets" id="sd-pre"></div>
+      <div class="chips" id="sd"></div>
+    </section>
+    <section class="card">
+      <h2>Tier</h2>
+      <div class="chips" id="tr"></div>
+    </section>
+    <section class="card scope" id="scope"></section>
+    <section class="card">
+      <h2>Stages <span class="tag" id="selcount"></span></h2>
+      <div class="presets" id="st-pre"></div>
+      <label class="opt"><input type="checkbox" class="cbx" id="keep"> Keep going after a failed stage</label>
+      <div class="args" id="argsbox" hidden>
+        <label><span>Arguments for <code id="argsname"></code></span><button class="linkbtn" id="argshelp" type="button">stage help</button></label>
+        <input id="args" placeholder="--dry" spellcheck="false" autocomplete="off">
+      </div>
+    </section>
+    <div class="actions">
+      <button class="btn primary" id="run" type="button"><span id="runlbl">Run</span><small id="runsub"></small></button>
+      <button class="btn danger" id="stop" type="button" disabled>Stop</button>
+    </div>
+  </aside>
+
+  <main>
+    <nav class="tabs" id="tabs">
+      <button data-tab="pipe" class="on" type="button">Pipeline</button>
+      <button data-tab="res" type="button">Results</button>
+      <button data-tab="hist" type="button">History</button>
+      <span class="sp"></span>
+    </nav>
+    <div class="content" id="content">
+      <section id="tab-pipe">
+        <div class="card prog" id="prog"></div>
+        <div class="map" id="map"></div>
+        <div id="segs"></div>
+      </section>
+      <section id="tab-res" hidden></section>
+      <section id="tab-hist" hidden></section>
+    </div>
+    <section class="card logp">
+      <div class="logp-h">
+        <span class="t">Output</span>
+        <span class="tag" id="logflt" hidden></span>
+        <span class="sp"></span>
+        <label class="opt" style="margin:0"><input type="checkbox" class="cbx" id="follow" checked> Follow</label>
+      </div>
+      <div class="log" id="log"><div class="empty">The output of a run appears here. Click a stage to see only its lines.</div></div>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-h"><span class="t" id="dtitle"></span><span class="sp"></span>
+    <a class="linkbtn" id="dopen" target="_blank" rel="noopener" hidden>open in a new tab</a>
+    <button class="btn" id="dclose" type="button">Close</button></div>
+  <div class="drawer-b" id="dbody"></div>
+</aside>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+"use strict";
+const TOKEN = "__NF_TOKEN__";
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+function h(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v);
+    else if (k === "html") e.innerHTML = v;
+    else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) e.append(k.nodeType ? k : document.createTextNode(k));
+  return e;
+}
+
+const LABEL = {
+  markets: {us: "US", ww: "Worldwide", ru: "Russia"},
+  side: {"b2b-smb": "B2B · SMB", "b2b-mid": "B2B · mid", b2b: "B2B", b2c: "B2C", prosumer: "Prosumer"},
+  tier: {A: "A · measure", B: "B · candidate", C: "C · control"},
+};
+const KEYNAMES = {dataforseo: "DataForSEO", llm: "LLM", yandex: "Wordstat", producthunt: "Product Hunt", youtube: "YouTube",
+  trustmrr: "TrustMRR", github: "GitHub"};
+const S = {
+  st: null, spec: {markets: [], side: [], tier: []}, sel: new Set(), preview: null, previewErr: "",
+  run: null, running: false, plan: null, status: {}, why: {}, secs: {}, startT: {}, last: {}, summary: null,
+  logs: [], pendingLog: [], logFilter: "", times: {}, offset: 0, rows: {}, segs: [], folded: new Set(),
+  tab: "pipe", res: {profile: null, data: null, q: "", v: "", board: null},
+};
+const now = () => Date.now() / 1000 + S.offset;
+const stageOf = n => S.st.stages.find(s => s.name === n);
+
+/* ---------- api ---------- */
+async function getJSON(url) {
+  const r = await fetch(url, {cache: "no-store"});
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function post(url, body) {
+  const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "X-NF-Token": TOKEN},
+    body: JSON.stringify(body || {})});
+  const data = await r.json().catch(() => ({error: r.statusText}));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+function toast(msg, ms = 4200) {
+  const t = $("#toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.tm); toast.tm = setTimeout(() => t.hidden = true, ms);
+}
+const storeKey = () => "nf-ui:" + S.st.workspace;
+function save() {
+  try { localStorage.setItem(storeKey(), JSON.stringify({spec: S.spec, sel: [...S.sel], keep: $("#keep").checked, tab: S.tab})); } catch (e) { /* storage off */ }
+}
+function restore() {
+  try { return JSON.parse(localStorage.getItem(storeKey()) || "null"); } catch (e) { return null; }
+}
+
+/* ---------- formatting ---------- */
+function dur(s) {
+  if (s == null || isNaN(s)) return "";
+  s = Math.max(0, Math.round(s));
+  if (s < 60) return s + "s";
+  const m = Math.floor(s / 60), r = s % 60;
+  if (m < 60) return m + "m " + String(r).padStart(2, "0") + "s";
+  return Math.floor(m / 60) + "h " + String(m % 60).padStart(2, "0") + "m";
+}
+function ago(t) {
+  if (!t) return "never";
+  const s = now() - t;
+  if (s < 90) return "just now";
+  if (s < 3600) return Math.round(s / 60) + " min ago";
+  if (s < 86400) return Math.round(s / 3600) + " h ago";
+  return new Date(t * 1000).toLocaleString();
+}
+
+/* ---------- presets ---------- */
+const inAll = () => S.st.stages.filter(s => s.in_all).map(s => s.name);
+const STAGE_PRESETS = [
+  ["Full", "Every stage of nf run all", () => inAll()],
+  ["Software", "nf run all without the info cohort", () => S.st.stages.filter(s => s.in_all && s.group !== "info").map(s => s.name)],
+  ["Info", "The info cohort (short video, Telegram)", () => S.st.stages.filter(s => s.group === "info").map(s => s.name)],
+  ["Rescore", "Score, passports and leaderboard from existing data", () => S.st.rescore.slice()],
+  ["None", "Clear the selection", () => []],
+];
+function b2bSides() { return S.st.universe.side.filter(s => !S.st.b2c_sides.includes(s)); }
+function b2cSides() { return S.st.universe.side.filter(s => S.st.b2c_sides.includes(s)); }
+const sameSet = (a, b) => a.length === b.length && a.every(x => b.includes(x));
+
+/* ---------- setup panel ---------- */
+function counts(key, dflt) {
+  const c = {};
+  for (const n of S.st.niches) { const v = String(n[key] || dflt); c[v] = (c[v] || 0) + 1; }
+  return c;
+}
+function chipGroup(box, key, values, cnt) {
+  box.replaceChildren(...values.map(v => {
+    const on = S.spec[key].includes(v);
+    return h("label", {class: "chip" + (on ? " on" : "") + (S.running ? " dis" : ""), title: v},
+      h("input", {type: "checkbox", checked: on, disabled: S.running, onchange: () => {
+        if (S.running) return;
+        const set = new Set(S.spec[key]);
+        set.has(v) ? set.delete(v) : set.add(v);
+        S.spec[key] = values.filter(x => set.has(x));
+        specChanged();
+      }}),
+      h("span", {class: "box"}), (LABEL[key] && LABEL[key][v]) || v || "(none)", cnt ? h("span", {class: "n"}, cnt[v] || 0) : null);
+  }));
+}
+function presetRow(box, items) {
+  box.replaceChildren(...items.map(([label, title, active, fn]) =>
+    h("button", {type: "button", class: active ? "on" : "", title, disabled: S.running, onclick: fn}, label)));
+}
+function renderSetup() {
+  const U = S.st.universe;
+  const mk = S.spec.markets;
+  presetRow($("#mk-pre"), [
+    ["nf.yaml", "The markets of nf.yaml: " + S.st.markets.join(", "), sameSet(mk, S.st.markets), () => setSpec("markets", S.st.markets)],
+    ["West", "US and worldwide (English)", sameSet(mk, ["us", "ww"]), () => setSpec("markets", ["us", "ww"])],
+    ["Russia", "Russian-language demand and the Russian module", sameSet(mk, ["ru"]), () => setSpec("markets", ["ru"])],
+  ]);
+  chipGroup($("#mk"), "markets", U.markets, null);
+  const sd = S.spec.side;
+  presetRow($("#sd-pre"), [
+    ["All", "Every side", sameSet(sd, U.side), () => setSpec("side", U.side)],
+    ["B2B", b2bSides().join(", "), sameSet(sd, b2bSides()), () => setSpec("side", b2bSides())],
+    ["B2C", b2cSides().join(", "), sameSet(sd, b2cSides()), () => setSpec("side", b2cSides())],
+  ]);
+  chipGroup($("#sd"), "side", U.side, counts("side", ""));
+  chipGroup($("#tr"), "tier", U.tier, counts("tier", ""));
+  presetRow($("#st-pre"), STAGE_PRESETS.map(([label, title, fn]) => {
+    const want = fn();
+    return [label, title, want.length === S.sel.size && want.every(n => S.sel.has(n)), () => {
+      S.sel = new Set(want); autoFold(); save(); renderAll();
+    }];
+  }));
+  $("#selcount").textContent = S.sel.size + " of " + S.st.stages.length;
+  const one = S.sel.size === 1 ? [...S.sel][0] : null;
+  $("#argsbox").hidden = !one;
+  if (one) $("#argsname").textContent = one;
+  $("#keep").disabled = S.running;
+  $("#args").disabled = S.running;
+  renderRunButton();
+}
+function setSpec(key, vals) { if (S.running) return; S.spec[key] = vals.slice(); specChanged(); }
+function specChanged() { save(); renderSetup(); refreshPreview(); }
+
+function renderScope() {
+  const box = $("#scope"), p = S.preview;
+  if (S.previewErr) { box.replaceChildren(h("h2", {}, "Scope"), h("ul", {class: "warns"}, h("li", {class: "bad"}, S.previewErr))); return; }
+  if (!p) { box.replaceChildren(h("h2", {}, "Scope"), h("div", {class: "hint"}, "…")); return; }
+  const total = S.st.niches.length;
+  const sides = Object.entries(p.by_side);
+  const colors = ["var(--accent)", "#8a63d2", "#1f9e89", "#d9822b", "#c2417a", "#6b7f99"];
+  box.replaceChildren(...[
+    h("h2", {}, "Scope"),
+    h("div", {class: "prof"},
+      p.profile ? h("span", {class: "tag accent"}, "profile " + p.profile) : h("span", {class: "tag ok"}, "full run"),
+      p.profile ? h("span", {class: "tag"}, p.exists ? "existing" : "new") : null,
+      h("span", {class: "tag"}, (p.spec.markets || S.st.markets).join(" + "))),
+    h("div", {class: "big"}, h("span", {class: "num"}, p.niches), h("span", {class: "of"}, "of " + total + " niches"),
+      h("span", {class: "of"}, "· " + p.shortlisted + " shortlisted")),
+    h("div", {class: "split"}, ...sides.map(([k, v], i) => h("i", {style: `width:${100 * v / Math.max(1, p.niches)}%;background:${colors[i % colors.length]}`, title: `${k}: ${v}`}))),
+    h("div", {class: "legend"}, ...sides.map(([k, v], i) => h("span", {style: `--c:${colors[i % colors.length]}`}, `${LABEL.side[k] || k} ${v}`))),
+    p.warnings.length ? h("ul", {class: "warns"}, ...p.warnings.map(w => h("li", {}, w))) : null,
+    h("div", {class: "outpath", title: "where this run writes data/out and reports"}, "→ " + p.outputs)].filter(Boolean));
+}
+function renderRunButton() {
+  const n = S.sel.size, btn = $("#run");
+  btn.disabled = S.running || !n || !!S.previewErr || !S.preview || !S.preview.niches;
+  $("#runlbl").textContent = S.running ? "Running…" : `Run ${n} stage${n === 1 ? "" : "s"}`;
+  $("#runsub").textContent = S.preview ? (S.preview.profile ? "profile " + S.preview.profile : "full run") + ` · ${S.preview.niches} niches` : "";
+  $("#stop").disabled = !S.running;
+}
+
+let previewTimer = null, previewSeq = 0;
+function refreshPreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(async () => {
+    const my = ++previewSeq;
+    try {
+      const p = await post("/api/preview", {spec: S.spec});
+      if (my !== previewSeq) return;
+      if (p.error) { S.previewErr = p.error; S.preview = null; } else { S.previewErr = ""; S.preview = p; }
+    } catch (e) { S.previewErr = String(e.message || e); }
+    renderScope(); renderRunButton(); renderStages();
+  }, 120);
+}
+
+/* ---------- pipeline ---------- */
+function badges(s) {
+  const out = [];
+  if (s.keys.some(k => k.startsWith("DATAFORSEO"))) out.push(["$ paid", "paid", "DataForSEO: prints the expected cost and checks the balance first"]);
+  if (s.keys.includes("LLM_API_KEY")) out.push(["LLM", "", "LLM calls (cached)"]);
+  if (s.keys.includes("YANDEX_API_KEY")) out.push(["Wordstat", "", "Yandex Wordstat: about 100 requests an hour when not cached"]);
+  if (s.keys.includes("YOUTUBE_API_KEY")) out.push(["YouTube quota", "", "YouTube Data API: 10,000 units a day"]);
+  for (const k of s.keys) if (!/^(DATAFORSEO|LLM_API_KEY|YANDEX_API_KEY|YOUTUBE_API_KEY)/.test(k)) out.push([k, "", "needs " + k]);
+  for (const t of s.needs) out.push([t, "", "needs " + t]);
+  if (s.market === "ru") out.push(["RU", "ru", "runs only when the markets include ru"]);
+  if (!s.in_all) out.push(["manual", "na", "not part of nf run all"]);
+  return out.map(([t, c, title]) => h("span", {class: "bd " + c, title}, t));
+}
+function buildPipeline() {
+  S.segs = [];
+  for (const s of S.st.stages) {
+    const last = S.segs[S.segs.length - 1];
+    if (last && last.group === s.group) last.stages.push(s.name);
+    else S.segs.push({group: s.group, stages: [s.name], idx: S.segs.length});
+  }
+  const titles = Object.fromEntries(S.st.groups.map(g => [g.key, g.title]));
+  const seen = {};
+  for (const seg of S.segs) {
+    seen[seg.group] = (seen[seg.group] || 0) + 1;
+    seg.title = titles[seg.group] || seg.group;
+    if (seen[seg.group] > 1) seg.title += seg.group === "s6" ? " · final pass" : " · continued";
+    if (seg.group === "s6" && seen[seg.group] === 1) seg.title += " · first pass";
+  }
+  const box = $("#segs");
+  box.replaceChildren();
+  S.rows = {};
+  for (const seg of S.segs) {
+    const cb = h("input", {type: "checkbox", class: "cbx", title: "select the whole block",
+      onclick: e => e.stopPropagation(), onchange: e => {
+        if (S.running) return;
+        for (const n of seg.stages) e.target.checked ? S.sel.add(n) : S.sel.delete(n);
+        save(); renderAll();
+      }});
+    const head = h("div", {class: "seg-h", onclick: () => { S.folded.has(seg.idx) ? S.folded.delete(seg.idx) : S.folded.add(seg.idx); renderStages(); }},
+      cb, h("span", {class: "gk"}, seg.group.toUpperCase()), h("span", {class: "gt"}, seg.title),
+      h("span", {class: "gs"}), h("span", {class: "fold"}, "▾"));
+    const body = h("div", {class: "seg-b"});
+    for (const n of seg.stages) {
+      const s = stageOf(n);
+      const rcb = h("input", {type: "checkbox", class: "cbx", onclick: e => e.stopPropagation(), onchange: e => {
+        if (S.running) return;
+        e.target.checked ? S.sel.add(n) : S.sel.delete(n); save(); renderAll();
+      }});
+      const row = h("div", {class: "st", "data-n": n, title: s.summary, onclick: () => { setLogFilter(S.logFilter === n ? "" : n); }},
+        rcb, h("span", {class: "ico"}),
+        h("div", {}, h("div", {class: "l1"}, h("code", {class: "nm"}, n), ...badges(s), h("span", {class: "sum"}, s.summary)),
+          h("div", {class: "l2"})),
+        h("span", {class: "tm"}));
+      S.rows[n] = {row, cb: rcb, l2: row.querySelector(".l2"), tm: row.querySelector(".tm")};
+      body.append(row);
+    }
+    seg.el = h("div", {class: "card seg", id: "seg-" + seg.idx}, head, body);
+    seg.cb = cb; seg.gs = head.querySelector(".gs");
+    box.append(seg.el);
+  }
+}
+function autoFold() {
+  S.folded = new Set(S.segs.filter(seg => !seg.stages.some(n => S.sel.has(n))).map(seg => seg.idx));
+}
+function stageState(n) {
+  const st = S.status[n];
+  if (st) return st;
+  if (S.plan && S.plan.includes(n)) return S.running ? "pending" : "notrun";
+  return S.sel.has(n) ? "idle" : "off";
+}
+function renderStages() {
+  if (!S.st) return;
+  const ready = (S.preview && S.preview.ready) || {};
+  for (const [n, r] of Object.entries(S.rows)) {
+    const st = stageState(n);
+    const sel = S.sel.has(n);
+    let cls = "st s-" + st;
+    if (!sel && (st === "idle" || st === "off")) cls = "st s-off";
+    if (S.logFilter === n) cls += " flt";
+    r.row.className = cls;
+    r.cb.checked = sel; r.cb.disabled = S.running;
+    let l2 = "", tm = "";
+    if (st === "running") { l2 = S.last[n] || "starting…"; tm = dur(now() - (S.startT[n] || now())); }
+    else if (st === "done") tm = dur(S.secs[n]);
+    else if (st === "skipped" || st === "failed" || st === "stopped") { l2 = S.why[n] || st; tm = S.secs[n] != null ? dur(S.secs[n]) : ""; }
+    else if (st === "notrun") l2 = "not reached: the run " + (S.run ? S.run.status : "ended");
+    else if (sel && ready[n]) l2 = "will be skipped: " + ready[n];
+    else if (sel && S.times[n] != null) tm = "~" + dur(S.times[n]);
+    if (r.l2.textContent !== l2) { r.l2.textContent = l2; r.l2.title = l2; }
+    if (r.tm.textContent !== tm) r.tm.textContent = tm;
+  }
+  for (const seg of S.segs) {
+    const sel = seg.stages.filter(n => S.sel.has(n)).length;
+    seg.cb.checked = sel === seg.stages.length; seg.cb.indeterminate = sel > 0 && sel < seg.stages.length; seg.cb.disabled = S.running;
+    const done = seg.stages.filter(n => ["done", "skipped"].includes(S.status[n])).length;
+    const planned = S.plan ? seg.stages.filter(n => S.plan.includes(n)).length : sel;
+    seg.gs.textContent = S.plan ? `${done} / ${planned}` + (seg.stages.some(n => S.status[n] === "failed") ? " · failed" : "")
+      : `${sel} / ${seg.stages.length} selected`;
+    seg.el.classList.toggle("folded", S.folded.has(seg.idx));
+  }
+  renderMap(); renderProgress();
+}
+function renderMap() {
+  const box = $("#map");
+  const items = [];
+  S.segs.forEach((seg, i) => {
+    if (i) items.push(h("span", {class: "arrow"}, "›"));
+    const st = seg.stages.map(stageState);
+    const planned = S.plan ? seg.stages.filter(n => S.plan.includes(n)) : seg.stages.filter(n => S.sel.has(n));
+    const n = Math.max(1, planned.length);
+    const c = k => planned.filter(x => S.status[x] === k).length;
+    const pill = h("button", {type: "button", class: "pill" + (planned.length ? "" : " off") + (st.includes("running") ? " run" : "") + (st.includes("failed") ? " fail" : ""),
+      title: seg.title, onclick: () => { S.folded.delete(seg.idx); renderStages(); seg.el.scrollIntoView({behavior: "smooth", block: "start"}); }},
+      h("span", {class: "k"}, seg.group.toUpperCase()),
+      h("span", {class: "mini"}, h("i", {style: `width:${100 * c("done") / n}%;background:var(--ok)`}), h("i", {style: `width:${100 * c("skipped") / n}%;background:var(--skip)`}),
+        h("i", {style: `width:${100 * c("failed") / n}%;background:var(--bad)`}), h("i", {style: `width:${100 * c("running") / n}%;background:var(--accent)`})),
+      h("span", {class: "c"}, S.plan ? `${c("done") + c("skipped")}/${planned.length}` : `${planned.length}`));
+    items.push(pill);
+  });
+  box.replaceChildren(...items);
+}
+function renderProgress() {
+  const box = $("#prog");
+  if (!S.run) {
+    const est = [...S.sel].reduce((a, n) => a + (S.times[n] || 0), 0);
+    const unknown = [...S.sel].filter(n => S.times[n] == null).length;
+    box.replaceChildren(h("div", {class: "prog-h"}, h("span", {class: "title"}, "No run in this session yet")),
+      h("div", {class: "stats"}, h("span", {}, h("b", {}, S.sel.size), " stages selected"),
+        est ? h("span", {}, "last timings: ", h("b", {}, "≈ " + dur(est)), unknown ? ` + ${unknown} without a timing` : "") : null));
+    return;
+  }
+  const plan = S.plan || S.run.stages || [];
+  const c = k => plan.filter(n => S.status[n] === k).length;
+  const done = c("done"), skip = c("skipped"), fail = c("failed") + c("stopped"), run = c("running");
+  const total = Math.max(1, plan.length);
+  const cur = plan.find(n => S.status[n] === "running");
+  const ended = S.run.ended;
+  const elapsed = (ended || now()) - S.run.started;
+  let left = null, unknown = 0;
+  if (S.running) {
+    left = 0;
+    for (const n of plan) {
+      const st = S.status[n];
+      if (!st || st === "pending") { if (S.times[n] != null) left += S.times[n]; else unknown++; }
+      else if (st === "running" && S.times[n] != null) left += Math.max(0, S.times[n] - (now() - (S.startT[n] || now())));
+    }
+  }
+  const status = S.running ? "Running" : ({ok: "Finished", failed: "Failed", stopped: "Stopped"}[S.run.status] || S.run.status);
+  const tagc = S.running ? "accent" : S.run.status === "ok" ? "ok" : S.run.status === "stopped" ? "warn" : "bad";
+  box.replaceChildren(
+    h("div", {class: "prog-h"}, h("span", {class: "title"}, status), h("span", {class: "tag " + tagc}, S.run.profile ? "profile " + S.run.profile : "full run"),
+      cur ? h("span", {class: "tag accent"}, cur) : null,
+      h("span", {class: "cmd", title: S.run.command}, S.run.command)),
+    h("div", {class: "bar"}, h("i", {class: "b-done", style: `width:${100 * done / total}%`}), h("i", {class: "b-skip", style: `width:${100 * skip / total}%`}),
+      h("i", {class: "b-fail", style: `width:${100 * fail / total}%`}), h("i", {class: "b-run", style: `width:${100 * run / total}%`})),
+    h("div", {class: "stats"},
+      h("span", {}, h("b", {}, done + skip + fail), " / ", h("b", {}, plan.length), " stages"),
+      h("span", {}, h("b", {}, done), " done"), h("span", {}, h("b", {}, skip), " skipped"), h("span", {}, h("b", {}, fail), " failed"),
+      h("span", {}, "elapsed ", h("b", {}, dur(elapsed))),
+      left != null ? h("span", {}, "left ", h("b", {}, "≈ " + dur(left)), unknown ? ` + ${unknown} without a timing` : "") : null,
+      !S.running ? h("span", {}, "started ", h("b", {}, ago(S.run.started))) : null));
+}
+
+/* ---------- log ---------- */
+function lineClass(t) {
+  if (/^== /.test(t)) return "h";
+  if (/Traceback|Error\b|error:|^\s*failed|FAILED|stopped/.test(t)) return "e";
+  if (/^\s+done in /.test(t)) return "k";
+  if (/skipped/.test(t)) return "m";
+  return "";
+}
+function logNode(ev) {
+  const showStage = !S.logFilter;
+  return h("div", {class: "ln " + lineClass(ev.line)}, showStage ? h("span", {class: "s"}, ev.stage || "") : null, ev.line);
+}
+function setLogFilter(n) {
+  S.logFilter = n;
+  const tag = $("#logflt");
+  tag.hidden = !n;
+  tag.replaceChildren(...(n ? [n + "  ", h("button", {class: "linkbtn", type: "button", onclick: e => { e.stopPropagation(); setLogFilter(""); }}, "show all")] : []));
+  const box = $("#log");
+  const lines = S.logs.filter(ev => !n || ev.stage === n).slice(-4000);
+  box.replaceChildren(...(lines.length ? lines.map(logNode) : [h("div", {class: "empty"}, n ? `No output from ${n} in this run.` : "No output yet.")]));
+  box.scrollTop = box.scrollHeight;
+  renderStages();
+}
+function flushLog() {
+  if (!S.pendingLog.length) return;
+  const box = $("#log");
+  const atEnd = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+  const items = S.pendingLog.filter(ev => !S.logFilter || ev.stage === S.logFilter);
+  S.pendingLog = [];
+  if (!items.length) return;
+  if (box.firstChild && box.firstChild.classList && box.firstChild.classList.contains("empty")) box.replaceChildren();
+  const frag = document.createDocumentFragment();
+  for (const ev of items.slice(-4000)) frag.append(logNode(ev));
+  box.append(frag);
+  while (box.childElementCount > 5000) box.firstChild.remove();
+  if ($("#follow").checked || atEnd) box.scrollTop = box.scrollHeight;
+}
+
+/* ---------- events ---------- */
+function resetRun(meta, live) {
+  S.run = meta; S.running = meta.status === "running";
+  S.plan = null; S.status = {}; S.why = {}; S.secs = {}; S.startT = {}; S.last = {}; S.summary = null;
+  S.logs = []; S.pendingLog = [];
+  $("#log").replaceChildren();
+  if (S.running && live) {
+    S.res.profile = meta.profile || "";
+    $("#keep").checked = !!meta.keep_going;
+    if (meta.args && meta.args.length) $("#args").value = meta.args.join(" ");
+    refreshState();
+    S.sel = new Set(meta.stages);
+    const spec = meta.spec || {};
+    S.spec = {markets: spec.markets || S.st.markets.slice(), side: spec.side || S.st.universe.side.slice(), tier: spec.tier || S.st.universe.tier.slice()};
+    autoFold(); renderSetup(); refreshPreview();
+  }
+}
+function onEvent(ev) {
+  switch (ev.type) {
+    case "run": resetRun(ev.run, isLive(ev)); break;
+    case "plan": S.plan = ev.stages; break;
+    case "stage":
+      S.status[ev.stage] = ev.status;
+      if (ev.status === "running") { S.startT[ev.stage] = ev.t; S.folded.forEach(i => { if (S.segs[i] && S.segs[i].stages.includes(ev.stage)) S.folded.delete(i); }); }
+      else {
+        if (ev.secs != null) S.secs[ev.stage] = ev.secs;
+        if (ev.why) S.why[ev.stage] = ev.why;
+        if (ev.status === "done" && ev.secs != null) S.times[ev.stage] = ev.secs;
+      }
+      if (ev.status === "running" && isLive(ev) && $("#follow").checked && S.tab === "pipe") {
+        const r = S.rows[ev.stage]; if (r) requestAnimationFrame(() => r.row.scrollIntoView({block: "nearest"}));
+      }
+      break;
+    case "log":
+      S.logs.push(ev); S.pendingLog.push(ev);
+      if (S.logs.length > 60000) S.logs.splice(0, 10000);
+      if (ev.stage && ev.line.trim() && !/^== /.test(ev.line)) S.last[ev.stage] = ev.line.trim();
+      break;
+    case "summary": S.summary = ev; break;
+    case "end":
+      S.run = ev.run; S.running = false;
+      document.title = ({ok: "✓ ", failed: "✕ ", stopped: "■ "}[ev.status] || "") + "niche-finder console";
+      if (!document.hidden) setTimeout(() => document.title = "niche-finder console", 8000);
+      refreshState(); renderSetup();
+      if (S.tab === "res") loadResults();
+      break;
+  }
+  schedule();
+}
+/* A live event, not the replay that a reloaded page receives first: the run is still going, or the event just happened. */
+function isLive(ev) {
+  return (S.st.running && S.st.run && ev.run && S.st.run.id === ev.run.id) || now() - (ev.t || 0) < 8;
+}
+let frame = 0;
+function schedule() {
+  if (frame) return;
+  frame = requestAnimationFrame(() => { frame = 0; renderStages(); flushLog(); renderRunButton(); });
+}
+function connect() {
+  const es = new EventSource("/api/events");
+  es.onopen = () => $("#conn").classList.add("on");
+  es.onerror = () => $("#conn").classList.remove("on");
+  es.onmessage = e => { try { onEvent(JSON.parse(e.data)); } catch (err) { console.error(err); } };
+}
+async function refreshState() {
+  try {
+    const st = await getJSON("/api/state");
+    S.st.profiles = st.profiles; S.st.history = st.history;
+    if (S.tab === "hist") renderHistory();
+  } catch (e) { /* the next event refreshes it */ }
+}
+
+/* ---------- actions ---------- */
+async function startRun() {
+  const stages = S.st.stages.map(s => s.name).filter(n => S.sel.has(n));
+  const ready = (S.preview && S.preview.ready) || {};
+  const paid = stages.filter(n => stageOf(n).keys.some(k => k.startsWith("DATAFORSEO")) && !ready[n]);
+  if (paid.length && !confirm(`This run includes paid DataForSEO stages:\n  ${paid.join("\n  ")}\n\nEach prints its expected cost and stops before paying when the balance is low; cached calls are free.\n\nStart the run?`)) return;
+  const btn = $("#run");
+  btn.disabled = true;
+  $("#runlbl").textContent = S.preview && S.preview.profile && !S.preview.exists ? "Preparing the profile…" : "Starting…";
+  try {
+    await post("/api/run", {spec: S.spec, stages, keep_going: $("#keep").checked, args: S.sel.size === 1 ? $("#args").value : ""});
+    setTab("pipe");
+  } catch (e) { toast("Could not start: " + e.message); }
+  renderRunButton();
+}
+async function stopRun() {
+  if (!confirm("Stop the run? The running stage is killed; stages that finished keep their outputs.")) return;
+  try { await post("/api/stop"); } catch (e) { toast(e.message); }
+}
+
+/* ---------- tabs: results and history ---------- */
+function setTab(t) {
+  S.tab = t;
+  for (const b of $("#tabs").querySelectorAll("button[data-tab]")) b.classList.toggle("on", b.dataset.tab === t);
+  $("#tab-pipe").hidden = t !== "pipe"; $("#tab-res").hidden = t !== "res"; $("#tab-hist").hidden = t !== "hist";
+  if (t === "res") loadResults();
+  if (t === "hist") { renderHistory(); refreshState(); }
+  const hash = {pipe: "", res: "#results", hist: "#history"}[t];
+  if (location.hash !== hash) history.replaceState(null, "", hash || location.pathname);
+  save();
+}
+async function loadResults() {
+  if (S.res.profile == null) S.res.profile = (S.run && S.run.profile) || (S.preview && S.preview.exists ? S.preview.profile : "") || "";
+  try { S.res.data = await getJSON("/api/results?profile=" + encodeURIComponent(S.res.profile || "-")); }
+  catch (e) { S.res.data = {rows: [], rows_ru: [], reports: [], markets: [], error: e.message}; }
+  const d = S.res.data;
+  if (!S.res.board || (S.res.board === "ru" && !d.rows_ru.length)) S.res.board = d.rows_ru.length && !d.markets.includes("us") ? "ru" : "main";
+  renderResults();
+}
+function renderResults() {
+  const box = $("#tab-res"), d = S.res.data;
+  if (!d) { box.replaceChildren(h("div", {class: "empty"}, "Loading…")); return; }
+  const profs = [""].concat(S.st.profiles.map(p => p.name));
+  const sel = h("select", {onchange: e => { S.res.profile = e.target.value; loadResults(); }},
+    ...profs.map(p => h("option", {value: p, selected: p === (S.res.profile || "")}, p ? "profile " + p : "full run")));
+  const all = boardRows();
+  const vc = {green: 0, yellow: 0, red: 0};
+  for (const r of all) if (r.verdict in vc) vc[r.verdict]++;
+  const base = "/r/" + encodeURIComponent(S.res.profile || "-") + "/";
+  const ru = S.res.board === "ru";
+  const boards = d.rows_ru.length ? h("div", {class: "presets", style: "margin:0;width:auto"},
+    ...[["main", "S6 score", "the main score (US demand)"], ["ru", "S6 RU", "the Russian leaderboard (Wordstat, App Store RU)"]].map(([k, label, title]) =>
+      h("button", {type: "button", class: S.res.board === k ? "on" : "", title, onclick: () => { S.res.board = k; S.res.v = ""; renderResults(); }}, label))) : null;
+  const search = h("input", {type: "search", placeholder: "Filter niches", value: S.res.q, oninput: e => { S.res.q = e.target.value; renderResultsTable(); }});
+  box.replaceChildren(
+    h("div", {class: "res-h"}, sel, boards,
+      h("div", {class: "vchips"}, ...[["", "all", all.length], ["green", "green", vc.green], ["yellow", "yellow", vc.yellow], ["red", "red", vc.red]].map(([v, label, n]) =>
+        h("button", {type: "button", class: "vchip" + (S.res.v === v ? " on" : ""), onclick: () => { S.res.v = v; renderResults(); }},
+          v ? h("span", {class: "dot " + v}) : null, `${label} ${n}`))),
+      search, h("span", {class: "tag"}, (ru ? d.scored_ru : d.scored) ? "scored " + ago(ru ? d.scored_ru : d.scored) : "not scored yet")),
+    h("div", {class: "reps"},
+      d.reports.some(r => r.name === "leaderboard.html") ? h("a", {class: "rep main", href: base + "leaderboard.html", target: "_blank", rel: "noopener"}, "Open leaderboard ↗") : null,
+      ...d.reports.filter(r => r.name.endsWith(".md")).map(r => h("button", {type: "button", class: "rep", title: "updated " + ago(r.mtime), onclick: () => openReport(base, r.name)}, r.name.replace(/\.md$/, ""))),
+      d.passports ? h("span", {class: "tag"}, d.passports + " passports") : null),
+    h("div", {class: "card", id: "restable"}));
+  renderResultsTable();
+}
+function boardRows() {
+  const d = S.res.data;
+  return S.res.board === "ru" ? d.rows_ru : d.rows;
+}
+function renderResultsTable() {
+  const d = S.res.data, box = $("#restable");
+  if (!box) return;
+  const q = S.res.q.toLowerCase(), all = boardRows();
+  const rows = all.filter(r => (!S.res.v || r.verdict === S.res.v) && (!q || (r.name + " " + r.niche_id + " " + r.flags).toLowerCase().includes(q)));
+  if (!all.length) { box.replaceChildren(h("div", {class: "empty"}, d.error || "No score_final.csv in this profile yet: run S6 (the Rescore preset) after S3 and S5.")); return; }
+  const base = "/r/" + encodeURIComponent(S.res.profile || "-") + "/";
+  box.replaceChildren(h("table", {class: "t"},
+    h("thead", {}, h("tr", {}, h("th", {class: "num"}, "#"), h("th", {}, "Niche"), h("th", {}, "Side"), h("th", {}, S.res.board === "ru" ? "Demand RU" : "Tier"), h("th", {}, "Score"), h("th", {}, "Verdict"), h("th", {}, "Gates · flags"))),
+    h("tbody", {}, ...rows.map((r, i) => h("tr", {},
+      h("td", {class: "num"}, i + 1),
+      h("td", {}, h("button", {type: "button", class: "linkbtn", style: "font-size:13px;text-align:left", title: "open the passport",
+        onclick: () => openReport(base, "passports/" + r.niche_id + ".md")}, r.name), h("div", {class: "id"}, r.niche_id)),
+      h("td", {}, LABEL.side[r.side] || r.side), h("td", {class: S.res.board === "ru" ? "num" : ""}, S.res.board === "ru" ? (r.demand ? Number(r.demand).toLocaleString() : "") : r.tier),
+      h("td", {}, h("div", {class: "sbar"}, h("span", {class: "tr"}, h("i", {style: `width:${Math.min(100, +r.score || 0)}%`})), h("b", {}, (+r.score || 0).toFixed(1)))),
+      h("td", {title: r.verdict_note}, h("span", {class: "dot " + r.verdict}), " ", r.verdict),
+      h("td", {class: "flags", title: r.flags}, [r.gates_failed, r.flags].filter(Boolean).join(" · ")))))));
+}
+function renderHistory() {
+  const box = $("#tab-hist");
+  const rows = S.st.history || [];
+  if (!rows.length) { box.replaceChildren(h("div", {class: "empty"}, "No runs from the console yet.")); return; }
+  box.replaceChildren(h("div", {class: "card", style: "margin-top:12px"}, h("table", {class: "t"},
+    h("thead", {}, h("tr", {}, h("th", {}, "Started"), h("th", {}, "Profile"), h("th", {}, "Command"), h("th", {}, "Status"), h("th", {class: "num"}, "Duration"), h("th", {}, ""))),
+    h("tbody", {}, ...rows.map(r => h("tr", {},
+      h("td", {}, new Date(r.started * 1000).toLocaleString()),
+      h("td", {}, r.profile || "full run"),
+      h("td", {class: "flags", title: r.command}, r.command),
+      h("td", {}, h("span", {class: "tag " + ({ok: "ok", failed: "bad", stopped: "warn", running: "accent"}[r.status] || "")}, r.status)),
+      h("td", {class: "num"}, r.ended ? dur(r.ended - r.started) : "…"),
+      h("td", {}, h("button", {type: "button", class: "linkbtn", onclick: () => openText("/api/runlog?id=" + encodeURIComponent(r.id), "run " + r.id)}, "log"))))))));
+}
+
+/* ---------- drawer: reports, help, logs ---------- */
+function openDrawer(title, node, href) {
+  $("#dtitle").textContent = title;
+  const a = $("#dopen"); a.hidden = !href; if (href) a.href = href;
+  $("#dbody").replaceChildren(node); $("#dbody").scrollTop = 0;
+  $("#drawer").hidden = false; $("#scrim").hidden = false;
+}
+function closeDrawer() { $("#drawer").hidden = true; $("#scrim").hidden = true; }
+async function openText(url, title) {
+  try {
+    const r = await fetch(url, {cache: "no-store"});
+    const t = await r.text();
+    openDrawer(title, h("pre", {class: "plain"}, r.ok ? t : "Not available: " + t));
+  } catch (e) { toast(e.message); }
+}
+async function openReport(base, rel) {
+  const url = base + rel.split("/").map(encodeURIComponent).join("/");
+  try {
+    const r = await fetch(url, {cache: "no-store"});
+    if (!r.ok) { toast(rel + " is not in this profile yet"); return; }
+    const t = await r.text();
+    const dir = base + rel.split("/").slice(0, -1).map(x => x + "/").join("");
+    const node = h("div", {class: "md", html: md(t, dir)});
+    node.addEventListener("click", e => {
+      const a = e.target.closest("a[data-md]");
+      if (a) { e.preventDefault(); openReport(base, a.dataset.md); }
+    });
+    openDrawer(rel, node, url);
+  } catch (e) { toast(e.message); }
+}
+
+/* Small Markdown renderer for the generated reports: headings, tables, lists, quotes, code, links, emphasis. */
+function md(src, dir) {
+  const lines = src.replace(/\r\n?/g, "\n").split("\n");
+  const relBase = dir.replace(/^\/r\/[^/]+\//, "");
+  const link = (text, url) => {
+    if (/^(https?:|mailto:)/i.test(url)) return `<a href="${esc(url)}" target="_blank" rel="noopener">${text}</a>`;
+    if (url.startsWith("#")) return text;
+    const parts = (relBase + url).split("/"), out = [];
+    for (const p of parts) { if (p === "..") out.pop(); else if (p !== "." && p !== "") out.push(p); }
+    const rel = out.join("/");
+    if (/\.md$/i.test(rel)) return `<a href="#" data-md="${esc(rel)}">${text}</a>`;
+    return `<a href="${esc(dir.replace(relBase, "") + rel)}" target="_blank" rel="noopener">${text}</a>`;
+  };
+  const inline = s => s.split(/(`[^`]*`)/).map((part, i) => {
+    if (i % 2) return `<code>${esc(part.slice(1, -1))}</code>`;
+    return esc(part)
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, t, u) => link(t, u.replace(/&amp;/g, "&")))
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[\s(])\*([^*\s][^*]*?)\*(?=[\s).,;:!?]|$)/g, "$1<em>$2</em>")
+      .replace(/(^|[\s(])_([^_\s][^_]*?)_(?=[\s).,;:!?]|$)/g, "$1<em>$2</em>");
+  }).join("");
+  const cells = l => l.trim().replace(/^\|/, "").replace(/\|$/, "").split(/(?<!\\)\|/).map(c => c.trim().replace(/\\\|/g, "|"));
+  const out = [];
+  let i = 0;
+  const isBlock = l => /^(#{1,6}\s|```|>\s?|\s*([-*+]|\d+\.)\s+|\s*\|)/.test(l) || /^(-{3,}|\*{3,})\s*$/.test(l);
+  while (i < lines.length) {
+    const l = lines[i];
+    if (/^```/.test(l)) {
+      const code = []; i++;
+      while (i < lines.length && !/^```/.test(lines[i])) code.push(lines[i++]);
+      i++; out.push(`<pre><code>${esc(code.join("\n"))}</code></pre>`); continue;
+    }
+    const hm = l.match(/^(#{1,6})\s+(.*)$/);
+    if (hm) { out.push(`<h${hm[1].length}>${inline(hm[2])}</h${hm[1].length}>`); i++; continue; }
+    if (/^\s*\|/.test(l) && i + 1 < lines.length && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1])) {
+      const head = cells(l); i += 2;
+      const body = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) body.push(cells(lines[i++]));
+      out.push("<table><thead><tr>" + head.map(c => `<th>${inline(c)}</th>`).join("") + "</tr></thead><tbody>" +
+        body.map(r => "<tr>" + r.map(c => `<td>${inline(c)}</td>`).join("") + "</tr>").join("") + "</tbody></table>");
+      continue;
+    }
+    if (/^(-{3,}|\*{3,})\s*$/.test(l)) { out.push("<hr>"); i++; continue; }
+    if (/^>\s?/.test(l)) {
+      const q = [];
+      while (i < lines.length && /^>\s?/.test(lines[i])) q.push(lines[i++].replace(/^>\s?/, ""));
+      out.push(`<blockquote>${inline(q.join(" "))}</blockquote>`); continue;
+    }
+    if (/^\s*([-*+]|\d+\.)\s+/.test(l)) {
+      const ordered = /^\s*\d+\./.test(l), items = [];
+      while (i < lines.length && /^\s*([-*+]|\d+\.)\s+/.test(lines[i])) {
+        let item = lines[i++].replace(/^\s*([-*+]|\d+\.)\s+/, "");
+        while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !/^\s*([-*+]|\d+\.)\s+/.test(lines[i])) item += " " + lines[i++].trim();
+        items.push(`<li>${inline(item)}</li>`);
+      }
+      out.push(`<${ordered ? "ol" : "ul"}>${items.join("")}</${ordered ? "ol" : "ul"}>`); continue;
+    }
+    if (!l.trim()) { i++; continue; }
+    const p = [];
+    while (i < lines.length && lines[i].trim() && !isBlock(lines[i])) p.push(lines[i++]);
+    if (!p.length) p.push(lines[i++]);
+    out.push(`<p>${inline(p.join(" "))}</p>`);
+  }
+  return out.join("\n");
+}
+
+/* ---------- boot ---------- */
+function renderHeader() {
+  $("#ws").textContent = S.st.workspace;
+  $("#ws").title = "workspace · niche-finder " + S.st.version;
+  $("#keys").replaceChildren(...Object.entries(S.st.keys).map(([k, on]) =>
+    h("span", {class: "key" + (on ? " on" : ""), title: on ? k + ": key found" : k + ": no key, its stages are skipped"}, KEYNAMES[k] || k)));
+}
+function renderAll() { renderSetup(); renderStages(); }
+function tick() { if (S.running) { renderStages(); } }
+
+async function init() {
+  S.st = await getJSON("/api/state");
+  S.offset = S.st.now - Date.now() / 1000;
+  S.times = Object.assign({}, S.st.stage_times);
+  const U = S.st.universe, saved = restore();
+  const pick = (vals, all) => { const v = (vals || []).filter(x => all.includes(x)); return v.length ? v : all.slice(); };
+  S.spec = {markets: saved ? pick(saved.spec.markets, U.markets) : S.st.markets.slice(),
+    side: pick(saved && saved.spec.side, U.side), tier: pick(saved && saved.spec.tier, U.tier)};
+  const names = new Set(S.st.stages.map(s => s.name));
+  S.sel = new Set(saved && saved.sel ? saved.sel.filter(n => names.has(n)) : inAll());
+  if (saved && saved.keep) $("#keep").checked = true;
+  renderHeader(); buildPipeline(); autoFold(); renderAll(); refreshPreview();
+  $("#run").onclick = startRun; $("#stop").onclick = stopRun;
+  $("#keep").onchange = save;
+  $("#argshelp").onclick = () => { const n = [...S.sel][0]; if (n) openText("/api/help?stage=" + encodeURIComponent(n), n + " — help"); };
+  $("#tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
+  $("#dclose").onclick = closeDrawer; $("#scrim").onclick = closeDrawer;
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+  connect();
+  setInterval(tick, 1000);
+  const fromHash = {"#results": "res", "#history": "hist"}[location.hash];
+  if (fromHash || (saved && saved.tab && saved.tab !== "pipe")) setTab(fromHash || saved.tab);
+}
+init().catch(e => { document.body.prepend(h("div", {class: "toast"}, "Could not load the console: " + e.message)); });
+</script>
+</body>
+</html>

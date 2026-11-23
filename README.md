@@ -64,6 +64,8 @@ nf run all                     # stages without a key or tool are skipped, not f
 
 Then open `reports/leaderboard.html`.
 
+Prefer a screen to a terminal? `nf ui` opens a local console in the browser: pick the markets, niche segment and tiers, pick the stages, press Run and watch each stage go from pending to running, done, skipped or failed with its live output, then read the scores and reports of that run.
+
 <details>
 <summary>More commands</summary>
 
@@ -72,6 +74,9 @@ nf list                        # every stage, in run order, with readiness
 nf run s3                      # one group
 nf run s5_capterra -- --help   # one stage with its own flags
 nf run s9_snapshot -- freeze   # freeze supply today; later: refresh, then diff
+nf profile west-b2b --markets us,ww --side b2b-smb,b2b-mid   # a filtered run with its own outputs
+nf -p west-b2b run all         # run under that profile
+nf ui                          # the local web console (http://127.0.0.1:8765)
 nf setup node                  # install the Google Play scraper for Node-based stages
 ```
 
@@ -198,7 +203,9 @@ my-research/
 ├── data/
 │   ├── cache/       every external response: re-runs are free and work offline
 │   └── out/         every measurement as CSV / JSON
-└── reports/         leaderboard.html, passports, stage reports
+├── reports/         leaderboard.html, passports, stage reports
+├── profiles/<name>/ filtered runs: profile.yaml, their own data/out/ and reports/
+└── logs/ui/         run history of nf ui
 ```
 
 Set `as_of: YYYY-MM-DD` in `nf.yaml` to reproduce an earlier run from cache.
@@ -210,6 +217,8 @@ Set `as_of: YYYY-MM-DD` in `nf.yaml` to reproduce an earlier run from cache.
 **Your goal.** `goal` in `nf.yaml` sets the net monthly income you are aiming for, in any currency. The path-to-goal grade A also requires a founder fit of 2 or more. Fit defaults to `default_fit: 1`; set `fit` per niche in `config/overrides.yaml` where your skills or stack carry over.
 
 **Markets.** `markets: [us, ww]` measures the US and worldwide demand pools. Adding `ru` enables the Russian module. Some Russian sources refuse foreign IP addresses: set `NF_PROXY_RU` to route only those requests through a proxy. `HTTPS_PROXY` applies to everything.
+
+**Filtered runs.** A run profile measures part of the catalog: only the western markets, only Russia, only B2B niches, only some tiers. Its outputs and reports go to `profiles/<name>/`, so the full leaderboard stays as it is, while settings, config, keys, raw dumps and the cache are shared, so a profile never pays twice for a call the full run made. A new profile starts from a copy of the full run's `data/out/` for its niches, which lets it rescore (S6, S7) at once. Percentiles are taken within the B2B or B2C segment, so a B2B-only profile gives the same B2B scores as the full run; a profile without the `us` market has no demand signal in the S6 score, so read the Russian leaderboard (`s6_ru`) there.
 
 ## Documentation
 

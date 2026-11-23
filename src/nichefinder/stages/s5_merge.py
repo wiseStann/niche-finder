@@ -53,13 +53,16 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         return list(csv.DictReader(open(p, encoding="utf-8")))
 
     all_niches = {x["id"]: x for x in niches.load_niches(ws)}
+    scope = niches.scope_ids(ws)   # a run profile merges only its own niches
     tiers = {}
     for tier, items in niches.shortlist(ws).items():
         if tier == "ru" or not isinstance(items, list):
             continue
         label = tier[5:].upper() if tier.startswith("tier_") else tier.upper()
         for it in items:
-            tiers[it["id"] if isinstance(it, dict) else it] = label
+            nid = it["id"] if isinstance(it, dict) else it
+            if scope is None or nid in scope:
+                tiers[nid] = label
     cmap = ws.load_config("capterra_map.yaml", {}) or {}
     quick = load("metrics_quick.csv", "id")
     trends = {}   # the anchor row; if the anchor is NA and a broad phrase (kind=extra) has a verdict, take that one
