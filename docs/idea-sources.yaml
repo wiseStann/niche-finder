@@ -1389,7 +1389,7 @@ sources:
         auth: "DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD"
         cost: "$0.09/call up to 1,000 keywords"
         limits: "a positive balance is required"
-        probe: {date: 2026-11-21, http: 402, note: "s3_switch_intent: 2 of 6 batches paid and cached, then 'Payment Required'; after a top-up DataForSEO paused the account (task status 40201 'unusual activity'): support must lift it, then about $0.36 finishes the stage"}
+        probe: {date: 2026-11-23, http: 200, note: "s3_switch_intent finished on a verified account: $0.09 per batch with 24 months of history; brands with brackets are rejected (40501) and are now cleaned; two earlier accounts were paused (40201) or unverified (40104)"}
     caveats: ["Google Ads does not target Russia; a hump in 'X software' in 2024 and an acceleration of 'X app' in 2025-26 distort year-over-year comparisons (see the base-year setting of the metrics stage)"]
     plan: "-"
 
@@ -1613,9 +1613,9 @@ sources:
         auth: "DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD"
         cost: "about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48"
         limits: "a positive balance is required; the stage stops before paying when the balance is below 1.5x the estimate"
-        probe: {date: 2026-11-21, http: 402, note: "not run: first the balance, then the account pause (status 40201) after the top-up; organic SERP items worked earlier (paid blocks did not, methodology S5); parser tested offline on the documented format"}
+        probe: {date: 2026-11-23, http: 200, note: "first full run on a verified account: 222 SERPs and one difficulty task, ~$0.40; organic results now come as google.com/goto redirects (domain read from the breadcrumb); 2 keywords answered 20000 with an empty task list and were charged; a 40104 appeared once mid-run and cleared"}
     caveats: ["One snapshot of a page that changes daily and is personalised", "Brand match is by name in the domain: renamed or generic domains count as 'other'"]
-    plan: "Top up the balance and run `nf run s5_serp`; then read R:serp-leaders / R:serp-listicles / R:ai-overview in the passports"
+    plan: "Done (2026-11-23). R:ai-overview fires for 73 of 74 niches (AI Overview on 97% of queries) and no longer separates niches; a sharper test would be whether the overview cites the niche's brands"
 
   - id: us_census_cbp
     name: US Census County Business Patterns + Nonemployer Statistics (bulk files)

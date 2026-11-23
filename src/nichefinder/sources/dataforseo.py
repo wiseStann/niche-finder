@@ -36,6 +36,15 @@ def _fail(code, message: str, what: str = "DataForSEO") -> RuntimeError:
     return cls(f"{what} {code}: {message}")
 
 
+def _first_task(res: dict, what: str) -> dict:
+    """The task of a one-task call. The API sometimes answers 20000 with an empty task list for one keyword (seen for
+    'co parenting app' on serp/live, charged anyway): that keyword is skipped, never retried in a loop."""
+    tasks = res.get("tasks") or []
+    if not tasks:
+        raise RuntimeError(f"{what}: the API returned no task (status {res.get('status_code')}, tasks_count {res.get('tasks_count')})")
+    return tasks[0]
+
+
 def _request(method: str, path: str, body=None) -> dict:
     """One API call. An account-level refusal (no tasks, e.g. 40104 'verify your account', 40200 payment) raises
     RuntimeError with the API's own message instead of failing later on the missing task list."""
@@ -99,9 +108,9 @@ def search_volume(ws: Workspace, keywords, location_code=None, language_code=Non
         res = json.loads(path.read_text(encoding="utf-8"))
     else:
         res = _request("POST", "/keywords_data/google_ads/search_volume/live", [task])
-        if res["tasks"][0].get("status_code") == 20000:
+        if (res.get("tasks") or [{}])[0].get("status_code") == 20000:
             path.write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
-    t = res["tasks"][0]
+    t = _first_task(res, "DataForSEO")
     if t.get("status_code") != 20000:
         raise _fail(t.get("status_code"), t.get("status_message"))
     out = {}
@@ -129,9 +138,9 @@ def ai_search_volume(ws: Workspace, keywords, location_code=2840, language_code=
         res = json.loads(path.read_text(encoding="utf-8"))
     else:
         res = _request("POST", "/ai_optimization/ai_keyword_data/keywords_search_volume/live", [task])
-        if res["tasks"][0].get("status_code") == 20000:
+        if (res.get("tasks") or [{}])[0].get("status_code") == 20000:
             path.write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
-    t = res["tasks"][0]
+    t = _first_task(res, "DataForSEO")
     if t.get("status_code") != 20000:
         raise _fail(t.get("status_code"), t.get("status_message"), "DataForSEO AI keyword data")
     out = {}
@@ -163,9 +172,9 @@ def keyword_difficulty(ws: Workspace, keywords, location_code=2840, language_cod
         res = json.loads(path.read_text(encoding="utf-8"))
     else:
         res = _request("POST", "/dataforseo_labs/google/bulk_keyword_difficulty/live", [task])
-        if res["tasks"][0].get("status_code") == 20000:
+        if (res.get("tasks") or [{}])[0].get("status_code") == 20000:
             path.write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
-    t = res["tasks"][0]
+    t = _first_task(res, "DataForSEO")
     if t.get("status_code") != 20000:
         raise _fail(t.get("status_code"), t.get("status_message"), "DataForSEO keyword difficulty")
     out = {}
@@ -189,9 +198,9 @@ def serp(ws: Workspace, keyword, location_code=2840, language_code="en", depth=1
         res = json.loads(path.read_text(encoding="utf-8"))
     else:
         res = _request("POST", "/serp/google/organic/live/advanced", [task])
-        if res["tasks"][0].get("status_code") == 20000:
+        if (res.get("tasks") or [{}])[0].get("status_code") == 20000:
             path.write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
-    t = res["tasks"][0]
+    t = _first_task(res, "DataForSEO")
     if t.get("status_code") != 20000:
         raise _fail(t.get("status_code"), t.get("status_message"), "DataForSEO serp")
     items = (t["result"] or [{}])[0].get("items") or []

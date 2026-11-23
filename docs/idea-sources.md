@@ -177,11 +177,11 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **G2** (`g2`) | store | global | evaluation | weekly | html · none · $0 | 403 (2026-09-15) | ⛔ blocked | none | s0 |
 | **Chrome Web Store** (`chrome_web_store`) | store | global | evaluation | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s5 |
 | **Atlassian Marketplace** (`atlassian_marketplace`) | store | global | evaluation | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P3 | s5 |
-| **DataForSEO (Google Ads search_volume)** (`dataforseo`) | search | global | evaluation, trend | monthly | api · DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD · $0.09/call up to 1,000 keywords | 402 (2026-11-21) | ✅ in_pipeline | P1 | s3, s4 |
+| **DataForSEO (Google Ads search_volume)** (`dataforseo`) | search | global | evaluation, trend | monthly | api · DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD · $0.09/call up to 1,000 keywords | 200 (2026-11-23) | ✅ in_pipeline | P1 | s3, s4 |
 | **Yandex Wordstat API v2** (`wordstat`) | search | ru | evaluation, trend | monthly | api · YANDEX_API_KEY · $0 | 200 (2026-09-16) | ✅ in_pipeline | P1 | s2, s3, s4 |
 | **Google Trends (trendspy) + YouTube (gprop=youtube)** (`google_trends`) | search | global | trend | weekly | scraper · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s4, s8 |
 | **Google / Yandex autocomplete** (`suggest`) | search | both | evaluation | daily | api · none · $0 | 200 (2026-09-15) | ✅ in_pipeline | P3 | s2 |
-| **DataForSEO SERP + Labs keyword difficulty** (`dataforseo_serp`) | search | global | evaluation | daily | api · DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD · about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48 | 402 (2026-11-21) | ✅ in_pipeline | P1 | s5 |
+| **DataForSEO SERP + Labs keyword difficulty** (`dataforseo_serp`) | search | global | evaluation | daily | api · DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD · about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48 | 200 (2026-11-23) | ✅ in_pipeline | P1 | s5 |
 | **Register of Russian software (Ministry of Digital Development)** (`reestr_mincifry`) | ru_registry | ru | evaluation | daily | html_ssr · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s0 |
 | **zakupki.gov.ru (Federal Laws 44-FZ / 223-FZ)** (`zakupki`) | ru_registry | ru | evaluation | daily | html · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P2 | s0 |
 | **Bitrix24 Market** (`bitrix24_market`) | ru_registry | ru | evaluation | daily | html · none · $0 | 200 (2026-09-17) | ✅ in_pipeline | P3 | s0 |
@@ -1289,7 +1289,7 @@ Feeds: `data/out/dfs_*.csv`; `data/out/metrics_quick.csv`; `data/out/switch_inte
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| api | google_ads/search_volume/live | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | $0.09/call up to 1,000 keywords | a positive balance is required | 402 2026-11-21 - s3_switch_intent: 2 of 6 batches paid and cached, then 'Payment Required'; after a top-up DataForSEO paused the account (task status 40201 'unusual activity'): support must lift it, then about $0.36 finishes the stage |
+| api | google_ads/search_volume/live | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | $0.09/call up to 1,000 keywords | a positive balance is required | 200 2026-11-23 - s3_switch_intent finished on a verified account: $0.09 per batch with 24 months of history; brands with brackets are rejected (40501) and are now cleaned; two earlier accounts were paused (40201) or unverified (40104) |
 
 Traps:
 - Google Ads does not target Russia; a hump in 'X software' in 2024 and an acceleration of 'X app' in 2025-26 distort year-over-year comparisons (see the base-year setting of the metrics stage)
@@ -1352,13 +1352,13 @@ Feeds: `data/out/serp_ownership.csv`; `data/out/serp_items.csv`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| api | serp/google/organic/live/advanced (top 10, US); dataforseo_labs/google/bulk_keyword_difficulty/live (up to 1,000 keywords per task) | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48 | a positive balance is required; the stage stops before paying when the balance is below 1.5x the estimate | 402 2026-11-21 - not run: first the balance, then the account pause (status 40201) after the top-up; organic SERP items worked earlier (paid blocks did not, methodology S5); parser tested offline on the documented format |
+| api | serp/google/organic/live/advanced (top 10, US); dataforseo_labs/google/bulk_keyword_difficulty/live (up to 1,000 keywords per task) | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | about $0.002 per SERP page; $0.01 per difficulty task + $0.0001 per keyword; the 74 shortlisted niches x 3 queries = about $0.48 | a positive balance is required; the stage stops before paying when the balance is below 1.5x the estimate | 200 2026-11-23 - first full run on a verified account: 222 SERPs and one difficulty task, ~$0.40; organic results now come as google.com/goto redirects (domain read from the breadcrumb); 2 keywords answered 20000 with an empty task list and were charged; a 40104 appeared once mid-run and cleared |
 
 Traps:
 - One snapshot of a page that changes daily and is personalised
 - Brand match is by name in the domain: renamed or generic domains count as 'other'
 
-Plan: Top up the balance and run `nf run s5_serp`; then read R:serp-leaders / R:serp-listicles / R:ai-overview in the passports
+Plan: Done (2026-11-23). R:ai-overview fires for 73 of 74 niches (AI Overview on 97% of queries) and no longer separates niches; a sharper test would be whether the overview cites the niche's brands
 
 ### ru_registry - Russian registries and open government data - Russian B2B branch
 

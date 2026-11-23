@@ -171,8 +171,9 @@ def test_switch_intent_phrases_and_summary(tmp_path, monkeypatch):
         f.write("keyword,search_volume\nvagaro,1000\nzen planner,400\n")
     s3_switch_intent.run(ws, argparse.Namespace(pools=["us"], dry=False))
     rows = {r["niche_id"]: r for r in csv.DictReader(open(ws.out("switch_intent.csv"), encoding="utf-8"))}
-    assert rows["salons"]["alt_volume"] == "310" and float(rows["salons"]["alt_ratio"]) == 0.31   # 3 x 100 + "apps like" 10
-    assert rows["salons"]["churn_volume"] == "20"
+    # the three "alternative" forms share one monthly series (close variants): counted once, plus "apps like" 10
+    assert rows["salons"]["alt_volume"] == "110" and float(rows["salons"]["alt_ratio"]) == 0.11
+    assert rows["salons"]["churn_volume"] == "10"
     assert rows["salons"]["top_alt_brand"] == "Vagaro" and rows["salons"]["alt_ratio_pct"] == "1.0"   # B2B cohort of one
 
 
@@ -333,3 +334,48 @@ def test_serp_stops_at_the_first_account_error(tmp_path, monkeypatch):
         assert "40201" in str(e)
     assert len(calls) == 1
     assert isinstance(dfs._fail(40104, "verify"), dfs.AccountError) and not isinstance(dfs._fail(40501, "bad"), dfs.AccountError)
+
+
+def test_empty_task_list_skips_one_keyword(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path)
+    monkeypatch.setattr(dfs, "_raw_request", lambda *a, **k: {"status_code": 20000, "tasks_count": 1, "tasks": []})
+    try:
+        dfs.serp(ws, "co parenting app")
+        raise AssertionError("expected RuntimeError")
+    except dfs.AccountError:
+        raise AssertionError("an empty task list is not an account error")
+    except RuntimeError as e:
+        assert "no task" in str(e)
+    assert not list(ws.cache("dfs").glob("serp_*.json"))     # nothing cached, so a later run can try again
+
+
+def test_serp_domain_from_google_redirect():
+    goto = "https://google.com/goto?url=CAES"
+    assert s5_serp.domain_of({"domain": "google.com", "url": goto, "breadcrumb": "https://www.promapranker.com › Blog"}) == "promapranker.com"
+    assert s5_serp.domain_of({"domain": "google.com", "url": goto, "breadcrumb": "20+ reactions · 6 years ago",
+                              "website_name": "Facebook · Stellarium Labs"}) == "facebook.com"
+    assert s5_serp.domain_of({"domain": "play.google.com", "url": "https://play.google.com/store"}) == "play.google.com"
+
+
+def test_serp_listicle_titles_count_as_media():
+    assert s5_serp.classify("joingerald.com", {}, [], "Best Reward Card Apps 2026 | iOS & Android") == "media"
+    assert s5_serp.classify("shopthemedetector.com", {}, [], "Shopify Promotion Popup Apps: 8 Top Picks 2026") == "media"
+    assert s5_serp.classify("example.com", {}, [], "How to plan a trip") == "other"
+    assert s5_serp.classify("vagaro.com", {}, ["vagaro"], "Best salon software") == "brand"   # a brand's own page stays a brand
+
+
+def test_switch_intent_cleans_brand_names(tmp_path):
+    ws = make_ws(tmp_path)
+    (tmp_path / "queries" / "q.yaml").write_text(yaml.safe_dump({"salons": {"en": [
+        {"q": "salon software", "i": "category", "anchor": True}, {"q": "x", "i": "brand", "b": "Fines (T-Bank)"}]}}), encoding="utf-8")
+    assert "fines t-bank alternative" in {p["phrase"] for p in s3_switch_intent.phrases(ws, "en")}
+
+
+def test_switch_intent_drops_homonym_brands():
+    rows = [{"niche_id": "recipes", "brand": "Paprika", "kind": "alternative", "volume": 15000, "last12": 0, "prev12": 0, "monthly_json": "a"},
+            {"niche_id": "recipes", "brand": "Mealime", "kind": "alternative", "volume": 50, "last12": 0, "prev12": 0, "monthly_json": "b"}]
+    bvol = {("recipes", "Paprika"): 2000, ("recipes", "Mealime"): 3000}
+    (r,) = s3_switch_intent.summarize(rows, bvol, {"recipes": "b2c"}, "us")          # not listed: only a suspect
+    assert r["alt_volume"] == 15050 and r["suspects"].startswith("Paprika (15,000 vs brand 2,000") and not r["homonyms"]
+    (r,) = s3_switch_intent.summarize(rows, bvol, {"recipes": "b2c"}, "us", {"paprika"})
+    assert r["alt_volume"] == 50 and r["top_alt_brand"] == "Mealime" and r["homonyms"] == "Paprika (15,000)"

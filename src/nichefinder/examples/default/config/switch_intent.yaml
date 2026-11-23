@@ -1,10 +1,21 @@
 # s3_switch_intent: phrases built from every brand query (intent `brand`, brand name `b`) in queries/*.yaml.
 # {b} is the brand name in lower case. `alternative` = shopping for a substitute; `churn` = leaving (cancel a subscription).
+# Close variants with identical monthly history are counted once per brand and kind.
 # Changing the list changes every niche at once; never tune it to rescue one niche (methodology section 2).
 templates:
   en:
     alternative: ["{b} alternative", "{b} alternatives", "alternatives to {b}", "apps like {b}"]
     churn: ["cancel {b}", "{b} cancel subscription"]
   ru:
-    alternative: ["аналог {b}", "аналоги {b}", "{b} аналог"]
-    churn: ["отменить подписку {b}", "{b} отменить подписку"]
+    # no word-order twins ("{b} аналог"): Keyword Planner answers them as the same group of close variants
+    alternative: ["аналог {b}", "аналоги {b}"]
+    churn: ["отменить подписку {b}"]
+
+# Brands whose name is also a common word: their "alternative" / "cancel" searches are about the word, so they are left out
+# of the niche's sums. Add a brand only after reading its phrases in data/out/switch_intent_kw.csv (`suspects` lists
+# candidates). Lower case, as in the brand queries' `b`.
+homonyms:
+  paprika: "the spice: 'paprika alternative' 15,060/month vs ~2,900 for the recipe app (2026-11-23)"
+  choco: "chocolate: 'choco alternative' exceeds the ordering app's own brand demand (2026-11-23)"
+  sling: "Sling TV: 'cancel sling' 5,800/month is the TV service, not the shift scheduler (2026-11-23)"
+  tango: "the dance and other products: 680 phrases against no measurable demand for the SOP tool (2026-11-23)"

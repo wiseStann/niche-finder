@@ -3,8 +3,9 @@
 For each shortlisted niche: the anchor and up to --per-niche English category queries (queries/*.yaml), one live Google
 SERP each (DataForSEO serp/google/organic/live/advanced, US, top 10, about $0.002 a page), plus DataForSEO Labs keyword
 difficulty (0-100) for the same queries in one bulk task. The organic top 10 is sorted into groups by config/serp_domains.yaml:
-review directories, app stores and marketplaces, user-generated content, media listicles, the niche's own brands (domain
-contains a brand name from queries/*.yaml) and other sites (smaller vendors, blogs). SERP features are counted too:
+review directories, app stores and marketplaces, user-generated content, media listicles (the listed publishers plus any
+page titled like a comparison: "best ... apps", "8 top picks"), the niche's own brands (domain contains a brand name from
+queries/*.yaml) and other sites (smaller vendors, blogs). SERP features are counted too:
 an AI Overview answers the query on Google itself (platform risk evidence), a local pack means local intent.
 
 Flags (evidence, never a gate or a score input):
@@ -14,7 +15,9 @@ Flags (evidence, never a gate or a score input):
 Outputs: data/out/serp_ownership.csv (niche level), data/out/serp_items.csv (every organic result).
 Cost: printed before any call (--dry stops there); a run stops before paying when the balance is below the estimate.
 Every SERP and difficulty task is cached in data/cache/dfs/, so re-runs are free.
-Caveat: one snapshot of a personalised, daily-changing page; the brand match is by name and misses renamed domains.
+Caveats: one snapshot of a personalised, daily-changing page; the brand match is by name and misses renamed domains. Since
+2026-11 the vendor returns many organic results as google.com redirects (the real domain is read from the breadcrumb), and
+some US pages carry European results (hl=nl, .de sites).
 """
 from __future__ import annotations
 
@@ -62,18 +65,41 @@ def brand_slugs(ws: Workspace) -> dict[str, list[str]]:
     return out
 
 
+PLATFORMS = {"facebook": "facebook.com", "reddit": "reddit.com", "youtube": "youtube.com", "quora": "quora.com",
+             "medium": "medium.com", "linkedin": "linkedin.com", "instagram": "instagram.com", "tiktok": "tiktok.com",
+             "x": "x.com", "twitter": "twitter.com", "pinterest": "pinterest.com", "vk": "vk.com"}
+
+
 def domain_of(item: dict) -> str:
+    """The result's own domain. Since 2026-11 many organic items carry a google.com/goto redirect as `url` and google.com as
+    `domain`; the real address is then in `breadcrumb` ("https://promapranker.com › Blog"), or for social sites only in
+    `website_name` ("Facebook · Stellarium Labs")."""
     d = (item.get("domain") or urlparse(item.get("url") or "").netloc or "").lower()
+    d = d[4:] if d.startswith("www.") else d
+    if d == "google.com":
+        m = re.match(r"https?://([^\s/›]+)", item.get("breadcrumb") or "")
+        if m:
+            d = m.group(1).lower()
+        else:
+            name = (item.get("website_name") or "").split("·")[0].strip().lower()
+            d = PLATFORMS.get(name, d)
     return d[4:] if d.startswith("www.") else d
 
 
-def classify(domain: str, groups: dict[str, list[str]], brands: list[str]) -> str:
+# A comparison page of any site counts as a media listicle: "Best Reward Card Apps 2026", "8 Top Picks", "Top 10 ... software".
+LISTICLE = re.compile(r"\b(best|top)\b.{0,60}\b(apps?|software|tools?|platforms?|services|picks|options|alternatives)\b"
+                      r"|\b\d{1,2}\s+(best|top)\b|\btop\s+\d{1,2}\b", re.I)
+
+
+def classify(domain: str, groups: dict[str, list[str]], brands: list[str], title: str = "") -> str:
     for g in GROUPS:
         for x in groups.get(g) or []:
             if domain == x or domain.endswith("." + x):
                 return g
     label = re.sub(r"[^a-z0-9]", "", ".".join(domain.split(".")[:-1]) if "." in domain else domain)
-    return "brand" if any(b in label for b in brands) else "other"
+    if any(b in label for b in brands):
+        return "brand"
+    return "media" if LISTICLE.search(title or "") else "other"
 
 
 def niche_metrics(nid: str, serps: dict[str, list[dict]], kd: dict[str, float], groups: dict, brands: list[str]):
@@ -88,7 +114,7 @@ def niche_metrics(nid: str, serps: dict[str, list[dict]], kd: dict[str, float], 
         t3 = 0
         for it in org:
             d = domain_of(it)
-            g = classify(d, groups, brands)
+            g = classify(d, groups, brands, it.get("title") or "")
             counts[g] = counts.get(g, 0) + 1
             domains.add(d)
             n_org += 1

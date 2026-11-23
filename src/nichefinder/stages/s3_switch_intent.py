@@ -3,7 +3,8 @@
 For every brand query in queries/*.yaml (intent `brand`, brand name `b`) the stage builds phrases from config/switch_intent.yaml:
   alternative - "<brand> alternative(s)", "apps like <brand>", "analog <brand>" (in Russian): people shopping for a substitute;
   churn       - "cancel <brand>", "cancel subscription <brand>" (in Russian): people leaving, a B2C churn signal.
-Volumes come from DataForSEO Google Ads search volume with 24 months of history (one call per pool and batch of up to 1000
+Phrases that Keyword Planner answers as one group of close variants (identical monthly history for the same brand and
+kind, e.g. singular and plural) are counted once. Volumes come from DataForSEO Google Ads search volume with 24 months of history (one call per pool and batch of up to 1000
 phrases, about $0.09), pools us (United States, English) and ru (Russian-language worldwide), as in s3_dataforseo.
 Per niche and pool: brand demand (from dfs_<pool>.csv), alternative and churn volumes, their ratio to brand demand
 (switching intensity that does not grow with brand size), the last-12 vs prior-12 change of alternative searches, the brand
@@ -12,7 +13,9 @@ people most want to leave, and the percentile of the alternative ratio within th
 Outputs: data/out/switch_intent_kw.csv (phrase level), data/out/switch_intent.csv (niche level).
 Evidence only: shown in passports beside the manual lock-in and the S10 switching shares, never in the score.
 Cost: printed before any call (--dry stops there); batches are cached by content, so re-runs are free.
-Caveats: a brand that is a common word ("Opal", "Speak") inflates its phrases; Keyword Planner rounds small volumes and
+Homonyms: a brand that is also a common word ("Paprika", "Choco", "Sling" TV) draws switching phrases about the word. Brands
+listed under `homonyms` in config/switch_intent.yaml are left out of the niche's sums; a brand whose phrases exceed half of
+its own brand demand (and 300 a month) is only marked in `suspects` for a human to decide. Caveats: a common-word brand below that line still inflates its phrases; Keyword Planner rounds small volumes and
 returns nothing below ~10/month, so a missing phrase is "too small to measure", not zero demand.
 """
 from __future__ import annotations
@@ -21,6 +24,7 @@ import argparse
 import csv
 import datetime as dt
 import json
+import re
 from collections import defaultdict
 
 from nichefinder import niches
@@ -35,8 +39,8 @@ POOLS = {"us": {"lang": "en", "location_code": 2840, "language_code": "en"},
 DEFAULT_TEMPLATES = {
     "en": {"alternative": ["{b} alternative", "{b} alternatives", "alternatives to {b}", "apps like {b}"],
            "churn": ["cancel {b}", "{b} cancel subscription"]},
-    "ru": {"alternative": ["аналог {b}", "аналоги {b}", "{b} аналог"],
-           "churn": ["отменить подписку {b}", "{b} отменить подписку"]},
+    "ru": {"alternative": ["аналог {b}", "аналоги {b}"],
+           "churn": ["отменить подписку {b}"]},
 }
 B2B = {"b2b-smb", "b2b", "b2b-mid"}
 
@@ -57,7 +61,9 @@ def phrases(ws: Workspace, lang: str) -> list[dict]:
     for r in niches.keyword_rows(ws, lang):
         if r["intent"] != "brand" or not r["brand"]:
             continue
-        b = str(r["brand"]).strip().lower()
+        b = " ".join(re.sub(r"[^\w\s'&.+-]", " ", str(r["brand"]).lower()).split())   # the API rejects (), quotes and the like
+        if not b:
+            continue
         for kind, forms in tpl.items():
             for f in forms:
                 ph = " ".join(f.format(b=b).lower().split())
@@ -102,17 +108,47 @@ def percentiles(values: dict[str, float]) -> dict[str, float]:
     return {k: round(sum(1 for x in xs if x <= v) / len(xs), 2) for k, v in values.items()}
 
 
-def summarize(kw_rows: list[dict], bvol: dict, side: dict[str, str], pool: str) -> list[dict]:
-    per: dict[str, dict] = {}
+HOMONYM_RATIO = 0.5    # switching phrases above half of the brand's own demand mean another word ("paprika alternative")
+HOMONYM_MIN = 300      # ... and above this monthly volume, so small brands with a few searches are not dropped by noise
+
+
+def summarize(kw_rows: list[dict], bvol: dict, side: dict[str, str], pool: str, exclude: set[str] | None = None) -> list[dict]:
+    # per (niche, brand): alternative / churn volumes and the alternative series sums, close variants counted once.
+    # Keyword Planner returns one volume for a group of close variants ("x alternative" / "x alternatives": identical
+    # history in 265 of 273 brands on 2026-11-23), so a phrase whose monthly series repeats one already counted for the
+    # same niche, brand and kind is the same searches.
+    per_brand: dict[tuple[str, str], dict] = {}
+    seen: set = set()
     for r in kw_rows:
-        d = per.setdefault(r["niche_id"], {"alt": 0, "churn": 0, "alt12": 0, "altprev": 0, "by_brand": defaultdict(int)})
+        if int(r["volume"] or 0):
+            key = (r["niche_id"], r["brand"], r["kind"], r["volume"], r.get("monthly_json", ""))
+            if key in seen:
+                continue
+            seen.add(key)
+        b = per_brand.setdefault((r["niche_id"], r["brand"]), {"alt": 0, "churn": 0, "alt12": 0, "altprev": 0})
         v = int(r["volume"] or 0)
-        key = "alt" if r["kind"] == "alternative" else r["kind"]
-        d[key] = d.get(key, 0) + v
+        b["alt" if r["kind"] == "alternative" else "churn"] += v
         if r["kind"] == "alternative":
-            d["alt12"] += int(r["last12"] or 0)
-            d["altprev"] += int(r["prev12"] or 0)
-            d["by_brand"][r["brand"]] += v
+            b["alt12"] += int(r["last12"] or 0)
+            b["altprev"] += int(r["prev12"] or 0)
+    per: dict[str, dict] = {}
+    for (nid, brand), b in per_brand.items():
+        d = per.setdefault(nid, {"alt": 0, "churn": 0, "alt12": 0, "altprev": 0, "by_brand": defaultdict(int),
+                                 "homonyms": [], "suspects": []})
+        own = bvol.get((nid, brand), 0)
+        tot = b["alt"] + b["churn"]
+        # A brand that is also a common word ("Paprika", "Choco", "Sling" TV) draws "alternative" / "cancel" searches about
+        # the word. Brands listed under `homonyms` in config/switch_intent.yaml are left out of the niche's sums. The ratio
+        # rule only marks suspects for a human: genuine switching is a few percent of brand demand, but a narrow brand
+        # query ("mindbody app") makes a real brand look high and a homonymous brand query ("sling") hides a homonym.
+        if brand.lower() in (exclude or set()):
+            d["homonyms"].append(f"{brand} ({tot:,})")
+            continue
+        if tot > max(HOMONYM_RATIO * own, HOMONYM_MIN):
+            d["suspects"].append(f"{brand} ({tot:,} vs brand {own:,})")
+        for k2 in ("alt", "churn", "alt12", "altprev"):
+            d[k2] += b[k2]
+        d["by_brand"][brand] += b["alt"]
     rows = []
     for nid, d in per.items():
         bv = sum(v for (n, _), v in bvol.items() if n == nid)
@@ -121,7 +157,8 @@ def summarize(kw_rows: list[dict], bvol: dict, side: dict[str, str], pool: str) 
                      "alt_volume": d["alt"], "churn_volume": d["churn"],
                      "alt_ratio": round(d["alt"] / bv, 4) if bv else "", "churn_ratio": round(d["churn"] / bv, 4) if bv else "",
                      "alt_yoy": round(d["alt12"] / d["altprev"] - 1, 2) if d["altprev"] >= 120 else "",
-                     "top_alt_brand": top[0] if top[1] else "", "top_alt_share": round(top[1] / d["alt"], 2) if d["alt"] else ""})
+                     "top_alt_brand": top[0] if top[1] else "", "top_alt_share": round(top[1] / d["alt"], 2) if d["alt"] else "",
+                     "homonyms": "; ".join(d["homonyms"]), "suspects": "; ".join(d["suspects"])})
     for seg in (True, False):
         vals = {r["niche_id"]: r["alt_ratio"] for r in rows if r["alt_ratio"] != "" and (r["side"] in B2B) == seg}
         pct = percentiles(vals)
@@ -159,9 +196,10 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         cfg = POOLS[pool]
         data = {}
         for b in bs:
+            live = not dfs.search_volume_cached(ws, b, cfg["location_code"], cfg["language_code"], date_from(ws))
             d, cost = dfs.search_volume(ws, b, cfg["location_code"], cfg["language_code"], date_from(ws))
             data.update(d)
-            spent += cost or 0
+            spent += (cost or 0) if live else 0      # a cached batch keeps the cost it had when it was paid
         rows = []
         for x in ph:
             it = data.get(x["phrase"]) or {}
@@ -170,13 +208,14 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             rows.append({**x, "pool": pool, "volume": it.get("search_volume") or 0, "last12": l12, "prev12": p12,
                          "monthly_json": json.dumps(sorted(monthly))})
         kw_out += rows
-        niche_out += summarize(rows, brand_volumes(ws, pool, cfg["lang"]), side, pool)
+        excl = {str(b).lower() for b in ((ws.load_config("switch_intent.yaml", {}) or {}).get("homonyms") or {})}
+        niche_out += summarize(rows, brand_volumes(ws, pool, cfg["lang"]), side, pool, excl)
     with open(ws.out("switch_intent_kw.csv"), "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=["pool", "niche_id", "brand", "kind", "phrase", "volume", "last12", "prev12", "monthly_json"])
         w.writeheader()
         w.writerows(kw_out)
     cols = ["niche_id", "pool", "side", "brand_volume", "alt_volume", "churn_volume", "alt_ratio", "churn_ratio",
-            "alt_ratio_pct", "alt_yoy", "top_alt_brand", "top_alt_share"]
+            "alt_ratio_pct", "alt_yoy", "top_alt_brand", "top_alt_share", "homonyms", "suspects"]
     with open(ws.out("switch_intent.csv"), "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=cols)
         w.writeheader()
