@@ -9,7 +9,7 @@ offsearch.csv (S8, with Hacker News), reddit_voice.csv, reddit_brands.csv,
 reddit_voice_llm.csv, reddit_voice_themes.json, ru_reviews_verdict.csv, ru_reviews_llm.csv, ru_reviews_themes.json (S10),
 ai_substitute.csv (s5_ai_substitute); the evidence-only sources rendered by nichefinder.evidence (who_counts.csv,
 switch_intent.csv, serp_ownership.csv, advertisers.csv, ecosystems_metrics.csv, oss_substitutes.csv, wayback.csv, freelance.csv,
-yt_comments_voice.csv, tg_voice.csv, vk_audience.csv, the TrustMRR columns of deals.csv);
+yt_comments_voice.csv, tg_voice.csv, vk_audience.csv, direct_niche.csv, the TrustMRR columns of deals.csv);
 config/overrides.yaml (notes, lens, manual supply estimates).
 """
 from __future__ import annotations
@@ -299,6 +299,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         L += ev.yt_lines(nid)
         L += ev.tg_lines(nid)
         L += ev.vk_lines(nid)
+        L += ev.direct_lines(nid)
         # feasibility and lens
         fe = m.get("feas") or {}
         L += ["## Feasibility for a small team", "",

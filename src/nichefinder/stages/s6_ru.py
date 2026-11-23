@@ -19,7 +19,8 @@ Per-niche inputs in config/overrides_ru.yaml (all optional):
   trap_anchor: phrase      the anchor is informational or foreign (see the nested phrases); it is excluded from demand
   trap_brands: [phrase]    brand phrases polluted by another meaning; excluded
   dynamics_phrases: [..]   corrected phrases for the dynamics stage; the first one is used for growth instead of the anchor
-Inputs (data/out/): wordstat_ru.csv, wordstat_dynamics.csv (optional), appstore_metrics.csv, metrics_quick.csv.
+Inputs (data/out/): wordstat_ru.csv, wordstat_dynamics.csv (optional), appstore_metrics.csv, metrics_quick.csv,
+direct_niche.csv (optional, s8_direct_forecast: a Yandex CPC column in the report, not scored).
 """
 from __future__ import annotations
 
@@ -74,6 +75,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     dyn = {(r["niche_id"], r["phrase"]): r for r in _read(ws, "wordstat_dynamics.csv")}
     aps = {r["niche_id"]: r for r in _read(ws, "appstore_metrics.csv") if r["store"] == "ru"}
     gq = {r["id"]: r for r in _read(ws, "metrics_quick.csv")}
+    ydir = {r["niche_id"]: r for r in _read(ws, "direct_niche.csv") if r.get("status") == "ok"}   # s8_direct_forecast, shown only
 
     rows = []
     for nid, rs in wsd.items():
@@ -156,15 +158,19 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
          "Demand RU = max(anchor, largest category phrase) + sum of brand queries (Wordstat, broad match, impressions/month). "
          "Growth: Wordstat dynamics over 36 months for the anchor (or a corrected phrase). Concentration: App Store RU estimates "
          f"({n_reviewed} niches with hand-cleaned results) or the top brand's share (at least 3 brands). "
-         "Score RU = demand 40 + growth 20 + fragmentation 40; percentiles inside the RU cohort. Control niches are at the bottom.", "",
-         "| # | Niche | Type | Verdict | Score | Demand RU | Anchor | Sum brands | Top brand | Dynamics | App Store RU: >=1k / top 1 | Gates | Note |",
-         "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+         "Score RU = demand 40 + growth 20 + fragmentation 40; percentiles inside the RU cohort. Control niches are at the bottom. "
+         "Yandex CPC: average click price in the premium / guarantee block from the Direct budget forecast (s8_direct_forecast; "
+         "shown, not scored).", "",
+         "| # | Niche | Type | Verdict | Score | Demand RU | Anchor | Sum brands | Top brand | Dynamics | App Store RU: >=1k / top 1 | Yandex CPC, RUB | Gates | Note |",
+         "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for k, r in enumerate(rows, 1):
         asr = f"{int(r['as_ru_players_1k'])} / {r['as_ru_top1_share']:.0%} {r['as_ru_top1'][:20]}" if r["as_ru_top1_share"] is not None else "—"
         br = f"{r['ya_top1_share']:.0%} {r['ya_top1_brand'][:16]}" if r["ya_top1_share"] is not None else "—"
         dynv = f"{r['dyn_verdict']} ({r['dyn_yoy']:+.0%})" if r["dyn_yoy"] is not None else r["dyn_verdict"]
+        yd = ydir.get(r["niche_id"])
+        ycpc = f"{yd['cpc_premium'] or '—'} / {yd['cpc_guarantee'] or '—'}" if yd else "—"
         L.append(f"| {k} | {r['niche_id']}{' (control)' if r['control'] else ''} | {r['side']} | {V[r['verdict']]} | {r['score_ru']} | {num(r['demand_ru'])} | "
-                 f"{num(r['ya_anchor'])} «{r['anchor_phrase'][:28]}» | {num(r['ya_brand_sum'])} ({r['ya_n_brands']}) | {br} | {dynv} | {asr} | {r['gates']} | {r['note']} |")
+                 f"{num(r['ya_anchor'])} «{r['anchor_phrase'][:28]}» | {num(r['ya_brand_sum'])} ({r['ya_n_brands']}) | {br} | {dynv} | {asr} | {ycpc} | {r['gates']} | {r['note']} |")
     ws.report("S6-ru.md").write_text("\n".join(L) + "\n", encoding="utf-8")
     for r in rows[:45]:
         print(f"{V[r['verdict']]} {r['score_ru']:5} {r['niche_id']:34} dem={r['demand_ru']:>7} anc={r['ya_anchor']:>6} br={r['ya_brand_sum']:>6}({r['ya_n_brands']}) top1={r['ya_top1_share']} dyn={r['dyn_verdict']}({r['dyn_yoy']}) as={r['as_ru_top1_share']}/{r['as_ru_players_1k']} {r['gates']}")

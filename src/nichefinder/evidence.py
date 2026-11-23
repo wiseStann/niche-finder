@@ -5,7 +5,7 @@ One place reads their outputs, so s6_passports and s7_html stay small and show t
   serp_ownership.csv (s5_serp), advertisers.csv (s5_advertisers), ecosystems_metrics.csv (s5_ecosystems),
   oss_substitutes.csv (s5_oss),
   wayback.csv (s9_wayback), freelance.csv (s8_freelance), yt_comments_voice.csv (s10_yt_comments_report),
-  tg_voice.csv (s10_tg_report), vk_audience.csv (s8_vk_audience),
+  tg_voice.csv (s10_tg_report), vk_audience.csv (s8_vk_audience), direct_niche.csv (s8_direct_forecast),
   deals.csv TrustMRR columns (s0_trustmrr via s5_deals).
 Every file is optional: a missing file means its block is skipped.
 """
@@ -57,6 +57,8 @@ class Evidence:
         self.yt = _rows(o("yt_comments_voice.csv"))
         self.tg = _rows(o("tg_voice.csv"))
         self.vk = _rows(o("vk_audience.csv"))
+        self.direct = _rows(o("direct_niche.csv"))
+        self.quick = _rows(o("metrics_quick.csv"), "id")
         self.deals = _rows(o("deals.csv"))
         self.tmrr = {k: [r for r in v if r.get("source") == "trustmrr"] for k, v in _group(o("deals_matches.csv")).items()}
 
@@ -210,6 +212,21 @@ class Evidence:
                 + (f" ({_n(y['niche_share'], '{:.0%}')} of the labelled comments)" if y.get("niche_share") else "")
                 + (f"; {shares}" if shares else "") + (f". Top theme: {y['top_theme']}" if y.get("top_theme") else "")
                 + (f". Products named: {prods}" if prods else "") + ". Details: `S10-yt-comments.md`.", ""]
+
+    # ---- Yandex Direct click prices -------------------------------------------------
+    def direct_lines(self, nid: str) -> list[str]:
+        d = self.direct.get(nid)
+        if not d or d.get("status") != "ok":
+            return []
+        g = _f((self.quick.get(nid) or {}).get("gru_cpc_med"))
+        return ["## Yandex Direct forecast (S8, evidence)", "",
+                f"A month of searches for the niche's {d['phrases']} Russian category and problem queries (Russia, broad match): "
+                f"{_n(d['shows'])} impressions; average click price **{_n(d['cpc_premium'], '{:,.0f}')} {d['currency']} in the premium block** "
+                f"({_n(d['premium_clicks'])} clicks, budget {_n(d['budget_premium'])} {d['currency']}) and {_n(d['cpc_guarantee'], '{:,.0f}')} "
+                f"{d['currency']} in the guarantee block ({_n(d['clicks'])} clicks)"
+                + (f"; the anchor \"{d['anchor_phrase']}\" costs {_n(d['anchor_cpc_premium'], '{:,.0f}')} {d['currency']} in premium" if d.get("anchor_phrase") else "")
+                + (f". Google Keyword Planner for the Russian pool (S3): median CPC ${g:.2f}" if g is not None else "")
+                + ". Not in the score.", ""]
 
     # ---- audience in VK communities ------------------------------------------------
     def vk_lines(self, nid: str) -> list[str]:

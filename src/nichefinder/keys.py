@@ -39,6 +39,12 @@ GROUPS: dict[str, dict] = {
                 "the stage reads a public snapshot of ~1,000 top earners. Free with an account.",
         "where": "https://trustmrr.com (account settings, API key)",
     },
+    "yandex_direct": {
+        "keys": ("YANDEX_DIRECT_TOKEN",),
+        "what": "Yandex Direct API Live 4 budget forecast: click prices for each niche's Russian queries (s8_direct_forecast, "
+                "evidence). Free; needs an OAuth app with direct:api and an approved access request in Direct Pro (Tools > API).",
+        "where": "https://oauth.yandex.ru (app), then https://oauth.yandex.ru/authorize?response_type=token&client_id=<ClientID>",
+    },
     "vk": {
         "keys": ("VK_SERVICE_TOKEN", "VK_USER_TOKEN"),
         "what": "VK API: community sizes around each niche's topic (s8_vk_audience, evidence). The service key of a VK mini app "

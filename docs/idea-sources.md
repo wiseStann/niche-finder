@@ -92,7 +92,7 @@ The generated registry follows.
 
 Generated from [`idea-sources.yaml`](idea-sources.yaml) by `scripts/render_idea_sources.py`. Edit only the YAML.
 
-**87 sources, 131 access methods:** ✅ in_pipeline - 45, 🛠 planned - 13, ✋ manual - 7, ⛔ blocked - 17, 💰 paid - 5.  
+**87 sources, 131 access methods:** ✅ in_pipeline - 46, 🛠 planned - 12, ✋ manual - 7, ⛔ blocked - 17, 💰 paid - 5.  
 Priorities: P1 - 11, P2 - 31, P3 - 30, none - 15.
 
 Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implemented) · ✋ by hand / browser only · ⛔ closed from the probing network · 💰 paid only. **Probe:** the HTTP code of a keyless curl probe (date). **Role:** discovery = entities for the universe, evaluation = a metric for a niche, voice = buyer voice, trend = dynamics over time.
@@ -101,7 +101,6 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 
 | P | Source | Group | Stage | Stage groups | What it would give |
 |---|---|---|---|---|---|
-| P2 | Yandex Direct budget forecast (API v4 Live) | ads | not implemented | s3, s6 | Add a YANDEX_DIRECT_TOKEN key and a stage that fills a Russian CPC column |
 | P2 | Wellfound (AngelList Talent) | hiring | not implemented | s8, s0 | Walk /role/l/<role>/<location> for 10 roles x 5 locations monthly -> JSON from the HTML -> a company table with high_concept; match to niches. Low priority: HN hiring gives the same more cheaply |
 | P2 | Launching Next | launch | not implemented | s0 | Collect the RSS daily into a cache (accumulate), merge into the universe once a month; use as a third 'launch density' counter (PH + BetaList + LN) |
 | P2 | Quiet Light Brokerage | m_and_a | not implemented | s5, s6 | The same fetcher as Empire Flippers: page -> CSV; multiples by type feed the ceiling stage |
@@ -196,7 +195,7 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **Similarweb** (`similarweb`) | web | global | evaluation | monthly | api · paid API key (a Similarweb MCP connector is also offered in Claude Code, unauthorised here) · subscription | 401 (2026-11-21) | 💰 paid | P3 | s5 |
 | **Meta Ad Library** (`meta_ad_library`) | ads | global | evaluation | daily | html · none · $0 | 403 (2026-11-21) | ✋ manual | P2 | s5 |
 | **Google Ads Transparency Center (through DataForSEO)** (`google_ads_transparency`) | ads | global | evaluation | daily | html · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P1 | s5 |
-| **Yandex Direct budget forecast (API v4 Live)** (`yandex_direct_forecast`) | ads | ru | evaluation | monthly | api · OAuth token of a Direct account and an approved application · $0 | 200 (2026-11-21) | 🛠 planned | P2 | s3, s6 |
+| **Yandex Direct budget forecast (API v4 Live)** (`yandex_direct_forecast`) | ads | ru | evaluation | monthly | api · OAuth token (direct:api) of an app registered at oauth.yandex.ru ('for API access') and an approved access request in Direct Pro (Tools > API > My requests; up to 7 working days; the simplified Direct interface has no API settings, and switching to Direct Pro cannot be undone) · $0 | 200 (2026-11-23) | ✅ in_pipeline | P2 | s8 |
 | **GitHub repository search** (`github_search`) | oss | global | evaluation | daily | api · optional GITHUB_TOKEN (Bearer) · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s5 |
 | **Federal Register (API)** (`federal_register`) | regulation | global | discovery | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s0 |
 | **regulation.gov.ru (federal portal of draft regulations, open-data API)** (`regulation_gov_ru`) | regulation | ru | discovery | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s0 |
@@ -1664,21 +1663,24 @@ Traps:
 
 Plan: Done (2026-11-23): s5_advertisers on the niches' own brand domains (157 domains, 59 niches; 15 niches have no brand domain): A:ads-pay 20, A:no-ads 2 (screen-time focus apps, couples apps). A first pass on the top App Store sites flagged 40 of 74 niches because giants (eBay, AliExpress, Shop, Zoom) were among them - hence the brand-domain rule
 
-#### 🛠 Yandex Direct budget forecast (API v4 Live) (`yandex_direct_forecast`) - P2
+#### ✅ Yandex Direct budget forecast (API v4 Live) (`yandex_direct_forecast`) - P2
 
-https://yandex.ru/dev/direct/ · geo ru · role evaluation · freshness monthly · stage groups s3, s6 · stage not implemented
+https://yandex.ru/dev/direct/ · geo ru · role evaluation · freshness monthly · stage groups s8 · stage `s8_direct_forecast`
 
 Signals:
-- Yandex CPC and clicks per Wordstat phrase - the price of a click on the search engine Russians use (the Russian pool's CPC now comes from Google Keyword Planner)
+- Yandex CPC and clicks per Wordstat phrase - the price of a click on the search engine Russians use (the Russian pool's CPC in S3 comes from Google Keyword Planner)
+
+Feeds: `data/out/direct_forecast.csv, direct_niche.csv; a column in reports/S6-ru.md`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
-| api | https://api.direct.yandex.ru/live/v4/json/ (CreateNewForecast / GetForecast) | OAuth token of a Direct account and an approved application | $0 | forecast units per day | 200 2026-11-21 - error 512 'method must be POST': the endpoint answers; no token to go further |
+| api | https://api.direct.yandex.ru/live/v4/json/ (CreateNewForecast -> GetForecastList -> GetForecast -> DeleteForecastReport; JSON envelope with the token in the body) | OAuth token (direct:api) of an app registered at oauth.yandex.ru ('for API access') and an approved access request in Direct Pro (Tools > API > My requests; up to 7 working days; the simplified Direct interface has no API settings, and switching to Direct Pro cannot be undone) | $0 | up to 100 phrases per report, at most 5 stored reports (error 31), kept five hours; forecasts spend no API points; the Live 4 sandbox host does not resolve | 200 2026-11-23 - error 58 'No access' until the app's request is approved; the account's programmatic access is open with 32,000 points |
 
 Traps:
-- Needs a Yandex Direct account
+- Overlapping phrases inside one report may have their forecast attributed to either of them: a niche's phrases share one report
+- Evidence only: replacing the Google CPC in a score is a separate decision
 
-Plan: Add a YANDEX_DIRECT_TOKEN key and a stage that fills a Russian CPC column
+Plan: Built (2026-11-23): s8_direct_forecast, tested on the documented format; the first real run waits for the access approval
 
 ### oss - Open source - free substitutes that cap willingness to pay
 

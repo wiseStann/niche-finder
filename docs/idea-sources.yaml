@@ -1831,23 +1831,24 @@ sources:
     geo: ru
     url: https://yandex.ru/dev/direct/
     role: [evaluation]
-    signals: ["Yandex CPC and clicks per Wordstat phrase - the price of a click on the search engine Russians use (the Russian pool's CPC now comes from Google Keyword Planner)"]
-    stages: [s3, s6]
-    feeds: []
+    signals: ["Yandex CPC and clicks per Wordstat phrase - the price of a click on the search engine Russians use (the Russian pool's CPC in S3 comes from Google Keyword Planner)"]
+    stages: [s8]
+    feeds: ["data/out/direct_forecast.csv, direct_niche.csv; a column in reports/S6-ru.md"]
     freshness: monthly
-    status: planned
-    adapter: null
+    status: in_pipeline
+    adapter: s8_direct_forecast
     priority: P2
     access:
       - method: api
-        endpoint: "https://api.direct.yandex.ru/live/v4/json/ (CreateNewForecast / GetForecast)"
-        auth: "OAuth token of a Direct account and an approved application"
+        endpoint: "https://api.direct.yandex.ru/live/v4/json/ (CreateNewForecast -> GetForecastList -> GetForecast -> DeleteForecastReport; JSON envelope with the token in the body)"
+        auth: "OAuth token (direct:api) of an app registered at oauth.yandex.ru ('for API access') and an approved access request in Direct Pro (Tools > API > My requests; up to 7 working days; the simplified Direct interface has no API settings, and switching to Direct Pro cannot be undone)"
         cost: $0
-        limits: "forecast units per day"
-        probe: {date: 2026-11-21, http: 200, note: "error 512 'method must be POST': the endpoint answers; no token to go further"}
-    caveats: ["Needs a Yandex Direct account"]
-    plan: "Add a YANDEX_DIRECT_TOKEN key and a stage that fills a Russian CPC column"
-
+        limits: "up to 100 phrases per report, at most 5 stored reports (error 31), kept five hours; forecasts spend no API points; the Live 4 sandbox host does not resolve"
+        probe: {date: 2026-11-23, http: 200, note: "error 58 'No access' until the app's request is approved; the account's programmatic access is open with 32,000 points"}
+    caveats:
+      - "Overlapping phrases inside one report may have their forecast attributed to either of them: a niche's phrases share one report"
+      - "Evidence only: replacing the Google CPC in a score is a separate decision"
+    plan: "Built (2026-11-23): s8_direct_forecast, tested on the documented format; the first real run waits for the access approval"
   - id: vk_api
     name: VK API (groups and walls)
     group: community

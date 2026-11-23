@@ -1,0 +1,10 @@
+# Yandex Direct budget forecast (s8_direct_forecast): click prices for each niche's Russian queries, as evidence only
+# (never the score, a gate or a verdict; passports and reports/S6-ru.md show it). See sources/direct.py for the token
+# and the access request (Direct Pro > Tools > API > My requests).
+
+intents: [category, problem]   # query intents to price; brand clicks price a competitor, not the niche
+geo: [225]                     # Direct region ids: 225 = Russia
+currency: RUB
+max_words: 7                   # Direct rejects longer phrases
+poll_s: 10                     # seconds between report status checks (a report takes up to a minute)
+max_wait_s: 600                # give up on a report after this long
