@@ -625,7 +625,7 @@ Traps:
 - B2B buyers rarely comment on YouTube: B2B niches are often quiet
 - LLM labels and themes are not hand-validated
 
-Plan: 7 niches measured and labelled (2026-11-21); fetch the remaining 40 over the next days (about 25 a day at --budget 3000), then fix the thresholds
+Plan: All 47 niches fetched by 2026-11-23 (29,368 comments, 184 videos, 5,343 units on the second day; 4 niches without relevant videos). Draft verdicts: gap 10, mixed 10, quiet 9, pain 7, how-to 4, content 2, seeking 1. Calibration warning: 3 of 5 control niches came out gap (task manager, website builder, transcription), so the gap verdict does not separate crowded markets; fix the thresholds before trusting it
 
 ### crowdfunding - Crowdfunding - a pre-order as demand before the product (B2C hardware / consumer)
 

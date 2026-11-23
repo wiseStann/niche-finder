@@ -2013,7 +2013,7 @@ sources:
         limits: "10,000 units/day shared with info_youtube: search 100 units, videos 1 per 50 ids, commentThreads 1 per page of 100; a separate 'Search Queries per day' cap (about 100 calls) stops new searches while cached searches and comment pages still work; comments turned off -> 403 commentsDisabled"
         probe: {date: 2026-11-21, http: 200, note: "7 searches: 7 niches, 31 videos, 4,892 Russian comments for 768 units; the 8th search got 429 'Search Queries per day' (the day's searches were mostly spent by info_youtube)"}
     caveats: ["Commenters are viewers of popular videos, not a buyer sample: a review draws complaints, a tutorial draws questions, so the verdict compares niches with each other", "Comments under how-to videos mostly carry the voice of the task (training, cooking, budgeting), not of the products: a signal for info products more than for a software gap", "B2B buyers rarely comment on YouTube: B2B niches are often quiet", "LLM labels and themes are not hand-validated"]
-    plan: "7 niches measured and labelled (2026-11-21); fetch the remaining 40 over the next days (about 25 a day at --budget 3000), then fix the thresholds"
+    plan: "All 47 niches fetched by 2026-11-23 (29,368 comments, 184 videos, 5,343 units on the second day; 4 niches without relevant videos). Draft verdicts: gap 10, mixed 10, quiet 9, pain 7, how-to 4, content 2, seeking 1. Calibration warning: 3 of 5 control niches came out gap (task manager, website builder, transcription), so the gap verdict does not separate crowded markets; fix the thresholds before trusting it"
 
   - id: trustmrr
     name: TrustMRR
