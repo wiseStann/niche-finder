@@ -31,8 +31,15 @@ class AccountError(RuntimeError):
     further call would fail the same way, so a stage stops instead of trying the next keyword."""
 
 
+def is_account_error(code) -> bool:
+    """401xx (authorisation, verification) and 402xx (payment, pause) refuse the account itself; 40102 is the one 401xx
+    code about a task ('No Search Results')."""
+    c = str(code or "")
+    return c.startswith("402") or (c.startswith("401") and c != "40102")
+
+
 def _fail(code, message: str, what: str = "DataForSEO") -> RuntimeError:
-    cls = AccountError if str(code).startswith(("401", "402")) else RuntimeError
+    cls = AccountError if is_account_error(code) else RuntimeError
     return cls(f"{what} {code}: {message}")
 
 

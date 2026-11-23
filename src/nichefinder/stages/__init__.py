@@ -100,6 +100,7 @@ STAGES: list[Stage] = [
     Stage("s9_snapshot", "s9", in_all=False),
     Stage("s9_gplay_refresh", "s9", in_all=False),
     Stage("s9_wayback", "s9"),         # competitor site age and liveness (Wayback Machine)
+    Stage("s5_advertisers", "s5"),     # evidence: competitors' ads (Ads Transparency); after s9_wayback, whose domains it reads
     # S10 — buyer voice (Reddit)
     Stage("s10_reddit_fetch", "s10"),
     Stage("s10_reddit_threads", "s10"),

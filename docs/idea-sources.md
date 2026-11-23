@@ -92,8 +92,8 @@ The generated registry follows.
 
 Generated from [`idea-sources.yaml`](idea-sources.yaml) by `scripts/render_idea_sources.py`. Edit only the YAML.
 
-**86 sources, 129 access methods:** ✅ in_pipeline - 42, 🛠 planned - 15, ✋ manual - 7, ⛔ blocked - 17, 💰 paid - 5.  
-Priorities: P1 - 9, P2 - 33, P3 - 29, none - 15.
+**86 sources, 129 access methods:** ✅ in_pipeline - 43, 🛠 planned - 14, ✋ manual - 7, ⛔ blocked - 17, 💰 paid - 5.  
+Priorities: P1 - 10, P2 - 32, P3 - 29, none - 15.
 
 Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implemented) · ✋ by hand / browser only · ⛔ closed from the probing network · 💰 paid only. **Probe:** the HTTP code of a keyless curl probe (date). **Role:** discovery = entities for the universe, evaluation = a metric for a niche, voice = buyer voice, trend = dynamics over time.
 
@@ -101,7 +101,6 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 
 | P | Source | Group | Stage | Stage groups | What it would give |
 |---|---|---|---|---|---|
-| P2 | Google Ads Transparency Center | ads | not implemented | s5 | After a top-up: probe the DataForSEO ads endpoints, then add advertisers per niche to s5_serp |
 | P2 | Yandex Direct budget forecast (API v4 Live) | ads | not implemented | s3, s6 | Add a YANDEX_DIRECT_TOKEN key and a stage that fills a Russian CPC column |
 | P2 | VK API (groups and walls) | community | not implemented | s8, s10 | Add a VK_TOKEN key and a stage beside s8_subreddit_stats |
 | P2 | Wellfound (AngelList Talent) | hiring | not implemented | s8, s0 | Walk /role/l/<role>/<location> for 10 roles x 5 locations monthly -> JSON from the HTML -> a company table with high_concept; match to niches. Low priority: HN hiring gives the same more cheaply |
@@ -196,7 +195,7 @@ Legend. **Status:** ✅ a pipeline stage exists · 🛠 no stage yet (not implem
 | **Wayback Machine CDX API** (`wayback_machine`) | web | global | trend | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s9 |
 | **Similarweb** (`similarweb`) | web | global | evaluation | monthly | api · paid API key (a Similarweb MCP connector is also offered in Claude Code, unauthorised here) · subscription | 401 (2026-11-21) | 💰 paid | P3 | s5 |
 | **Meta Ad Library** (`meta_ad_library`) | ads | global | evaluation | daily | html · none · $0 | 403 (2026-11-21) | ✋ manual | P2 | s5 |
-| **Google Ads Transparency Center** (`google_ads_transparency`) | ads | global | evaluation | daily | html · none · $0 | 200 (2026-11-21) | 🛠 planned | P2 | s5 |
+| **Google Ads Transparency Center (through DataForSEO)** (`google_ads_transparency`) | ads | global | evaluation | daily | html · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P1 | s5 |
 | **Yandex Direct budget forecast (API v4 Live)** (`yandex_direct_forecast`) | ads | ru | evaluation | monthly | api · OAuth token of a Direct account and an approved application · $0 | 200 (2026-11-21) | 🛠 planned | P2 | s3, s6 |
 | **GitHub repository search** (`github_search`) | oss | global | evaluation | daily | api · optional GITHUB_TOKEN (Bearer) · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s5 |
 | **Federal Register (API)** (`federal_register`) | regulation | global | discovery | daily | api · none · $0 | 200 (2026-11-21) | ✅ in_pipeline | P2 | s0 |
@@ -1620,22 +1619,26 @@ Traps:
 
 Plan: By hand for the final 3-5 niches: count advertisers and ads older than 60 days
 
-#### 🛠 Google Ads Transparency Center (`google_ads_transparency`) - P2
+#### ✅ Google Ads Transparency Center (through DataForSEO) (`google_ads_transparency`) - P1
 
-https://adstransparency.google.com · geo global · role evaluation · freshness daily · stage groups s5 · stage not implemented
+https://adstransparency.google.com · geo global · role evaluation · freshness daily · stage groups s5 · stage `s5_advertisers`
 
 Signals:
-- advertisers and their ads per query / domain - the fifth fragmentation point that the SERP paid blocks never gave
+- ads of each competitor's website shown in the US: total, running now, how long the running ones have run, format (text ~ Search) -> who pays for traffic in a niche and whether paid acquisition is sustained (a 90+ day ad pays back); the advertiser count the SERP paid blocks never gave
+
+Feeds: `data/out/advertisers.csv`; `data/out/advertisers_domains.csv`
 
 | Method | Endpoint | Auth | Cost | Limits / format | Probe |
 |---|---|---|---|---|---|
+| api | DataForSEO serp/google/ads_search/task_post (target = domain, location_code 2840, depth 40) -> task_get/advanced/<id> (first_shown, last_shown, format, title, verified; se_results_count = total ads) | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | $0.0006 per task (one page of up to 40 ads); 157 brand domains = about $0.10 | asynchronous: results in ~10 s; up to 100 tasks per POST; ads_advertisers searches advertiser names, not topics, so domains come from s5_serp and s9_wayback | 200 2026-11-23 - hallow.com: 300 ads in total, 40 returned, text / image / video, first and last shown dates |
 | html | https://adstransparency.google.com/?region=US | none | $0 | a JavaScript application; data comes from internal RPC calls | 200 2026-11-21 - 2.6 MB application page |
-| api | DataForSEO SERP API: google/ads_advertisers and google/ads_search | DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD | per task, paid | - | 402 2026-11-21 - not probed: balance exhausted, then the account was paused (status 40201) |
 
 Traps:
-- Advertiser counts favour niches with high CPC
+- A domain shared by a company's other products counts all its ads
+- Transparency covers Search, YouTube and Display together
+- Competitors without their own site are missed; the live SERP shows paid blocks on only 2 of 223 vendor pages, so it cannot replace this
 
-Plan: After a top-up: probe the DataForSEO ads endpoints, then add advertisers per niche to s5_serp
+Plan: Done (2026-11-23): s5_advertisers on the niches' own brand domains (157 domains, 59 niches; 15 niches have no brand domain): A:ads-pay 20, A:no-ads 2 (screen-time focus apps, couples apps). A first pass on the top App Store sites flagged 40 of 74 niches because giants (eBay, AliExpress, Shop, Zoom) were among them - hence the brand-domain rule
 
 #### 🛠 Yandex Direct budget forecast (API v4 Live) (`yandex_direct_forecast`) - P2
 

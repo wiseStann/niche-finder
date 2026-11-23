@@ -8,7 +8,7 @@ capterra_categories_stats.csv, shopify_metrics.csv, pricing_b2b.csv, pricing_b2c
 offsearch.csv (S8, with Hacker News), reddit_voice.csv, reddit_brands.csv,
 reddit_voice_llm.csv, reddit_voice_themes.json, ru_reviews_verdict.csv, ru_reviews_llm.csv, ru_reviews_themes.json (S10),
 ai_substitute.csv (s5_ai_substitute); the evidence-only sources rendered by nichefinder.evidence (who_counts.csv,
-switch_intent.csv, serp_ownership.csv, ecosystems_metrics.csv, oss_substitutes.csv, wayback.csv, freelance.csv,
+switch_intent.csv, serp_ownership.csv, advertisers.csv, ecosystems_metrics.csv, oss_substitutes.csv, wayback.csv, freelance.csv,
 yt_comments_voice.csv, the TrustMRR columns of deals.csv);
 config/overrides.yaml (notes, lens, manual supply estimates).
 """
@@ -149,6 +149,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                   + (" (signal too weak for a B2B query)" if t.get("verdict") == "NA" else "") + ".", ""]
         L += [f"Brand queries: top-1 brand **{sp['brand_top1']}** = {p(sp['brand_top1_share'])} of brand demand (HHI {n(sp['hhi_brand'], '{:.2f}')}); competition_index {n(sp['comp_idx'])}.", ""]
         L += ev.serp_lines(nid)
+        L += ev.ads_lines(nid)
         # supply
         L += ["## Supply (independent of search)", ""]
         if a and a.get("na") != "1":

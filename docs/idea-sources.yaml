@@ -1797,33 +1797,33 @@ sources:
     plan: "By hand for the final 3-5 niches: count advertisers and ads older than 60 days"
 
   - id: google_ads_transparency
-    name: Google Ads Transparency Center
+    name: Google Ads Transparency Center (through DataForSEO)
     group: ads
     geo: global
     url: https://adstransparency.google.com
     role: [evaluation]
-    signals: ["advertisers and their ads per query / domain - the fifth fragmentation point that the SERP paid blocks never gave"]
+    signals: ["ads of each competitor's website shown in the US: total, running now, how long the running ones have run, format (text ~ Search) -> who pays for traffic in a niche and whether paid acquisition is sustained (a 90+ day ad pays back); the advertiser count the SERP paid blocks never gave"]
     stages: [s5]
-    feeds: []
+    feeds: ["data/out/advertisers.csv", "data/out/advertisers_domains.csv"]
     freshness: daily
-    status: planned
-    adapter: null
-    priority: P2
+    status: in_pipeline
+    adapter: s5_advertisers
+    priority: P1
     access:
+      - method: api
+        endpoint: "DataForSEO serp/google/ads_search/task_post (target = domain, location_code 2840, depth 40) -> task_get/advanced/<id> (first_shown, last_shown, format, title, verified; se_results_count = total ads)"
+        auth: "DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD"
+        cost: "$0.0006 per task (one page of up to 40 ads); 157 brand domains = about $0.10"
+        limits: "asynchronous: results in ~10 s; up to 100 tasks per POST; ads_advertisers searches advertiser names, not topics, so domains come from s5_serp and s9_wayback"
+        probe: {date: 2026-11-23, http: 200, note: "hallow.com: 300 ads in total, 40 returned, text / image / video, first and last shown dates"}
       - method: html
         endpoint: "https://adstransparency.google.com/?region=US"
         auth: none
         cost: $0
         limits: "a JavaScript application; data comes from internal RPC calls"
         probe: {date: 2026-11-21, http: 200, note: "2.6 MB application page"}
-      - method: api
-        endpoint: "DataForSEO SERP API: google/ads_advertisers and google/ads_search"
-        auth: "DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD"
-        cost: "per task, paid"
-        limits: "-"
-        probe: {date: 2026-11-21, http: 402, note: "not probed: balance exhausted, then the account was paused (status 40201)"}
-    caveats: ["Advertiser counts favour niches with high CPC"]
-    plan: "After a top-up: probe the DataForSEO ads endpoints, then add advertisers per niche to s5_serp"
+    caveats: ["A domain shared by a company's other products counts all its ads", "Transparency covers Search, YouTube and Display together", "Competitors without their own site are missed; the live SERP shows paid blocks on only 2 of 223 vendor pages, so it cannot replace this"]
+    plan: "Done (2026-11-23): s5_advertisers on the niches' own brand domains (157 domains, 59 niches; 15 niches have no brand domain): A:ads-pay 20, A:no-ads 2 (screen-time focus apps, couples apps). A first pass on the top App Store sites flagged 40 of 74 niches because giants (eBay, AliExpress, Shop, Zoom) were among them - hence the brand-domain rule"
 
   - id: yandex_direct_forecast
     name: Yandex Direct budget forecast (API v4 Live)

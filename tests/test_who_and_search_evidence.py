@@ -334,6 +334,7 @@ def test_serp_stops_at_the_first_account_error(tmp_path, monkeypatch):
         assert "40201" in str(e)
     assert len(calls) == 1
     assert isinstance(dfs._fail(40104, "verify"), dfs.AccountError) and not isinstance(dfs._fail(40501, "bad"), dfs.AccountError)
+    assert not dfs.is_account_error(40102) and dfs.is_account_error(40201) and dfs.is_account_error(40104)
 
 
 def test_empty_task_list_skips_one_keyword(tmp_path, monkeypatch):

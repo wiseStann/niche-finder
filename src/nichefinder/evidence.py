@@ -2,7 +2,8 @@
 
 One place reads their outputs, so s6_passports and s7_html stay small and show the same numbers:
   who_counts.csv (s8_who_counts; Russian part from ru_msp_counts), switch_intent.csv (s3_switch_intent),
-  serp_ownership.csv (s5_serp), ecosystems_metrics.csv (s5_ecosystems), oss_substitutes.csv (s5_oss),
+  serp_ownership.csv (s5_serp), advertisers.csv (s5_advertisers), ecosystems_metrics.csv (s5_ecosystems),
+  oss_substitutes.csv (s5_oss),
   wayback.csv (s9_wayback), freelance.csv (s8_freelance), yt_comments_voice.csv (s10_yt_comments_report),
   deals.csv TrustMRR columns (s0_trustmrr via s5_deals).
 Every file is optional: a missing file means its block is skipped.
@@ -47,6 +48,7 @@ class Evidence:
         self.who = _rows(o("who_counts.csv"))
         self.switch = _group(o("switch_intent.csv"))
         self.serp = _rows(o("serp_ownership.csv"))
+        self.ads = _rows(o("advertisers.csv"))
         self.eco = _group(o("ecosystems_metrics.csv"))
         self.oss = _rows(o("oss_substitutes.csv"))
         self.wb = _rows(o("wayback.csv"))
@@ -114,6 +116,20 @@ class Evidence:
                 f"{_n(s['top3_brand_avg'], '{:.1f}')} of 3 on average. AI Overview on {_n(s['ai_overview_share'], '{:.0%}')} of the queries; "
                 f"keyword difficulty {_n(s['kd_mean'], '{:.0f}')}/100. Top domains: {s.get('top_domains') or '—'}."
                 + (f" **{s['flags']}**." if s.get("flags") else ""), ""]
+
+    # ---- who pays for traffic (acquisition cost evidence) ------------------------------
+    def ads_lines(self, nid: str) -> list[str]:
+        a = self.ads.get(nid)
+        if not a or a.get("checked") in (None, "", "0"):
+            return []
+        return [f"**Who pays for traffic** (Google Ads Transparency, US, s5_advertisers): {a['advertisers_now']} of {a['checked']} competitor sites "
+                f"advertise now; {a['long_runner_advertisers']} keep an ad running for 90+ days"
+                + (f" (longest {a['longest_active_days']} days)" if a.get("longest_active_days") else "")
+                + (f"; text ads (Search) {_n(a.get('text_share'), '{:.0%}')} of the running ones" if a.get("text_share") else "")
+                + (f"; biggest advertiser {a['top_advertiser']}" if a.get("top_advertiser") else "")
+                + (f". **{a['flags']}**" if a.get("flags") else "")
+                + ". A long-running ad is an advertiser paying back its clicks; no advertisers means the paid channel is unused, "
+                  "not that it is cheap.", ""]
 
     # ---- supply in more ecosystems, free substitutes, site history ------------------
     def supply_lines(self, nid: str) -> list[str]:
@@ -197,6 +213,7 @@ class Evidence:
         t = []
         s = self.serp.get(nid) or {}
         t += [x for x in (s.get("flags") or "").split() if x]
+        t += [x for x in ((self.ads.get(nid) or {}).get("flags") or "").split() if x]
         o = self.oss.get(nid) or {}
         t += [x for x in (o.get("flags") or "").split() if x]
         for r in self.switch.get(nid) or []:
