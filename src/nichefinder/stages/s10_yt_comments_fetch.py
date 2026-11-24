@@ -1,6 +1,7 @@
 """YouTube comments under each niche's how-to and review videos: buyer voice, Russian by default (--lang en: US English).
 
-Niches: shortlisted niches whose geo includes the language's market (ru: geo both or ru; en: geo global or both).
+Niches: shortlisted niches whose geo includes the language's market (ru: geo both or ru, plus the shortlist tier `ru`;
+en: geo global or both).
 Phrases per niche, taken from its queries in the order of `fetch.phrases`: anchor = the anchor query, problem = the
 first problem query, category = the first other category query, brand = the first brand query plus
 `fetch.brand_suffix` ("review"). The next phrase is searched only while fewer than `fetch.min_videos` relevant videos
@@ -115,7 +116,7 @@ def out_name(name: str, lang: str) -> str:
 def target_niches(ws: Workspace, lang: str, only: str = "") -> list[str]:
     """Shortlisted niches whose geo includes the language's market, optionally restricted to a comma-separated list."""
     geo = {n["id"]: n.get("geo", "global") for n in niches.load_niches(ws)}
-    ids = [i for i in niches.shortlist_ids(ws) if geo.get(i) in MARKET[lang]["geo"]]
+    ids = [i for i in niches.shortlist_ids(ws, ru=lang == "ru") if geo.get(i) in MARKET[lang]["geo"]]
     wanted = {x.strip() for x in only.split(",") if x.strip()}
     return [i for i in ids if i in wanted] if wanted else ids
 

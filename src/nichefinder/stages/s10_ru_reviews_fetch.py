@@ -83,9 +83,9 @@ def num(v) -> float:
 
 
 def target_niches(ws: Workspace, only: str = "") -> list[str]:
-    """Shortlisted niches whose geo includes Russia, optionally restricted to a comma-separated list."""
+    """Shortlisted niches (with the tier `ru`) whose geo includes Russia, optionally restricted to a comma-separated list."""
     geo = {n["id"]: n.get("geo", "global") for n in niches.load_niches(ws)}
-    ids = [i for i in niches.shortlist_ids(ws) if geo.get(i) in ("both", "ru")]
+    ids = [i for i in niches.shortlist_ids(ws, ru=True) if geo.get(i) in ("both", "ru")]
     if only:
         wanted = {x.strip() for x in only.split(",") if x.strip()}
         ids = [i for i in ids if i in wanted]

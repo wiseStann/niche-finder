@@ -4,7 +4,7 @@ The Russian branch (s6_ru) scores Wordstat demand and App Store RU concentration
 pool's CPC in S3 (gru_cpc_med) comes from Google Keyword Planner, a weak proxy for Yandex. This stage asks Direct itself.
 It never changes a score, a gate or a verdict: passports and reports/S6-ru.md show it beside the Google figure.
 
-Niches: shortlisted niches with geo both or ru. Phrases: the niche's Russian queries of the intents in
+Niches: shortlisted niches (with the shortlist tier `ru`) with geo both or ru. Phrases: the niche's Russian queries of the intents in
 `direct_forecast.yaml: intents` (category and problem by default; brand clicks price a competitor, not the niche), at most
 7 words and without characters Direct rejects. A niche's phrases always go into one report (up to 100 phrases), because
 Direct may give the forecast of overlapping phrases to either of them: within one report the niche's shows and clicks
@@ -50,7 +50,7 @@ def settings(ws: Workspace) -> dict:
 
 def target_niches(ws: Workspace, only: str = "") -> list[str]:
     geo = {n["id"]: n.get("geo", "global") for n in niches.load_niches(ws)}
-    ids = [i for i in niches.shortlist_ids(ws) if geo.get(i) in GEO]
+    ids = [i for i in niches.shortlist_ids(ws, ru=True) if geo.get(i) in GEO]
     wanted = {x.strip() for x in only.split(",") if x.strip()}
     return [i for i in ids if i in wanted] if wanted else ids
 

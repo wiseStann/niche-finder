@@ -4,7 +4,7 @@ The Russian counterpart of s8_subreddit_stats. It is not a voice source: a probe
 communities are content feeds and the businesses' own client pages, where tools are almost never discussed (the
 Telegram chats of s10_tg_* carry that voice). What VK does show is the size of the audience around a topic.
 
-Niches: shortlisted niches with geo both or ru.
+Niches: shortlisted niches (with the shortlist tier `ru`) with geo both or ru.
 1. Phrases. An LLM (LLM_API_KEY, one cached call per niche) writes `vk_audience.phrases_llm` short Russian phrases that
    names of VK communities about the niche's topic or its users would contain; `vk_audience.niches.<id>.phrases` adds
    phrases by hand. Without the key only the hand phrases are searched.
@@ -65,7 +65,7 @@ def settings(ws: Workspace) -> dict:
 
 def target_niches(ws: Workspace, only: str = "") -> list[str]:
     geo = {n["id"]: n.get("geo", "global") for n in niches.load_niches(ws)}
-    ids = [i for i in niches.shortlist_ids(ws) if geo.get(i) in GEO]
+    ids = [i for i in niches.shortlist_ids(ws, ru=True) if geo.get(i) in GEO]
     wanted = {x.strip() for x in only.split(",") if x.strip()}
     return [i for i in ids if i in wanted] if wanted else ids
 

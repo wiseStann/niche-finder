@@ -11,7 +11,7 @@ Score RU = demand 40 (percentile of log) + growth 20 (percentile of yoy 15 + ver
 Gates: demand >= 500; not DOWN; G2 top1: App Store RU top-1 > 50%, otherwise the top brand > 50% when at least 3 brands
 have volume, or > 70% when only 2 do and they hold at least 5,000 searches a month (with two brands the leader holds
 >= 50% by construction; 70% of >= 5,000 is the monopoly rule of the Russian B2B module, ru_report). For a B2C or
-prosumer niche a failed G2 passes as PASS:android when Google Play RU (offsearch.csv, s8) has a leader <= 50% and at least
+prosumer niche a failed G2 passes as PASS:android when Google Play RU (gplay_metrics.csv, s8) has a leader <= 50% and at least
 8 apps above 100k installs - the "second platform" rule of s6_score. G3 platform: `platform: 2` in config/overrides_ru.yaml
 (a government service, Yandex, a bank or a dominant free platform); without a Russian entry the global judgment
 `platform_risk` of config/overrides.yaml counts (a phone's own scanner covers the task in Russia too).
@@ -27,6 +27,7 @@ Per-niche inputs in config/overrides_ru.yaml (all optional):
   trap_brands: [phrase]    brand phrases polluted by another meaning; excluded
   dynamics_phrases: [..]   corrected phrases for the dynamics stage; the first one is used for growth instead of the anchor
 Inputs (data/out/): wordstat_ru.csv, wordstat_dynamics.csv (optional), appstore_metrics.csv, metrics_quick.csv,
+gplay_metrics.csv (optional, Google Play RU for the second-platform rule),
 direct_niche.csv (optional, s8_direct_forecast: a Yandex CPC column in the report, not scored).
 """
 from __future__ import annotations
@@ -81,7 +82,9 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     manual = nf_niches.overrides(ws, "overrides_ru.yaml")
     world = nf_niches.overrides(ws)            # global judgments: platform_risk is the fallback of the Russian `platform`
     bname = {(r["niche_id"], r["q"]): r["brand"] for r in nf_niches.keyword_rows(ws, "ru") if r["intent"] == "brand"}
-    off = {r["niche_id"]: r for r in _read(ws, "offsearch.csv")}   # Google Play RU (s8) for the second-platform rule
+    # Google Play RU (s8_gplay_metrics) for the second-platform rule; read directly, because s8_offsearch covers only the
+    # US-pool shortlist, not the shortlist tier `ru`
+    gpr = {r["niche_id"]: r for r in _read(ws, "gplay_metrics.csv") if r.get("country") == "ru"}
     reviewed = reviewed_ru(ws)
     green_min = float(ws.setting("verdict.green_min_score", 70))
     wsd = defaultdict(list)
@@ -136,7 +139,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             "as_ru_players_1k": as_players, "as_ru_top1_share": as_top1, "as_ru_top1": a.get("top1", "") if a else "",
             "platform": int(m["platform"]) if "platform" in m else int((world.get(nid) or {}).get("platform_risk") or 0),
             "platform_src": "ru" if "platform" in m else ("global" if (world.get(nid) or {}).get("platform_risk") is not None else ""),
-            "gp_ru_top1_share": f(off.get(nid, {}).get("gp_ru_top1_share")), "gp_ru_players_100k": f(off.get(nid, {}).get("gp_ru_players_100k")),
+            "gp_ru_top1_share": f(gpr.get(nid, {}).get("top1_share")), "gp_ru_players_100k": f(gpr.get(nid, {}).get("players_100k")),
             "note": m.get("note", ""), "verdict_manual": m.get("verdict", ""),
         })
     if not rows:

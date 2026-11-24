@@ -4,7 +4,7 @@ Why: Russian small businesses rarely review software in public (Startpack review
 about tools in VK communities, which are the businesses' own pages for their clients (probe of 2026-11-23). They do ask
 each other in Telegram chats: which booking app, how to link YCLIENTS with Avito, is AvtoDiler worth it.
 
-Niches: shortlisted niches with geo both or ru, as for the Russian reviews and YouTube comments.
+Niches: shortlisted niches (with the shortlist tier `ru`) with geo both or ru, as for the Russian reviews and YouTube comments.
 1. Chat search phrases. An LLM (LLM_API_KEY, one cached call per niche) writes `fetch.phrases_llm` short Russian phrases
    that the titles of these users' group chats would contain: the nouns people use for themselves and their trade, not
    product words. `niches.<id>.phrases` in config/tg_voice.yaml adds phrases by hand. Without the key only the hand
@@ -103,9 +103,9 @@ def config_status(ws: Workspace) -> str:
 
 
 def target_niches(ws: Workspace, only: str = "") -> list[str]:
-    """Shortlisted niches with geo both or ru, optionally restricted to a comma-separated list."""
+    """Shortlisted niches (with the tier `ru`) with geo both or ru, optionally restricted to a comma-separated list."""
     geo = {n["id"]: n.get("geo", "global") for n in niches.load_niches(ws)}
-    ids = [i for i in niches.shortlist_ids(ws) if geo.get(i) in GEO]
+    ids = [i for i in niches.shortlist_ids(ws, ru=True) if geo.get(i) in GEO]
     wanted = {x.strip() for x in only.split(",") if x.strip()}
     return [i for i in ids if i in wanted] if wanted else ids
 

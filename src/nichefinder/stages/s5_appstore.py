@@ -1,7 +1,7 @@
 """App Store supply: players, rating concentration, new apps and free share via the iTunes Search API.
 
 For every shortlisted niche, the category queries (EN -> US store, RU -> RU store for geo `both`/`ru`) are searched
-and merged by trackId; each app records in how many queries it appeared (hits) and its best position.
+and merged by trackId (a niche only in the shortlist tier `ru` gets the RU store only); each app records in how many queries it appeared (hits) and its best position.
 An app is a candidate (`auto`) when it ranks in the top TOP_POS of at least one query (Apple orders by relevance) or
 appears in 3+ queries with a name that shares a token with the queries. Search position alone lets in games, apps for
 the other side of a market and giants (2026-11-21: Pandora held 97 % of the ratings of the music-distribution niche,
@@ -56,7 +56,8 @@ def tokens(q: str) -> set[str]:
 
 def run(ws: Workspace, args: argparse.Namespace) -> None:
     all_niches = {x["id"]: x for x in niches.load_niches(ws)}
-    ids = niches.shortlist_ids(ws)
+    ids = niches.shortlist_ids(ws, ru=True)
+    ru_only = niches.ru_only_ids(ws)            # shortlist tier `ru`: the Russian store only
     queries = niches.load_queries(ws)
     rel = ws.load_config("appstore_relevance.yaml", {}) or {}
     use_fit = bool(keys.get("LLM_API_KEY"))
@@ -70,7 +71,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     n_cand = n_drop = 0
     for nid in ids:
         n = all_niches[nid]
-        stores = [("us", "en")]
+        stores = [] if nid in ru_only else [("us", "en")]
         if n.get("geo", "global") in ("both", "ru"):
             stores.append(("ru", "ru"))
         for country, lang in stores:

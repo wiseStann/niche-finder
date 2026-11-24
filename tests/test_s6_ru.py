@@ -49,10 +49,11 @@ def make_ws(tmp_path: Path) -> Workspace:
         w = csv.DictWriter(fh, fieldnames=list(ws_rows[0]))
         w.writeheader()
         w.writerows(ws_rows)
-    with open(ws.out("offsearch.csv"), "w", newline="", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=["niche_id", "gp_ru_top1_share", "gp_ru_players_100k"])
+    with open(ws.out("gplay_metrics.csv"), "w", newline="", encoding="utf-8") as fh:
+        w = csv.DictWriter(fh, fieldnames=["niche_id", "country", "top1_share", "players_100k"])
         w.writeheader()
-        w.writerows([{"niche_id": n, "gp_ru_top1_share": 0.3, "gp_ru_players_100k": 10} for n in ("android", "android-b2b")])
+        w.writerows([{"niche_id": n, "country": c, "top1_share": 0.3 if c == "ru" else 0.9, "players_100k": 10}
+                     for n in ("android", "android-b2b") for c in ("us", "ru")])
     return ws
 
 
@@ -74,3 +75,22 @@ def test_calibrated_gates(tmp_path):
     assert r["duo"]["verdict"] == "red" and r["android"]["verdict"] in ("green", "yellow")
     report = ws.report("S6-ru.md").read_text(encoding="utf-8")
     assert "PASS:android" in report
+
+
+def test_shortlist_tier_ru(tmp_path):
+    """The tier `ru` reaches only the Russian deep stages; stages that measure both markets skip its US side."""
+    from nichefinder import niches
+    from nichefinder.stages import s8_gplay_search
+    ws = make_ws(tmp_path)
+    (tmp_path / "config" / "shortlist.yaml").write_text(yaml.safe_dump(
+        {"tier_a": [{"id": "duo", "why": "x"}], "ru": [{"id": "android", "why": "RU leaderboard"}, {"id": "duo", "why": "both"}]}, sort_keys=False),
+        encoding="utf-8")
+    for nid in ("duo", "android"):   # an English query, so the US store has something to search
+        q = yaml.safe_load((tmp_path / "queries" / "q.yaml").read_text(encoding="utf-8"))
+        q[nid]["en"] = [{"q": f"{nid} app", "i": "category", "anchor": True}]
+        (tmp_path / "queries" / "q.yaml").write_text(yaml.safe_dump(q, allow_unicode=True), encoding="utf-8")
+    assert niches.shortlist_ids(ws) == ["duo"]
+    assert niches.shortlist_ids(ws, ru=True) == ["duo", "android"]
+    assert niches.ru_only_ids(ws) == {"android"}
+    plan = s8_gplay_search.build_plan(ws, niches.shortlist_ids(ws, ru=True), niches.ru_only_ids(ws))
+    assert sorted((p["niche_id"], p["country"]) for p in plan) == [("android", "ru"), ("duo", "ru"), ("duo", "us")]

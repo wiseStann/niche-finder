@@ -28,7 +28,7 @@ NEEDS: tuple[str, ...] = ()
 SHORTLIST_HEADER = """\
 # Shortlist: niches that go on to deep measurement (S4 trends, S5 supply, S8 off-search demand, S9 supply over time).
 # Written by `nf run s3_report` when this file is missing (`--rewrite-shortlist` regenerates it). Edit by hand freely:
-# every tier is read (the key `ru` is ignored), `why` is free text.
+# every tier is read (the key `ru` only by the Russian deep stages), `why` is free text.
 #
 # tier_a: niches that pass gates G0-G2 in the US pool.
 # tier_b: niches cut only by the top-1 brand gate, with demand >= {min_demand}/month and top-1 <= {max_top1:.0%}.
@@ -36,7 +36,9 @@ SHORTLIST_HEADER = """\
 #   signal (rating share in the app stores, reviews on directories). A "leader + long tail" market moves to tier_a.
 # tier_c: control niches whose expected verdict S3 has not yet confirmed. They go through the deep stages for calibration
 #   and sit in the same scoring cohort; if one ends with a verdict other than the expected one, suspect the scoring.
-# ru: reserved for the Russian module.
+# ru: niches with geo both/ru that the US-pool gates left out but the Russian leaderboard (s6_ru) ranks high; only the
+#   Russian deep stages measure them (App Store RU, Google Play RU, Russian reviews, Telegram, YouTube comments, VK,
+#   Yandex Direct). The US stages and s5_merge ignore this key.
 """
 
 

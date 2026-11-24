@@ -168,19 +168,26 @@ def shortlist(ws: Workspace) -> dict[str, list[dict]]:
     return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
 
 
-def shortlist_ids(ws: Workspace) -> list[str]:
+def shortlist_ids(ws: Workspace, ru: bool = False) -> list[str]:
     """Niches that go through deep measurement (S4, S5, S8, S9): the union of all shortlist tiers, in file order,
-    limited to the run profile's scope."""
+    limited to the run profile's scope. ru=True adds the tier `ru`: niches with geo both/ru that the Russian deep
+    stages measure (the Russian App Store and Google Play, Russian reviews, Telegram, YouTube comments, VK, Yandex
+    Direct) although the US-pool shortlist left them out. The US stages and s5_merge never see that tier."""
     scope = scope_ids(ws)
     ids: list[str] = []
     for tier, items in shortlist(ws).items():
-        if tier == "ru" or not isinstance(items, list):
+        if (tier == "ru" and not ru) or not isinstance(items, list):
             continue
         for it in items:
             nid = it["id"] if isinstance(it, dict) else it
             if nid not in ids and (scope is None or nid in scope):
                 ids.append(nid)
     return ids
+
+
+def ru_only_ids(ws: Workspace) -> set[str]:
+    """Niches of the shortlist tier `ru` that no other tier holds: stages that measure both markets skip their US side."""
+    return set(shortlist_ids(ws, ru=True)) - set(shortlist_ids(ws))
 
 
 def overrides(ws: Workspace, name: str = "overrides.yaml") -> dict[str, dict]:
