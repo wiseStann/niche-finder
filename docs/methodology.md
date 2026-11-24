@@ -409,6 +409,8 @@ After the change 7 of 11 controls behave. Still wrong, with the reason:
 - `ctrl-ai-song-generator` is red where green is expected: Suno holds 95 % of brand searches and 94 % of App Store RU ratings, and 54 % in Google Play RU with 17 apps above 100k installs, just over the 50 % line. Three Russian signals agree; the green expectation comes from the US market.
 - `ctrl-transcription` is yellow at 59 and no longer red: Google Play RU is fragmented.
 
+The owner made the two platform judgments the same day (`platform: 2` in the workspace `overrides_ru.yaml`: chatbots and office suites make slides; video-call services summarise meetings), so `ctrl-ai-presentations` and `ctrl-ai-meeting-notes` are red through G3, by judgment rather than by the formula, and 9 of 11 controls behave. The owner also left ATI.SU out of the trucking brands (`trap_brands`): it is a freight exchange, and that niche is yellow again.
+
 Side effects outside the controls:
 - Seven yellow niches turn red on the two-brand rule: AI study flashcards (Quizlet), AI interior design (Planner 5D), brain training (Wikium), shift scheduling (Verme), driving schools (Avtoshkola-Kontrol), loyalty passes (UDS) and small trucking fleets. The last turns red on ATI.SU, a freight exchange rather than fleet software, so its brand list needs the owner's review.
 - Two red niches turn yellow through Google Play RU: couples apps and AI language tutors.
