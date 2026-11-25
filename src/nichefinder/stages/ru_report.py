@@ -70,10 +70,15 @@ def eco_lines(rows: list[dict] | None) -> list[str]:
     return out
 
 
+def _by_niche(ws: Workspace, name: str, key: str = "niche_id") -> dict[str, dict]:
+    """Rows of data/out/<name> keyed by `key`; an empty dict when the file is missing."""
+    p = ws.out(name)
+    return {r[key]: r for r in csv.DictReader(open(p, encoding="utf-8"))} if p.exists() else {}
+
+
 def run(ws: Workspace, args: argparse.Namespace) -> None:
-    def rd(name, key="niche_id"):
-        p = ws.out(name)
-        return {r[key]: r for r in csv.DictReader(open(p, encoding="utf-8"))} if p.exists() else {}
+    def rd(name):
+        return _by_niche(ws, name)
 
     niches = ws.load_config("ru_b2b_niches.yaml")
     reestr, bitrix, zak, hh = rd("ru_b2b_reestr.csv"), rd("ru_b2b_bitrix.csv"), rd("ru_b2b_zakupki.csv"), rd("ru_b2b_hh.csv")
@@ -173,7 +178,7 @@ def write_report(ws: Workspace, rows, niches) -> None:
                  f"{nm(x['hh_roles'])} / {nm(x['hh_brands'])} | {nm(x['zak_last12'])} · {pc(x['zak_yoy'])} · {nm((x['zak_sum_rub'] or 0) / 1e6, '{:,.0f}')} M | "
                  f"{nm(x['reestr_products'])} / {nm(x['reestr_owners'])} / {nm(x['reestr_new_25_26'])} | {nm(x['bitrix_apps_100'])} / {sh(x['bitrix_top1_share'])} | {x['flags']} |")
     L += ["", "## 2. By niche (measurement details)", ""]
-    vrev = rd("ru_vendor_revenue.csv")     # evidence, not in the score
+    vrev = _by_niche(ws, "ru_vendor_revenue.csv")     # evidence, not in the score
     eco: dict[str, list[dict]] = {}
     if ws.out("ru_ecosystems.csv").exists():
         for r in csv.DictReader(open(ws.out("ru_ecosystems.csv"), encoding="utf-8")):
