@@ -408,6 +408,7 @@
 - id: ctrl-ru-task-manager
   name: "[control red] Task trackers and project management for teams (RU)"
   control: red
+  platform: 2       # owner's judgment 2026-11-25: Yandex Tracker and Bitrix24 tasks are free in the platforms SMBs already use
   who: SMB teams that plan work in tasks and boards
   product: SaaS 300-1000 RUB/month per user
   reestr: [таск-трекер, управления проектами, управления задачами]
