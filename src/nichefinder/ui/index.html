@@ -256,6 +256,9 @@ table.t .num { text-align: right; font-variant-numeric: tabular-nums; }
 .md pre code { background: none; padding: 0; }
 .md blockquote { margin: 8px 0; padding: 4px 12px; border-left: 3px solid var(--line2); color: var(--muted); }
 .md a { color: var(--accent); }
+.note { font-size: 12.5px; color: var(--warn); background: var(--warn-soft); border-radius: 7px; padding: 6px 9px; margin-bottom: 14px; }
+.wait { display: grid; gap: 10px; max-width: 520px; padding: 24px 0; color: var(--muted); }
+.wait .bar { height: 8px; }
 .scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, .25); z-index: 19; }
 .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 14px;
   border-radius: 9px; z-index: 30; font-size: 13px; max-width: 80vw; }
@@ -349,7 +352,8 @@ table.t .num { text-align: right; font-variant-numeric: tabular-nums; }
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" hidden>
   <div class="drawer-h"><span class="t" id="dtitle"></span><span class="sp"></span>
-    <a class="linkbtn" id="dopen" target="_blank" rel="noopener" hidden>открыть в новой вкладке</a>
+    <a class="linkbtn" id="dopen" target="_blank" rel="noopener" hidden title="файл отчёта на диске (английский)">исходный файл ↗</a>
+    <button class="btn" id="dlang" type="button" hidden></button>
     <button class="btn" id="dclose" type="button">Закрыть</button></div>
   <div class="drawer-b" id="dbody"></div>
 </aside>
@@ -864,13 +868,21 @@ function setTab(t) {
   if (location.hash !== hash) history.replaceState(null, "", hash || location.pathname);
   save();
 }
+let resultsSeq = 0, resultsTimer = 0;
 async function loadResults() {
   if (S.res.profile == null) S.res.profile = (S.run && S.run.profile) || (S.preview && S.preview.exists ? S.preview.profile : "") || "";
-  try { S.res.data = await getJSON("/api/results?profile=" + encodeURIComponent(S.res.profile || "-")); }
-  catch (e) { S.res.data = {rows: [], rows_ru: [], reports: [], markets: [], error: e.message}; }
-  const d = S.res.data;
-  if (!S.res.board || (S.res.board === "ru" && !d.rows_ru.length)) S.res.board = d.rows_ru.length && !d.markets.includes("us") ? "ru" : "main";
-  renderResults();
+  const my = ++resultsSeq;
+  clearTimeout(resultsTimer);
+  let data;
+  try { data = await getJSON("/api/results?lang=ru&profile=" + encodeURIComponent(S.res.profile || "-")); }
+  catch (e) { data = {rows: [], rows_ru: [], reports: [], markets: [], error: e.message}; }
+  if (my !== resultsSeq) return;
+  const again = !!S.res.data && document.activeElement && document.activeElement.type === "search";
+  S.res.data = data;
+  if (!S.res.board || (S.res.board === "ru" && !data.rows_ru.length)) S.res.board = data.rows_ru.length && !data.markets.includes("us") ? "ru" : "main";
+  again ? renderResultsTable() : renderResults();
+  /* niche names are being translated: ask again until they are */
+  if (data.pending) resultsTimer = setTimeout(() => { if (S.tab === "res") loadResults(); }, 2500);
 }
 function renderResults() {
   const box = $("#tab-res"), d = S.res.data;
@@ -892,10 +904,13 @@ function renderResults() {
       h("div", {class: "vchips"}, ...[["", "все", all.length], ["green", "зелёные", vc.green], ["yellow", "жёлтые", vc.yellow], ["red", "красные", vc.red]].map(([v, label, n]) =>
         h("button", {type: "button", class: "vchip" + (S.res.v === v ? " on" : ""), onclick: () => { S.res.v = v; renderResults(); }},
           v ? h("span", {class: "dot " + v}) : null, `${label} ${n}`))),
-      search, h("span", {class: "tag"}, (ru ? d.scored_ru : d.scored) ? "посчитано " + ago(ru ? d.scored_ru : d.scored) : "ещё не посчитано")),
+      search, h("span", {class: "tag"}, (ru ? d.scored_ru : d.scored) ? "посчитано " + ago(ru ? d.scored_ru : d.scored) : "ещё не посчитано"),
+      d.pending ? h("span", {class: "tag accent"}, "перевожу названия…") : null),
     h("div", {class: "reps"},
-      d.reports.some(r => r.name === "leaderboard.html") ? h("a", {class: "rep main", href: base + "leaderboard.html", target: "_blank", rel: "noopener"}, "Открыть лидерборд ↗") : null,
-      ...d.reports.filter(r => r.name.endsWith(".md")).map(r => h("button", {type: "button", class: "rep", title: "обновлён " + ago(r.mtime), onclick: () => openReport(base, r.name)}, r.name.replace(/\.md$/, ""))),
+      d.reports.some(r => r.name === "leaderboard.html") ? h("a", {class: "rep main", href: base + "leaderboard.html?lang=ru", target: "_blank", rel: "noopener",
+        title: "первое открытие переводит лидерборд и все паспорта; потом он открывается сразу"}, "Открыть лидерборд ↗") : null,
+      ...d.reports.filter(r => r.name.endsWith(".md")).map(r => h("button", {type: "button", class: "rep", title: r.name + " · обновлён " + ago(r.mtime),
+        onclick: () => openReport(S.res.profile || "", r.name)}, r.title || r.name.replace(/\.md$/, ""))),
       d.passports ? h("span", {class: "tag"}, d.passports + " " + plural(d.passports, "паспорт", "паспорта", "паспортов")) : null),
     h("div", {class: "card", id: "restable"}));
   renderResultsTable();
@@ -908,15 +923,15 @@ function renderResultsTable() {
   const d = S.res.data, box = $("#restable");
   if (!box) return;
   const q = S.res.q.toLowerCase(), all = boardRows();
-  const rows = all.filter(r => (!S.res.v || r.verdict === S.res.v) && (!q || (r.name + " " + r.niche_id + " " + r.flags).toLowerCase().includes(q)));
+  const rows = all.filter(r => (!S.res.v || r.verdict === S.res.v) && (!q || [r.name, r.name_en, r.niche_id, r.flags].join(" ").toLowerCase().includes(q)));
   if (!all.length) { box.replaceChildren(h("div", {class: "empty"}, d.error || (S.res.board === "ru" ? "В этом профиле ещё нет score_ru.csv: запустите s6_ru." : "В этом профиле ещё нет score_final.csv: запустите S6 (пресет «Пересчёт») после S3 и S5."))); return; }
-  const base = "/r/" + encodeURIComponent(S.res.profile || "-") + "/";
   box.replaceChildren(h("table", {class: "t"},
     h("thead", {}, h("tr", {}, h("th", {class: "num"}, "#"), h("th", {}, "Ниша"), h("th", {}, "Сегмент"), h("th", {}, S.res.board === "ru" ? "Спрос RU" : "Тир"), h("th", {}, "Балл"), h("th", {}, "Вердикт"), h("th", {}, "Гейты · флаги"))),
     h("tbody", {}, ...rows.map((r, i) => h("tr", {},
       h("td", {class: "num"}, i + 1),
-      h("td", {}, h("button", {type: "button", class: "linkbtn", style: "font-size:13px;text-align:left", title: "открыть паспорт",
-        onclick: () => openReport(base, "passports/" + r.niche_id + ".md")}, r.name), h("div", {class: "id"}, r.niche_id)),
+      h("td", {}, h("button", {type: "button", class: "linkbtn", style: "font-size:13px;text-align:left",
+        title: "открыть паспорт" + (r.name_en && r.name_en !== r.name ? " · " + r.name_en : ""),
+        onclick: () => openReport(S.res.profile || "", "passports/" + r.niche_id + ".md")}, r.name), h("div", {class: "id"}, r.niche_id)),
       h("td", {}, LABEL.side[r.side] || r.side), h("td", {class: S.res.board === "ru" ? "num" : ""}, S.res.board === "ru" ? (r.demand ? Number(r.demand).toLocaleString("ru-RU") : "") : r.tier),
       h("td", {}, h("div", {class: "sbar"}, h("span", {class: "tr"}, h("i", {style: `width:${Math.min(100, +r.score || 0)}%`})), h("b", {}, (+r.score || 0).toFixed(1)))),
       h("td", {title: r.verdict_note, style: "white-space:nowrap"}, h("span", {class: "dot " + r.verdict}), " ", VERDICT[r.verdict] || r.verdict),
@@ -938,13 +953,37 @@ function renderHistory() {
 }
 
 /* ---------- drawer: reports, help, logs ---------- */
-function openDrawer(title, node, href) {
+let drawerSeq = 0;
+/* lang: the language a report or help is shown in; toggle: what the header button switches to */
+function openDrawer(title, node, href, toggle) {
+  drawerSeq++;
   $("#dtitle").textContent = title;
   const a = $("#dopen"); a.hidden = !href; if (href) a.href = href;
+  const b = $("#dlang"); b.hidden = !toggle;
+  if (toggle) { b.textContent = toggle.label; b.onclick = toggle.fn; }
   $("#dbody").replaceChildren(node); $("#dbody").scrollTop = 0;
   $("#drawer").hidden = false; $("#scrim").hidden = false;
+  return drawerSeq;
 }
-function closeDrawer() { $("#drawer").hidden = true; $("#scrim").hidden = true; }
+function closeDrawer() { drawerSeq++; $("#drawer").hidden = true; $("#scrim").hidden = true; }
+function waitNode(d, what) {
+  const pct = d && d.total ? Math.round(100 * d.done / d.total) : 0;
+  return h("div", {class: "wait"}, h("div", {}, d && d.total ? `Перевожу ${what} на русский: ${d.done} из ${d.total} фрагментов…` : `Готовлю ${what}…`),
+    h("div", {class: "bar"}, h("i", {class: "b-done", style: `width:${pct}%`})),
+    h("div", {class: "hint"}, "Перевод сохраняется: в следующий раз этот текст откроется сразу, а после нового прогона переводится только изменившееся."));
+}
+/* GET a JSON endpoint that answers {status: "running", done, total} until the translation is ready */
+async function pollJSON(url, seq, onWait) {
+  for (;;) {
+    const r = await fetch(url, {cache: "no-store"});
+    if (!r.ok) { const e = new Error(await r.text()); e.status = r.status; throw e; }
+    const d = await r.json();
+    if (seq !== drawerSeq) return null;   // the drawer was closed or shows something else now
+    if (d.status !== "running") return d;
+    onWait(d);
+    await new Promise(res => setTimeout(res, 1200));
+  }
+}
 async function openText(url, title) {
   try {
     const r = await fetch(url, {cache: "no-store"});
@@ -952,20 +991,34 @@ async function openText(url, title) {
     openDrawer(title, h("pre", {class: "plain"}, r.ok ? t : "Недоступно: " + t));
   } catch (e) { toast(e.message); }
 }
-async function openReport(base, rel) {
-  const url = base + rel.split("/").map(encodeURIComponent).join("/");
+async function openHelp(n, lang = "ru") {
+  const seq = openDrawer(n + " — справка", waitNode(null, "справку"), null,
+    {label: lang === "ru" ? "Оригинал" : "По-русски", fn: () => openHelp(n, lang === "ru" ? "en" : "ru")});
   try {
-    const r = await fetch(url, {cache: "no-store"});
-    if (!r.ok) { toast("В этом профиле ещё нет " + rel); return; }
-    const t = await r.text();
+    const d = await pollJSON(`/api/help?lang=${lang}&stage=` + encodeURIComponent(n), seq, d => $("#dbody").replaceChildren(waitNode(d, "справку")));
+    if (d) $("#dbody").replaceChildren(h("pre", {class: "plain"}, d.text));
+  } catch (e) { toast(e.message); }
+}
+async function openReport(profile, rel, lang = "ru") {
+  const base = "/r/" + encodeURIComponent(profile || "-") + "/";
+  const file = base + rel.split("/").map(encodeURIComponent).join("/");
+  const seq = openDrawer(rel, waitNode(null, "отчёт"), file,
+    {label: lang === "ru" ? "Оригинал" : "По-русски", fn: () => openReport(profile, rel, lang === "ru" ? "en" : "ru")});
+  try {
+    const url = `/api/report?lang=${lang}&profile=` + encodeURIComponent(profile || "-") + "&path=" + encodeURIComponent(rel);
+    const d = await pollJSON(url, seq, d => $("#dbody").replaceChildren(waitNode(d, "отчёт")));
+    if (!d) return;
     const dir = base + rel.split("/").slice(0, -1).map(x => x + "/").join("");
-    const node = h("div", {class: "md", html: md(t, dir)});
+    const node = h("div", {class: "md", html: md(d.text, dir)});
     node.addEventListener("click", e => {
       const a = e.target.closest("a[data-md]");
-      if (a) { e.preventDefault(); openReport(base, a.dataset.md); }
+      if (a) { e.preventDefault(); openReport(profile, a.dataset.md, lang); }
     });
-    openDrawer(rel, node, url);
-  } catch (e) { toast(e.message); }
+    $("#dbody").replaceChildren(...[d.note ? h("div", {class: "note"}, d.note) : null, node].filter(Boolean));
+    $("#dbody").scrollTop = 0;
+  } catch (e) {
+    if (e.status === 404) { closeDrawer(); toast("В этом профиле ещё нет " + rel); } else toast(e.message);
+  }
 }
 
 /* Small Markdown renderer for the generated reports: headings, tables, lists, quotes, code, links, emphasis. */
@@ -1058,14 +1111,16 @@ async function init() {
   renderHeader(); buildPipeline(); autoFold(); renderAll(); refreshPreview();
   $("#run").onclick = startRun; $("#stop").onclick = stopRun;
   $("#keep").onchange = save;
-  $("#argshelp").onclick = () => { const n = [...S.sel][0]; if (n) openText("/api/help?stage=" + encodeURIComponent(n), n + " — справка"); };
+  $("#argshelp").onclick = () => { const n = [...S.sel][0]; if (n) openHelp(n); };
   $("#tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
   $("#dclose").onclick = closeDrawer; $("#scrim").onclick = closeDrawer;
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
   connect();
   setInterval(tick, 1000);
   const fromHash = {"#results": "res", "#history": "hist"}[location.hash];
-  if (fromHash || (saved && saved.tab && saved.tab !== "pipe")) setTab(fromHash || saved.tab);
+  const report = location.hash.startsWith("#report=") ? decodeURIComponent(location.hash.slice(8)) : "";   // #report=passports/<id>.md
+  if (report) { setTab("res"); openReport(S.res.profile || "", report); }
+  else if (fromHash || (saved && saved.tab && saved.tab !== "pipe")) setTab(fromHash || saved.tab);
 }
 init().catch(e => { document.body.prepend(h("div", {class: "toast"}, "Не удалось загрузить консоль: " + e.message)); });
 </script>

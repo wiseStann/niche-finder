@@ -22,6 +22,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import secrets
 import shlex
 import signal
@@ -38,7 +39,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 from nichefinder import __version__, keys, niches, profiles
 from nichefinder.cli import _readiness
 from nichefinder.stages import BY_NAME, GROUPS, STAGES
-from nichefinder.ui import ru
+from nichefinder.ui import ru, translate
 from nichefinder.workspace import PROFILE_NAME, Workspace, WorkspaceError
 
 PAGE = Path(__file__).with_name("index.html")
@@ -266,6 +267,15 @@ class App:
         self.runner = Runner(self.ws)
         self.token = secrets.token_urlsafe(24)
         self.closing = False
+        self.tr = translate.Translator(self.ws)
+        self.jobs = translate.Jobs(self.tr)
+        self._niche_names()
+
+    def _niche_names(self) -> dict[str, str]:
+        """id -> name of every niche; the names are also what the translator treats as niche names."""
+        names = {n["id"]: n.get("name", n["id"]) for n in niches.load_niches(self.ws, scoped=False) if "id" in n}
+        self.tr.names = set(names.values())
+        return names
 
     # ---- read ------------------------------------------------------------
 
@@ -346,9 +356,9 @@ class App:
             raise WorkspaceError(f"неверное имя профиля {profile!r}")
         return Workspace(self.ws.root, profile=profile)
 
-    def results(self, profile: str) -> dict:
+    def results(self, profile: str, lang: str = "") -> dict:
         ws = self._profile_ws(profile)
-        names = {n["id"]: n.get("name", n["id"]) for n in niches.load_niches(ws, scoped=False) if "id" in n}
+        names = self._niche_names()
         path = ws.profile_root / "data" / "out" / "score_final.csv"
         rows = []
         if path.is_file():
@@ -374,19 +384,70 @@ class App:
         if reports_dir.is_dir():
             for p in sorted(reports_dir.iterdir()):
                 if p.is_file() and p.suffix in (".md", ".html"):
-                    reports.append({"name": p.name, "mtime": p.stat().st_mtime, "size": p.stat().st_size})
+                    reports.append({"name": p.name, "title": ru.report_title(p.stem), "mtime": p.stat().st_mtime,
+                                    "size": p.stat().st_size})
         passports = len(list((reports_dir / "passports").glob("*.md"))) if (reports_dir / "passports").is_dir() else 0
+        pending = False
+        if lang == "ru" and keys.have("LLM_API_KEY"):
+            texts = [r[k] for r in rows + rows_ru for k in ("name", "verdict_note") if r[k]]
+            pending = self.jobs.ensure("names:" + translate.text_key(*texts), texts)["status"] == "running"
+            for r in rows + rows_ru:
+                r["name_en"] = r["name"]
+                r["name"], r["verdict_note"] = self.tr.get(r["name"]), self.tr.get(r["verdict_note"])
         return {"profile": ws.profile or "", "markets": ws.markets, "rows": rows, "rows_ru": rows_ru,
                 "scored": path.stat().st_mtime if path.is_file() else None,
                 "scored_ru": path_ru.stat().st_mtime if path_ru.is_file() else None,
-                "reports": reports, "passports": passports}
+                "reports": reports, "passports": passports, "pending": pending}
+
+    def report(self, profile: str, rel: str, lang: str = "") -> dict:
+        """A Markdown report, in Russian when lang is ru: {"status": "running", "done", "total"} while it is being
+        translated, then {"status": "ready", "text", "note"}."""
+        f = self.report_file(profile, rel)
+        if f is None or f.suffix != ".md":
+            raise KeyError(rel)
+        text = f.read_text(encoding="utf-8")
+        if lang != "ru":
+            return {"status": "ready", "text": text, "note": ""}
+        if not keys.have("LLM_API_KEY"):
+            return {"status": "ready", "text": text, "note": "Перевод недоступен: нет ключа LLM_API_KEY. Показан оригинал."}
+        rows, units = translate.split(text)
+        st = self.jobs.ensure("report:" + translate.text_key(profile, rel, text), units)
+        if st["status"] == "running":
+            return st
+        left = len(self.tr.missing(units))
+        note = ""
+        if left:
+            note = f"Не переведено фрагментов: {left}, они показаны по-английски" + (f" ({st['error']})." if st["error"] else ".")
+        return {"status": "ready", "text": translate.join(rows, units, self.tr.get), "note": note}
+
+    def leaderboard(self, profile: str, f: Path) -> str:
+        """The HTML leaderboard in Russian, or a page with the translation progress that reloads itself."""
+        page = f.read_text(encoding="utf-8")
+        parts = translate.board_parts(page)
+        if parts is None or not keys.have("LLM_API_KEY"):
+            return page
+        head, rows, tail = parts
+        self._niche_names()
+        pdir = f.parent / "passports"
+        passports = {}
+        for r in rows:
+            p = pdir / f"{r.get('id')}.md"
+            if p.is_file():
+                passports[r["id"]] = translate.split(p.read_text(encoding="utf-8"))
+        texts = translate.board_texts(head, rows, passports)
+        st = self.jobs.ensure("board:" + translate.text_key(profile, *texts), texts)
+        if st["status"] == "running":
+            return translate.progress_page(st["done"], st["total"])
+        from nichefinder.stages.s7_html import md_to_html
+        return translate.board_page(head, rows, tail, passports, self.tr.get, md_to_html)
 
     def report_file(self, profile: str, rel: str) -> Path | None:
         base = (self._profile_ws(profile).profile_root / "reports").resolve()
         p = (base / rel).resolve()
         return p if p.is_file() and p.is_relative_to(base) else None
 
-    def stage_help(self, name: str) -> str:
+    def stage_help(self, name: str, lang: str = "") -> dict:
+        """The stage's flags and docstring; in Russian when lang is ru (same status protocol as report())."""
         if name not in BY_NAME:
             raise KeyError(name)
         mod = BY_NAME[name].module()
@@ -394,7 +455,32 @@ class App:
         if hasattr(mod, "add_arguments"):
             mod.add_arguments(parser)
         doc = (mod.__doc__ or "").strip()
-        return parser.format_help() + ("\n\n" + doc if doc else "")
+        english = parser.format_help() + ("\n\n" + doc if doc else "")
+        if lang != "ru" or not keys.have("LLM_API_KEY"):
+            return {"status": "ready", "text": english, "note": ""}
+        fmt = parser._get_formatter()
+        actions = [a for a in parser._actions if a.help != argparse.SUPPRESS]
+        helps = {a: fmt._expand_help(a) for a in actions if a.help and not isinstance(a, argparse._HelpAction)}
+        paragraphs = []   # (text, translate?) - an indented block (an example, a list of files) stays as it is
+        for par in re.split(r"\n\s*\n", doc):
+            lines = par.split("\n")
+            indented = all(ln.startswith((" ", "\t")) for ln in lines[1:]) and len(lines) > 1 and lines[0].startswith((" ", "\t"))
+            paragraphs.append((par, False) if indented else (" ".join(ln.strip() for ln in lines), True))
+        texts = list(helps.values()) + [p for p, tr in paragraphs if tr]
+        st = self.jobs.ensure("help:" + translate.text_key(name, *texts), texts)
+        if st["status"] == "running":
+            return st
+        out = [f"nf run {name} -- [параметры]", "", ru.SUMMARY.get(name, getattr(mod, "SUMMARY", "")), "", "Параметры:"]
+        for a in actions:
+            try:
+                inv = fmt._format_action_invocation(a)
+            except Exception:  # noqa: BLE001 - an unusual action: its dest is enough
+                inv = a.dest
+            text = "показать эту справку и выйти" if isinstance(a, argparse._HelpAction) else self.tr.get(helps.get(a, ""))
+            out += [f"  {inv}", f"      {text}"] if text else [f"  {inv}"]
+        if paragraphs and doc:
+            out += ["", *[(self.tr.get(p) if tr else p) + "\n" for p, tr in paragraphs]]
+        return {"status": "ready", "text": "\n".join(out).rstrip() + "\n", "note": ""}
 
     def run_log(self, run_id: str) -> str:
         if not run_id.replace("-", "").isdigit():
@@ -462,9 +548,11 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/events":
                 return self._events(q)
             if u.path == "/api/results":
-                return self._json(self.app.results(q.get("profile", "")))
+                return self._json(self.app.results(q.get("profile", ""), q.get("lang", "")))
+            if u.path == "/api/report":
+                return self._json(self.app.report(q.get("profile", ""), q.get("path", ""), q.get("lang", "")))
             if u.path == "/api/help":
-                return self._send(200, self.app.stage_help(q.get("stage", "")))
+                return self._json(self.app.stage_help(q.get("stage", ""), q.get("lang", "")))
             if u.path == "/api/runlog":
                 return self._send(200, self.app.run_log(q.get("id", "")))
             if u.path.startswith("/r/"):
@@ -472,6 +560,8 @@ class Handler(BaseHTTPRequestHandler):
                 f = self.app.report_file(unquote(profile), unquote(rel)) if rel else None
                 if f is None:
                     return self._send(404, "not found")
+                if f.name == "leaderboard.html" and q.get("lang") == "ru":
+                    return self._send(200, self.app.leaderboard(unquote(profile), f), "text/html; charset=utf-8")
                 return self._send(200, f.read_bytes(), TYPES.get(f.suffix, "application/octet-stream"))
             return self._send(404, "not found")
         except (KeyError, WorkspaceError) as e:

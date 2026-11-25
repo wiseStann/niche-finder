@@ -14,7 +14,7 @@ import yaml
 from nichefinder import keys, niches, profiles, ui
 from nichefinder.cli import main
 from nichefinder.stages import BY_NAME, GROUPS
-from nichefinder.ui import ru
+from nichefinder.ui import ru, translate
 from nichefinder.workspace import Workspace, WorkspaceError
 
 NICHES = [dict(n, who="small teams", task="the job", product="SaaS", competitors=["A", "B", "C"]) for n in [
@@ -223,3 +223,114 @@ def test_ui_server_runs_a_stage_and_streams_its_events(server, tmp_path):
     assert "dog-daycare" in md and "budget-app" not in md
     assert json.load(urllib.request.urlopen(base + "/api/state", timeout=10))["history"][0]["status"] == "ok"
     assert (tmp_path / "logs" / "ui" / "stage_times.json").is_file()
+
+
+# ---- the Russian translation of reports (translate.py), with a fake LLM -------------------------------------------
+
+def fake_llm(calls: list, broken: str = "BROKEN"):
+    """A stand-in for llm.chat_json: "translates" by a prefix, and changes the digits of items containing `broken`."""
+    def chat_json(ws, messages, **kw):
+        items = json.loads(messages[-1]["content"])["items"]
+        calls.append(items)
+        return {"t": [("RU " + t.replace("5", "6")) if broken in t else "RU " + t for t in items]}, False, None
+    return chat_json
+
+
+def test_translate_split_keeps_the_markdown_structure():
+    md = ("# Travel eSIM\n\n`travel-esim` · tier B · score 56.9\nsecond line of the paragraph\n\n"
+          "- first item\n  continued here\n- 2023\n\n> **Verdict.** all gates passed\n\n"
+          "| Demand | CPC | Note |\n|---|---|---|\n| 10,500 | $8.25 | rising fast |\n\n"
+          "```\ncode stays\n```\nУже по-русски\n---\n")
+    rows, units = translate.split(md)
+    assert units == ["Travel eSIM", "`travel-esim` · tier B · score 56.9 second line of the paragraph",
+                     "first item continued here", "**Verdict.** all gates passed", "Demand", "Note", "rising fast"]
+    out = translate.join(rows, units, lambda t: t.upper())
+    assert out.split("\n") == [
+        "# TRAVEL ESIM", "", "`TRAVEL-ESIM` · TIER B · SCORE 56.9 SECOND LINE OF THE PARAGRAPH", "",
+        "- FIRST ITEM CONTINUED HERE", "- 2023", "", "> **VERDICT.** ALL GATES PASSED", "",
+        "| DEMAND | CPC | NOTE |", "|---|---|---|", "| 10,500 | $8.25 | RISING FAST |", "",
+        "```", "code stays", "```", "Уже по-русски", "---", ""]
+    assert not translate.wanted("P1:platform-partial") and not translate.wanted("saily.com")
+    assert translate.wanted("FLAT") and translate.wanted("Players")
+
+
+def test_translator_checks_digits_and_placeholders_and_caches(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path)
+    calls: list = []
+    monkeypatch.setattr(translate.llm, "chat_json", fake_llm(calls))
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    tr = translate.Translator(ws)
+    texts = ["Demand grew 15% in `s5_serp`", "BROKEN count is 5 apps", "already done", "FLAT",
+             'Buyers say "this is way too expensive" and trend **UP**']
+    tr.translate(texts)
+    assert tr.get(texts[0]) == "RU Demand grew 15% in `s5_serp`"     # the code span went out as a placeholder
+    assert tr.get(texts[1]) == texts[1]                               # wrong digits twice: the source stays
+    assert tr.get("FLAT") == "ровно"                                  # the glossary needs no call
+    assert tr.get(texts[4]) == 'RU Buyers say "this is way too expensive" and trend **рост**'   # asked alone, then kept
+    assert len(calls) == 3 and "⟦0⟧" in calls[0][0]                   # the batch, then each bad item alone
+    tr.translate(texts)
+    assert len(calls) == 3                                            # all cached, the failed one too
+    assert tr.missing(texts) == []
+
+
+def test_ui_serves_reports_in_russian(server, tmp_path, monkeypatch):
+    httpd, base = server
+    calls: list = []
+    monkeypatch.setattr(translate.llm, "chat_json", fake_llm(calls))
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    (tmp_path / "reports").mkdir(exist_ok=True)
+    (tmp_path / "reports" / "S6-passports.md").write_text("# Passports\n\nAll niches with a score.\n", encoding="utf-8")
+    url = base + "/api/report?profile=-&path=S6-passports.md&lang=ru"
+    deadline = time.time() + 20
+    while True:
+        d = json.load(urllib.request.urlopen(url, timeout=10))
+        if d["status"] == "ready" or time.time() > deadline:
+            break
+        time.sleep(0.1)
+    assert d["text"] == "# RU Passports\n\nRU All niches with a score.\n" and not d["note"]
+    en = json.load(urllib.request.urlopen(url.replace("lang=ru", "lang=en"), timeout=10))
+    assert en["text"].startswith("# Passports")
+    res = json.load(urllib.request.urlopen(base + "/api/results?profile=-&lang=ru", timeout=10))
+    assert res["reports"][0]["title"] == "S6 · паспорта"
+    monkeypatch.delenv("LLM_API_KEY")
+    assert "LLM_API_KEY" in json.load(urllib.request.urlopen(url, timeout=10))["note"]
+
+
+def test_leaderboard_page_is_translated(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path)
+    monkeypatch.setattr(translate.llm, "chat_json", fake_llm([]))
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    rows = [{"id": "dog-daycare", "name": "Dog daycare software", "kp": "UP", "note": "score 56.9 < 70", "md": "<p>x</p>",
+             "side": "Prosumer"}]
+    page = ('<html lang="en"><head><title>Niche Finder leaderboard</title><style>.a{color:red}</style></head><body>'
+            '<th>Score</th><script>\nconst DATA=' + json.dumps(rows) + ';\nconst SIDES=["B2C","Prosumer"], TIERS=[];\n'
+            "const V={green:'🟢 green',yellow:'🟡 yellow',red:'🔴 red'};</script></body></html>")
+    head, data, tail = translate.board_parts(page)
+    passports = {"dog-daycare": translate.split("# Dog daycare\n\nSmall teams book dogs.\n")}
+    tr = translate.Translator(ws)
+    tr.translate(translate.board_texts(head, data, passports))
+    out = translate.board_page(head, data, tail, passports, tr.get, lambda m: "<md>" + m + "</md>")
+    assert '<html lang="ru">' in out and "<title>RU Niche Finder leaderboard</title>" in out and ">RU Score<" in out
+    assert ".a{color:red}" in out and "'🟢 зелёный'" in out
+    got = translate.board_parts(out)[1][0]
+    assert (got["name"], got["kp"], got["note"]) == ("RU Dog daycare software", "рост", "RU score 56.9 < 70")
+    assert got["md"] == "<md># RU Dog daycare\n\nRU Small teams book dogs.\n</md>"
+    assert got["side"] == "Просьюмер" and 'const SIDES=["B2C", "Просьюмер"]' in out   # rows and filter chips agree
+
+
+def test_niche_names_are_asked_apart_and_tags_are_polished(tmp_path, monkeypatch):
+    ws = make_ws(tmp_path)
+    systems: list = []
+
+    def chat_json(ws, messages, **kw):
+        systems.append(messages[0]["content"])
+        items = json.loads(messages[-1]["content"])["items"]
+        return {"t": [t.upper() if t.startswith("[control") else "RU " + t for t in items]}, False, None
+    monkeypatch.setattr(translate.llm, "chat_json", chat_json)
+    monkeypatch.setenv("LLM_API_KEY", "test-key")
+    tr = translate.Translator(ws)
+    tr.names = {"[control red] Notes"}
+    tr.translate(["[control red] Notes", "Some report text"])
+    assert sorted(translate.NICHE_NOTE in s for s in systems) == [False, True]   # one call per kind
+    assert tr.get("[control red] Notes") == "[контроль: красный] NOTES"
+    assert translate.polish("trend **FLAT**, [контрольная зелёная] x") == "trend **ровно**, [контроль: зелёный] x"

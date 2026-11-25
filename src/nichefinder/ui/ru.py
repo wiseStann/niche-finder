@@ -124,6 +124,54 @@ SUMMARY = {
 
 SPEC_KEYS = {"markets": "рынок", "side": "сегмент", "tier": "тир", "geo": "гео"}
 
+# Whole fragments of the reports with a fixed translation (translate.py asks the LLM for everything else).
+GLOSSARY = {"UP": "рост", "DOWN": "спад", "FLAT": "ровно", "green": "зелёный", "yellow": "жёлтый", "red": "красный",
+            "leader": "лидер", "top-3": "топ-3", "top-10": "топ-10", "one of many": "один из многих"}
+# Bold verdict words inside a translated sentence (the model sometimes leaves them in English).
+VERDICT_WORDS = {"UP": "рост", "DOWN": "спад", "FLAT": "ровно", "PASS": "пройден", "FAIL": "не пройден"}
+# The tag of a control niche name, "[control red] Notes" -> "[контроль: красный] ...", by the first three letters.
+CONTROL_TAGS = {"red": "красный", "кра": "красный", "gre": "зелёный", "зел": "зелёный", "yel": "жёлтый",
+                "жёл": "жёлтый", "жел": "жёлтый", "pla": "платформа", "пла": "платформа"}
+# Segment labels of the HTML leaderboard (s7_html.SIDE values).
+BOARD_SIDES = {"Prosumer": "Просьюмер", "B2B-SMB": "B2B · МСБ", "B2B-mid": "B2B · средний"}
+
+# Report buttons in the Results tab, by file stem (an unknown report shows its stem).
+REPORT_TITLES = {
+    "S0-kickstarter": "S0 · Kickstarter", "S0-regulation": "S0 · новые правила", "S0-ru-b2b": "S0 · российский B2B",
+    "S1-niche-universe": "S1 · вселенная ниш", "S1-coverage": "S1 · покрытие", "S3-quick-filter": "S3 · быстрый фильтр",
+    "S3-ai-volume": "S3 · AI-объём (эксперимент)", "S5-ai-substitute": "S5 · ИИ-замена", "S6-passports": "S6 · паспорта",
+    "S6-path-to-goal": "S6 · путь к цели", "S6-ru": "S6 · российский лидерборд", "S10-reddit-voice": "S10 · голос Reddit",
+    "S10-ru-reviews": "S10 · русские отзывы", "S10-telegram": "S10 · чаты Telegram",
+    "S10-yt-comments": "S10 · комментарии YouTube", "RU-synthesis": "RU · сводка", "freelance": "Фриланс-биржи",
+    "info": "Инфопродукты", "info_discover": "Инфо-темы из спроса",
+}
+
+
+def report_title(stem: str) -> str:
+    if stem.startswith("S9-snapshot-"):
+        return "S9 · снимок " + stem[len("S9-snapshot-"):]
+    if stem.startswith("candidates-"):
+        return "Кандидаты " + stem[len("candidates-"):]
+    return REPORT_TITLES.get(stem, stem)
+
+
+# Words inside the script of the HTML leaderboard (s7_html.PAGE); a pair that no longer matches is skipped.
+LEADERBOARD_JS = [
+    ("{green:'🟢 green',yellow:'🟡 yellow',red:'🔴 red'}", "{green:'🟢 зелёный',yellow:'🟡 жёлтый',red:'🔴 красный'}"),
+    ("toLocaleString('en-US'", "toLocaleString('ru-RU'"),
+    ("'tier '+esc(t)", "'тир '+esc(t)"),
+    ("'path '+g", "'путь '+g"),
+    ("mk('grade','','no grade')", "mk('grade','','без оценки')"),
+    ('placeholder="search by name / id" aria-label="Search"', 'placeholder="поиск по названию или id" aria-label="Поиск"'),
+    ("— score ${fmt(r.score)}", "— балл ${fmt(r.score)}"),
+    ("', path '+esc(r.grade)", "', путь '+esc(r.grade)"),
+    ("ticket ${esc(r.ticket||'—')}, fit ${", "чек ${esc(r.ticket||'—')}, соответствие ${"),
+    ("r.manual?'manual'", "r.manual?'вручную'"),
+    ("'excl.'", "'искл.'"),
+    ('title="evidence, not in the score"', 'title="справочно, в балл не входит"'),
+    ("'<p>No passport found. Run s6_passports.</p>'", "'<p>Паспорта нет: запустите s6_passports.</p>'"),
+]
+
 _RULES: list[tuple[re.Pattern, str | Callable[[re.Match], str]]] = [
     (re.compile(r"^needs (\S+(?:, \S+)*) from https://my\.telegram\.org"),
      r"нужны \1 с https://my.telegram.org (API development tools) в .env воркспейса"),

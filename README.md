@@ -64,7 +64,7 @@ nf run all                     # stages without a key or tool are skipped, not f
 
 Then open `reports/leaderboard.html`.
 
-Prefer a screen to a terminal? `nf ui` opens a local console in the browser (its interface is in Russian): pick the markets, niche segment and tiers, pick the stages, press Run and watch each stage go from pending to running, done, skipped or failed with its live output, then read the scores and reports of that run.
+Prefer a screen to a terminal? `nf ui` opens a local console in the browser (in Russian: reports, passports and the leaderboard are translated by the LLM when first opened, then cached): pick the markets, niche segment and tiers, pick the stages, press Run and watch each stage go from pending to running, done, skipped or failed with its live output, then read the scores and reports of that run.
 
 <details>
 <summary>More commands</summary>
