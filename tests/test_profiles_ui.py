@@ -11,8 +11,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-from nichefinder import niches, profiles, ui
+from nichefinder import keys, niches, profiles, ui
 from nichefinder.cli import main
+from nichefinder.stages import BY_NAME, GROUPS
+from nichefinder.ui import ru
 from nichefinder.workspace import Workspace, WorkspaceError
 
 NICHES = [dict(n, who="small teams", task="the job", product="SaaS", competitors=["A", "B", "C"]) for n in [
@@ -178,10 +180,25 @@ def test_ui_server_guards_and_preview(server):
     assert e.value.code == 403
     p = _post(base, "/api/preview", {"spec": {"markets": ["ru"], "side": ["b2b-smb"]}}, token)
     assert (p["profile"], p["niches"]) == ("ru-b2b", 1)
-    assert p["ready"]["s2_wordstat"] != "market ru is off in nf.yaml"
-    assert any("US demand" in w for w in p["warnings"])
-    assert _post(base, "/api/preview", {"spec": {"tier": []}}, token) == {"error": "pick at least one tier"}
+    assert not (p["ready"]["s2_wordstat"] or "").startswith("рынок")    # the market is on in this profile
+    assert any("спросу США" in w for w in p["warnings"])
+    assert _post(base, "/api/preview", {"spec": {"tier": []}}, token) == {"error": "выберите хотя бы один тир"}
     assert httpd.app.report_file("-", "../nf.yaml") is None
+    s1 = next(s for s in state["stages"] if s["name"] == "s1_niches")
+    assert (s1["summary"], s1["summary_en"]) == (ru.SUMMARY["s1_niches"], BY_NAME["s1_niches"].module().SUMMARY)
+
+
+def test_ui_text_is_russian():
+    assert set(ru.SUMMARY) <= set(BY_NAME)              # a renamed or removed stage leaves no stale translation
+    assert set(ru.GROUP_TITLES) <= set(GROUPS)
+    assert ru.why("needs YANDEX_API_KEY") == "нужен ключ YANDEX_API_KEY"
+    assert ru.why("market ru is off in the profile") == "рынок ru выключен в профиле"
+    assert ru.why("market ru is off") == "рынок ru выключен"
+    assert ru.why("pick at least one markets") == "выберите хотя бы один рынок"
+    assert ru.why(str(keys.MissingKey(["LLM_API_KEY"], "labels"))) == \
+        "нет ключа LLM_API_KEY: добавьте его в .env воркспейса или в окружение"
+    assert ru.why("KeyError: 'x'") == "KeyError: 'x'"   # a stage's own failure passes through
+    assert ru.why(None) is None
 
 
 def test_ui_server_runs_a_stage_and_streams_its_events(server, tmp_path):

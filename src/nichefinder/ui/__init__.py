@@ -3,6 +3,8 @@
 One page (index.html next to this file) served on 127.0.0.1. The owner picks the markets, niche sides and tiers of a run
 (a run profile, see profiles.py) and the stages, starts the run and watches each stage go from pending to running, done,
 skipped or failed, with its live output; then opens the profile's scores and reports. Standard library only.
+The page is in Russian: the words the server sends it (group titles, stage summaries, skip reasons, warnings) come
+from ru.py or are written here in Russian; the CLI and the stages stay English.
 
 A run is a child process `python -m nichefinder [-p profile] run <targets>` with $NF_EVENTS set, so the CLI prints
 `@@nf {...}` progress lines (cli._event) between the stages' own output. The server turns both into events with a
@@ -36,21 +38,21 @@ from urllib.parse import parse_qs, unquote, urlparse
 from nichefinder import __version__, keys, niches, profiles
 from nichefinder.cli import _readiness
 from nichefinder.stages import BY_NAME, GROUPS, STAGES
+from nichefinder.ui import ru
 from nichefinder.workspace import PROFILE_NAME, Workspace, WorkspaceError
 
 PAGE = Path(__file__).with_name("index.html")
 EVENT_PREFIX = "@@nf "
 MAX_LINE = 4000
-GROUP_TITLES = {
-    "s0": "Universe of products", "s1": "Niches", "s2": "Queries", "s3": "Search demand", "exp": "Paid experiments",
-    "s4": "Trend depth", "s5": "Supply depth", "s9": "Supply over time", "s6": "Score and passports",
-    "s8": "Demand outside search", "s10": "Buyer voice", "s7": "Leaderboard", "info": "Info products (own score)",
-    "ru": "Russian B2B module",
-}
+GROUP_TITLES = ru.GROUP_TITLES
 # Presets of the stage picker: names of stages (the page adds `nf run all`, which is every stage with in_all).
 RESCORE = ["s6_score", "s6_ru", "s6_ceiling", "s6_passports", "s7_html"]
 TYPES = {".html": "text/html; charset=utf-8", ".md": "text/plain; charset=utf-8", ".csv": "text/plain; charset=utf-8",
          ".txt": "text/plain; charset=utf-8", ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml"}
+
+
+STATUS_RU = {"done": "готово", "skipped": "пропущена", "failed": "ошибка", "stopped": "остановлена"}
+RUN_STATUS_RU = {"ok": "завершён", "failed": "упал", "stopped": "остановлен"}
 
 
 class Busy(Exception):
@@ -127,13 +129,13 @@ class Runner:
 
     def start(self, spec: dict, stages: list[str], keep_going: bool, stage_args: str) -> dict:
         if not self.start_lock.acquire(blocking=False):
-            raise Busy("a run is starting")
+            raise Busy("прогон уже запускается")
         try:
             if self.busy():
-                raise Busy("a run is in progress")
+                raise Busy("уже идёт прогон")
             unknown = [n for n in stages if n not in BY_NAME]
             if unknown or not stages:
-                raise ValueError(f"unknown stages: {', '.join(unknown)}" if unknown else "pick at least one stage")
+                raise ValueError(f"неизвестные стадии: {', '.join(unknown)}" if unknown else "выберите хотя бы одну стадию")
             prof = profiles.create(self.ws, spec)   # ValueError for an empty pick; seeds a new profile (can take seconds)
             order = {s.name: i for i, s in enumerate(STAGES)}
             stages = sorted(set(stages), key=order.get)
@@ -185,7 +187,7 @@ class Runner:
             status = "stopped" if self.stopping else ("ok" if code == 0 else "failed")
             if self.current:
                 self._emit({"type": "stage", "stage": self.current, "status": "stopped" if self.stopping else "failed",
-                            "why": "stopped from the console" if self.stopping else f"the run ended with code {code}"})
+                            "why": "остановлено из консоли" if self.stopping else f"прогон завершился с кодом {code}"})
                 self.current = None
             assert self.meta is not None
             self.meta.update(status=status, code=code, ended=round(time.time(), 2))
@@ -214,7 +216,7 @@ class Runner:
                 if kind == "done" and ev.get("secs") is not None:
                     self.times[stage] = ev["secs"]
                 self._emit({"type": "stage", "stage": stage, "status": status, "secs": ev.get("secs"),
-                            "why": ev.get("why", "")})
+                            "why": ru.why(ev.get("why", ""))})
                 if self.current == stage:
                     self.current = None
             elif kind == "end":
@@ -272,10 +274,12 @@ class App:
         for s in STAGES:
             try:
                 mod = s.module()
-                info = {"summary": getattr(mod, "SUMMARY", ""), "keys": list(getattr(mod, "KEYS", ())),
-                        "needs": list(getattr(mod, "NEEDS", ())), "args": hasattr(mod, "add_arguments")}
+                summary = getattr(mod, "SUMMARY", "")
+                info = {"summary": ru.SUMMARY.get(s.name, summary), "summary_en": summary,
+                        "keys": list(getattr(mod, "KEYS", ())), "needs": list(getattr(mod, "NEEDS", ())),
+                        "args": hasattr(mod, "add_arguments")}
             except ImportError as e:
-                info = {"summary": f"not available: {e}", "keys": [], "needs": [], "args": False}
+                info = {"summary": f"недоступна: {e}", "summary_en": "", "keys": [], "needs": [], "args": False}
             stages.append({"name": s.name, "group": s.group, "market": s.market, "in_all": s.in_all, **info})
         all_niches = niches.load_niches(self.ws, scoped=False)
         with self.runner.cond:
@@ -297,7 +301,7 @@ class App:
         try:
             norm = profiles.normalize(self.ws, spec)
         except ValueError as e:
-            return {"error": str(e)}
+            return {"error": ru.why(str(e))}
         name = profiles.auto_name(self.ws, norm) if norm else ""
         ws = Workspace(self.ws.root, profile=name or None, profile_spec=norm)
         scoped = niches.load_niches(ws)
@@ -314,21 +318,22 @@ class App:
 
         warnings = []
         if norm.get("tier") and "C" not in norm["tier"]:
-            warnings.append("Control niches (tier C) are out: they show whether the score behaves (methodology §3).")
+            warnings.append("Контрольные ниши (тир C) исключены, а по ним видно, правильно ли ведёт себя балл "
+                            "(методология §3).")
         if norm.get("markets"):
-            warnings.append("Other markets than nf.yaml: run S3 again in this profile before scoring, since S6 reads "
-                            "the demand that S3 measured for the markets.")
+            warnings.append("Рынки не те, что в nf.yaml: перед подсчётом балла прогоните S3 в этом профиле заново, "
+                            "потому что S6 читает спрос, который S3 измерил для выбранных рынков.")
         if "us" not in ws.markets:
-            warnings.append("The S6 score reads US demand: without the us market every niche gets the same demand "
-                            "points. Read the Russian leaderboard (S6 RU in Results) instead.")
+            warnings.append("Балл S6 считается по спросу США: без рынка us все ниши получат одинаковые баллы за спрос. "
+                            "Смотрите российский лидерборд (S6 RU во вкладке «Результаты»).")
         if name and not (self.ws.root / "profiles" / name).is_dir():
-            warnings.append("New profile: its outputs start as a copy of the full run's data/out/ for these niches.")
+            warnings.append("Новый профиль: его результаты начнутся с копии data/out/ полного прогона по этим нишам.")
         ready = {}
         for s in STAGES:
             try:
-                ready[s.name] = _readiness(s, ws)
+                ready[s.name] = ru.why(_readiness(s, ws))
             except ImportError as e:
-                ready[s.name] = f"not available: {e}"
+                ready[s.name] = f"недоступна: {e}"
         return {"spec": norm, "profile": name, "exists": bool(name) and (self.ws.root / "profiles" / name).is_dir(),
                 "niches": len(scoped), "shortlisted": len(short), "by_side": count("side", ""),
                 "by_tier": count("tier", ""), "by_geo": count("geo", "global"), "ready": ready, "warnings": warnings,
@@ -338,7 +343,7 @@ class App:
         if profile in ("", "-"):
             return self.ws
         if not PROFILE_NAME.match(profile):
-            raise WorkspaceError(f"bad profile {profile!r}")
+            raise WorkspaceError(f"неверное имя профиля {profile!r}")
         return Workspace(self.ws.root, profile=profile)
 
     def results(self, profile: str) -> dict:
@@ -406,9 +411,11 @@ class App:
             if ev.get("type") == "log":
                 lines.append(ev.get("line", ""))
             elif ev.get("type") == "stage" and ev.get("status") != "running":
-                lines.append(f"-- {ev.get('stage')}: {ev.get('status')} {ev.get('why') or ''}".rstrip())
+                status = STATUS_RU.get(ev.get("status"), ev.get("status"))
+                lines.append(f"-- {ev.get('stage')}: {status} {ev.get('why') or ''}".rstrip())
             elif ev.get("type") == "end":
-                lines.append(f"-- run {ev.get('status')} (exit code {ev.get('code')})")
+                status = RUN_STATUS_RU.get(ev.get("status"), ev.get("status"))
+                lines.append(f"-- прогон {status} (код выхода {ev.get('code')})")
         return "\n".join(lines)
 
 
@@ -476,7 +483,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self._host_ok():
             return self._send(403, "forbidden host")
         if not secrets.compare_digest(self.headers.get("X-NF-Token", ""), self.app.token):
-            return self._send(403, "bad token: reload the page")
+            return self._send(403, "неверный токен: перезагрузите страницу")
         try:
             body = json.loads(self.rfile.read(int(self.headers.get("Content-Length") or 0)) or b"{}")
         except ValueError:
@@ -495,7 +502,7 @@ class Handler(BaseHTTPRequestHandler):
         except Busy as e:
             return self._json({"error": str(e)}, 409)
         except (ValueError, WorkspaceError) as e:
-            return self._json({"error": str(e)}, 400)
+            return self._json({"error": ru.why(str(e))}, 400)
         except OSError as e:
             return self._json({"error": f"{type(e).__name__}: {e}"}, 500)
 

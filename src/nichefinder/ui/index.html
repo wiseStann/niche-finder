@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>niche-finder console</title>
+<title>Консоль niche-finder</title>
 <style>
 :root {
   --bg: #f5f6f8; --panel: #ffffff; --panel2: #f0f2f5; --line: #e2e5ea; --line2: #d3d8df;
@@ -59,6 +59,7 @@ main { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 12px; m
 .setup .card { padding: 14px; }
 h2 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 10px; font-weight: 600;
   display: flex; align-items: center; justify-content: space-between; }
+h2 .tag { text-transform: none; letter-spacing: 0; }
 
 /* chips and presets */
 .presets { display: flex; gap: 4px; background: var(--panel2); padding: 3px; border-radius: 8px; margin-bottom: 10px; }
@@ -278,8 +279,8 @@ table.t .num { text-align: right; font-variant-numeric: tabular-nums; }
 </head>
 <body>
 <header class="top">
-  <div class="brand"><span class="logo">nf</span>niche-finder <span class="sub">console</span></div>
-  <span class="conn" id="conn" title="live connection"></span>
+  <div class="brand"><span class="logo">nf</span>niche-finder <span class="sub">консоль</span></div>
+  <span class="conn" id="conn" title="живое соединение"></span>
   <div class="ws" id="ws"></div>
   <div class="keys" id="keys"></div>
 </header>
@@ -287,41 +288,41 @@ table.t .num { text-align: right; font-variant-numeric: tabular-nums; }
 <div class="layout">
   <aside class="setup">
     <section class="card">
-      <h2>Market</h2>
+      <h2>Рынок</h2>
       <div class="presets" id="mk-pre"></div>
       <div class="chips" id="mk"></div>
-      <div class="hint">Demand pools. A niche stays in the run when a picked market measures its language.</div>
+      <div class="hint">Пулы спроса. Ниша остаётся в прогоне, если выбранный рынок измеряет её язык.</div>
     </section>
     <section class="card">
-      <h2>Segment</h2>
+      <h2>Сегмент</h2>
       <div class="presets" id="sd-pre"></div>
       <div class="chips" id="sd"></div>
     </section>
     <section class="card">
-      <h2>Tier</h2>
+      <h2>Тир</h2>
       <div class="chips" id="tr"></div>
     </section>
     <section class="card scope" id="scope"></section>
     <section class="card">
-      <h2>Stages <span class="tag" id="selcount"></span></h2>
+      <h2>Стадии <span class="tag" id="selcount"></span></h2>
       <div class="presets" id="st-pre"></div>
-      <label class="opt"><input type="checkbox" class="cbx" id="keep"> Keep going after a failed stage</label>
+      <label class="opt"><input type="checkbox" class="cbx" id="keep"> Продолжать после упавшей стадии</label>
       <div class="args" id="argsbox" hidden>
-        <label><span>Arguments for <code id="argsname"></code></span><button class="linkbtn" id="argshelp" type="button">stage help</button></label>
+        <label><span>Аргументы для <code id="argsname"></code></span><button class="linkbtn" id="argshelp" type="button">справка по стадии</button></label>
         <input id="args" placeholder="--dry" spellcheck="false" autocomplete="off">
       </div>
     </section>
     <div class="actions">
-      <button class="btn primary" id="run" type="button"><span id="runlbl">Run</span><small id="runsub"></small></button>
-      <button class="btn danger" id="stop" type="button" disabled>Stop</button>
+      <button class="btn primary" id="run" type="button"><span id="runlbl">Запустить</span><small id="runsub"></small></button>
+      <button class="btn danger" id="stop" type="button" disabled>Стоп</button>
     </div>
   </aside>
 
   <main>
     <nav class="tabs" id="tabs">
-      <button data-tab="pipe" class="on" type="button">Pipeline</button>
-      <button data-tab="res" type="button">Results</button>
-      <button data-tab="hist" type="button">History</button>
+      <button data-tab="pipe" class="on" type="button">Пайплайн</button>
+      <button data-tab="res" type="button">Результаты</button>
+      <button data-tab="hist" type="button">История</button>
       <span class="sp"></span>
     </nav>
     <div class="content" id="content">
@@ -335,12 +336,12 @@ table.t .num { text-align: right; font-variant-numeric: tabular-nums; }
     </div>
     <section class="card logp">
       <div class="logp-h">
-        <span class="t">Output</span>
+        <span class="t">Вывод</span>
         <span class="tag" id="logflt" hidden></span>
         <span class="sp"></span>
-        <label class="opt" style="margin:0"><input type="checkbox" class="cbx" id="follow" checked> Follow</label>
+        <label class="opt" style="margin:0"><input type="checkbox" class="cbx" id="follow" checked> Следить</label>
       </div>
-      <div class="log" id="log"><div class="empty">The output of a run appears here. Click a stage to see only its lines.</div></div>
+      <div class="log" id="log"><div class="empty">Здесь появится вывод прогона. Нажмите на стадию, чтобы видеть только её строки.</div></div>
     </section>
   </main>
 </div>
@@ -348,8 +349,8 @@ table.t .num { text-align: right; font-variant-numeric: tabular-nums; }
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" hidden>
   <div class="drawer-h"><span class="t" id="dtitle"></span><span class="sp"></span>
-    <a class="linkbtn" id="dopen" target="_blank" rel="noopener" hidden>open in a new tab</a>
-    <button class="btn" id="dclose" type="button">Close</button></div>
+    <a class="linkbtn" id="dopen" target="_blank" rel="noopener" hidden>открыть в новой вкладке</a>
+    <button class="btn" id="dclose" type="button">Закрыть</button></div>
   <div class="drawer-b" id="dbody"></div>
 </aside>
 <div class="toast" id="toast" hidden></div>
@@ -373,12 +374,22 @@ function h(tag, attrs = {}, ...kids) {
 }
 
 const LABEL = {
-  markets: {us: "US", ww: "Worldwide", ru: "Russia"},
-  side: {"b2b-smb": "B2B · SMB", "b2b-mid": "B2B · mid", b2b: "B2B", b2c: "B2C", prosumer: "Prosumer"},
-  tier: {A: "A · measure", B: "B · candidate", C: "C · control"},
+  markets: {us: "США", ww: "Весь мир", ru: "Россия"},
+  side: {"b2b-smb": "B2B · МСБ", "b2b-mid": "B2B · средний", b2b: "B2B", b2c: "B2C", prosumer: "Просьюмер"},
+  tier: {A: "A · измеряем", B: "B · кандидат", C: "C · контроль"},
 };
+const VERDICT = {green: "зелёный", yellow: "жёлтый", red: "красный"};
+const STATUS = {done: "готово", skipped: "пропущена", failed: "ошибка", stopped: "остановлена"};
+const RUN_STATUS = {ok: "завершён", failed: "упал", stopped: "остановлен", running: "идёт"};
+/* Russian plural form for n: plural(n, "стадия", "стадии", "стадий"). */
+function plural(n, one, few, many) {
+  const a = Math.abs(n) % 100, b = a % 10;
+  if (a > 10 && a < 20) return many;
+  if (b > 1 && b < 5) return few;
+  return b === 1 ? one : many;
+}
 const KEYNAMES = {dataforseo: "DataForSEO", llm: "LLM", yandex: "Wordstat", producthunt: "Product Hunt", youtube: "YouTube",
-  trustmrr: "TrustMRR", github: "GitHub"};
+  trustmrr: "TrustMRR", yandex_direct: "Директ", vk: "VK", telegram: "Telegram", github: "GitHub"};
 const S = {
   st: null, spec: {markets: [], side: [], tier: []}, sel: new Set(), preview: null, previewErr: "",
   run: null, running: false, plan: null, status: {}, why: {}, secs: {}, startT: {}, last: {}, summary: null,
@@ -397,7 +408,9 @@ async function getJSON(url) {
 async function post(url, body) {
   const r = await fetch(url, {method: "POST", headers: {"Content-Type": "application/json", "X-NF-Token": TOKEN},
     body: JSON.stringify(body || {})});
-  const data = await r.json().catch(() => ({error: r.statusText}));
+  const text = await r.text();
+  let data;
+  try { data = JSON.parse(text); } catch (e) { data = {error: text || r.statusText}; }
   if (!r.ok) throw new Error(data.error || r.statusText);
   return data;
 }
@@ -417,28 +430,29 @@ function restore() {
 function dur(s) {
   if (s == null || isNaN(s)) return "";
   s = Math.max(0, Math.round(s));
-  if (s < 60) return s + "s";
+  if (s < 60) return s + " с";
   const m = Math.floor(s / 60), r = s % 60;
-  if (m < 60) return m + "m " + String(r).padStart(2, "0") + "s";
-  return Math.floor(m / 60) + "h " + String(m % 60).padStart(2, "0") + "m";
+  if (m < 60) return m + " мин " + String(r).padStart(2, "0") + " с";
+  return Math.floor(m / 60) + " ч " + String(m % 60).padStart(2, "0") + " мин";
 }
+const when = t => new Date(t * 1000).toLocaleString("ru-RU", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
 function ago(t) {
-  if (!t) return "never";
+  if (!t) return "никогда";
   const s = now() - t;
-  if (s < 90) return "just now";
-  if (s < 3600) return Math.round(s / 60) + " min ago";
-  if (s < 86400) return Math.round(s / 3600) + " h ago";
-  return new Date(t * 1000).toLocaleString();
+  if (s < 90) return "только что";
+  if (s < 3600) return Math.round(s / 60) + " мин назад";
+  if (s < 86400) return Math.round(s / 3600) + " ч назад";
+  return when(t);
 }
 
 /* ---------- presets ---------- */
 const inAll = () => S.st.stages.filter(s => s.in_all).map(s => s.name);
 const STAGE_PRESETS = [
-  ["Full", "Every stage of nf run all", () => inAll()],
-  ["Software", "nf run all without the info cohort", () => S.st.stages.filter(s => s.in_all && s.group !== "info").map(s => s.name)],
-  ["Info", "The info cohort (short video, Telegram)", () => S.st.stages.filter(s => s.group === "info").map(s => s.name)],
-  ["Rescore", "Score, passports and leaderboard from existing data", () => S.st.rescore.slice()],
-  ["None", "Clear the selection", () => []],
+  ["Полный", "Все стадии nf run all", () => inAll()],
+  ["Софт", "nf run all без инфо-когорты", () => S.st.stages.filter(s => s.in_all && s.group !== "info").map(s => s.name)],
+  ["Инфо", "Инфо-когорта (короткие видео, Telegram)", () => S.st.stages.filter(s => s.group === "info").map(s => s.name)],
+  ["Пересчёт", "Балл, паспорта и лидерборд по уже собранным данным", () => S.st.rescore.slice()],
+  ["Сброс", "Снять выбор", () => []],
 ];
 function b2bSides() { return S.st.universe.side.filter(s => !S.st.b2c_sides.includes(s)); }
 function b2cSides() { return S.st.universe.side.filter(s => S.st.b2c_sides.includes(s)); }
@@ -461,7 +475,7 @@ function chipGroup(box, key, values, cnt) {
         S.spec[key] = values.filter(x => set.has(x));
         specChanged();
       }}),
-      h("span", {class: "box"}), (LABEL[key] && LABEL[key][v]) || v || "(none)", cnt ? h("span", {class: "n"}, cnt[v] || 0) : null);
+      h("span", {class: "box"}), (LABEL[key] && LABEL[key][v]) || v || "(нет)", cnt ? h("span", {class: "n"}, cnt[v] || 0) : null);
   }));
 }
 function presetRow(box, items) {
@@ -472,14 +486,14 @@ function renderSetup() {
   const U = S.st.universe;
   const mk = S.spec.markets;
   presetRow($("#mk-pre"), [
-    ["nf.yaml", "The markets of nf.yaml: " + S.st.markets.join(", "), sameSet(mk, S.st.markets), () => setSpec("markets", S.st.markets)],
-    ["West", "US and worldwide (English)", sameSet(mk, ["us", "ww"]), () => setSpec("markets", ["us", "ww"])],
-    ["Russia", "Russian-language demand and the Russian module", sameSet(mk, ["ru"]), () => setSpec("markets", ["ru"])],
+    ["nf.yaml", "Рынки из nf.yaml: " + S.st.markets.join(", "), sameSet(mk, S.st.markets), () => setSpec("markets", S.st.markets)],
+    ["Запад", "США и весь мир (английский спрос)", sameSet(mk, ["us", "ww"]), () => setSpec("markets", ["us", "ww"])],
+    ["Россия", "Русскоязычный спрос и российский модуль", sameSet(mk, ["ru"]), () => setSpec("markets", ["ru"])],
   ]);
   chipGroup($("#mk"), "markets", U.markets, null);
   const sd = S.spec.side;
   presetRow($("#sd-pre"), [
-    ["All", "Every side", sameSet(sd, U.side), () => setSpec("side", U.side)],
+    ["Все", "Все сегменты", sameSet(sd, U.side), () => setSpec("side", U.side)],
     ["B2B", b2bSides().join(", "), sameSet(sd, b2bSides()), () => setSpec("side", b2bSides())],
     ["B2C", b2cSides().join(", "), sameSet(sd, b2cSides()), () => setSpec("side", b2cSides())],
   ]);
@@ -491,7 +505,7 @@ function renderSetup() {
       S.sel = new Set(want); autoFold(); save(); renderAll();
     }];
   }));
-  $("#selcount").textContent = S.sel.size + " of " + S.st.stages.length;
+  $("#selcount").textContent = S.sel.size + " из " + S.st.stages.length;
   const one = S.sel.size === 1 ? [...S.sel][0] : null;
   $("#argsbox").hidden = !one;
   if (one) $("#argsname").textContent = one;
@@ -504,29 +518,30 @@ function specChanged() { save(); renderSetup(); refreshPreview(); }
 
 function renderScope() {
   const box = $("#scope"), p = S.preview;
-  if (S.previewErr) { box.replaceChildren(h("h2", {}, "Scope"), h("ul", {class: "warns"}, h("li", {class: "bad"}, S.previewErr))); return; }
-  if (!p) { box.replaceChildren(h("h2", {}, "Scope"), h("div", {class: "hint"}, "…")); return; }
+  if (S.previewErr) { box.replaceChildren(h("h2", {}, "Охват"), h("ul", {class: "warns"}, h("li", {class: "bad"}, S.previewErr))); return; }
+  if (!p) { box.replaceChildren(h("h2", {}, "Охват"), h("div", {class: "hint"}, "…")); return; }
   const total = S.st.niches.length;
   const sides = Object.entries(p.by_side);
   const colors = ["var(--accent)", "#8a63d2", "#1f9e89", "#d9822b", "#c2417a", "#6b7f99"];
   box.replaceChildren(...[
-    h("h2", {}, "Scope"),
+    h("h2", {}, "Охват"),
     h("div", {class: "prof"},
-      p.profile ? h("span", {class: "tag accent"}, "profile " + p.profile) : h("span", {class: "tag ok"}, "full run"),
-      p.profile ? h("span", {class: "tag"}, p.exists ? "existing" : "new") : null,
-      h("span", {class: "tag"}, (p.spec.markets || S.st.markets).join(" + "))),
-    h("div", {class: "big"}, h("span", {class: "num"}, p.niches), h("span", {class: "of"}, "of " + total + " niches"),
-      h("span", {class: "of"}, "· " + p.shortlisted + " shortlisted")),
+      p.profile ? h("span", {class: "tag accent"}, "профиль " + p.profile) : h("span", {class: "tag ok"}, "полный прогон"),
+      p.profile ? h("span", {class: "tag"}, p.exists ? "уже есть" : "новый") : null,
+      h("span", {class: "tag"}, (p.spec.markets || S.st.markets).map(m => LABEL.markets[m] || m).join(" + "))),
+    h("div", {class: "big"}, h("span", {class: "num"}, p.niches), h("span", {class: "of"}, "из " + total + " " + plural(total, "ниши", "ниш", "ниш")),
+      h("span", {class: "of"}, "· " + p.shortlisted + " в шорт-листе")),
     h("div", {class: "split"}, ...sides.map(([k, v], i) => h("i", {style: `width:${100 * v / Math.max(1, p.niches)}%;background:${colors[i % colors.length]}`, title: `${k}: ${v}`}))),
     h("div", {class: "legend"}, ...sides.map(([k, v], i) => h("span", {style: `--c:${colors[i % colors.length]}`}, `${LABEL.side[k] || k} ${v}`))),
     p.warnings.length ? h("ul", {class: "warns"}, ...p.warnings.map(w => h("li", {}, w))) : null,
-    h("div", {class: "outpath", title: "where this run writes data/out and reports"}, "→ " + p.outputs)].filter(Boolean));
+    h("div", {class: "outpath", title: "сюда прогон пишет data/out и отчёты"}, "→ " + p.outputs)].filter(Boolean));
 }
 function renderRunButton() {
   const n = S.sel.size, btn = $("#run");
   btn.disabled = S.running || !n || !!S.previewErr || !S.preview || !S.preview.niches;
-  $("#runlbl").textContent = S.running ? "Running…" : `Run ${n} stage${n === 1 ? "" : "s"}`;
-  $("#runsub").textContent = S.preview ? (S.preview.profile ? "profile " + S.preview.profile : "full run") + ` · ${S.preview.niches} niches` : "";
+  $("#runlbl").textContent = S.running ? "Идёт прогон…" : `Запустить ${n} ${plural(n, "стадию", "стадии", "стадий")}`;
+  $("#runsub").textContent = S.preview ? (S.preview.profile ? "профиль " + S.preview.profile : "полный прогон") +
+    ` · ${S.preview.niches} ${plural(S.preview.niches, "ниша", "ниши", "ниш")}` : "";
   $("#stop").disabled = !S.running;
 }
 
@@ -547,14 +562,14 @@ function refreshPreview() {
 /* ---------- pipeline ---------- */
 function badges(s) {
   const out = [];
-  if (s.keys.some(k => k.startsWith("DATAFORSEO"))) out.push(["$ paid", "paid", "DataForSEO: prints the expected cost and checks the balance first"]);
-  if (s.keys.includes("LLM_API_KEY")) out.push(["LLM", "", "LLM calls (cached)"]);
-  if (s.keys.includes("YANDEX_API_KEY")) out.push(["Wordstat", "", "Yandex Wordstat: about 100 requests an hour when not cached"]);
-  if (s.keys.includes("YOUTUBE_API_KEY")) out.push(["YouTube quota", "", "YouTube Data API: 10,000 units a day"]);
-  for (const k of s.keys) if (!/^(DATAFORSEO|LLM_API_KEY|YANDEX_API_KEY|YOUTUBE_API_KEY)/.test(k)) out.push([k, "", "needs " + k]);
-  for (const t of s.needs) out.push([t, "", "needs " + t]);
-  if (s.market === "ru") out.push(["RU", "ru", "runs only when the markets include ru"]);
-  if (!s.in_all) out.push(["manual", "na", "not part of nf run all"]);
+  if (s.keys.some(k => k.startsWith("DATAFORSEO"))) out.push(["$ платно", "paid", "DataForSEO: сначала печатает ожидаемую стоимость и проверяет баланс"]);
+  if (s.keys.includes("LLM_API_KEY")) out.push(["LLM", "", "вызовы LLM (кэшируются)"]);
+  if (s.keys.includes("YANDEX_API_KEY")) out.push(["Wordstat", "", "Яндекс Wordstat: около 100 запросов в час без кэша"]);
+  if (s.keys.includes("YOUTUBE_API_KEY")) out.push(["квота YouTube", "", "YouTube Data API: 10 000 единиц в день"]);
+  for (const k of s.keys) if (!/^(DATAFORSEO|LLM_API_KEY|YANDEX_API_KEY|YOUTUBE_API_KEY)/.test(k)) out.push([k, "", "нужен ключ " + k]);
+  for (const t of s.needs) out.push([t, "", "нужен " + t]);
+  if (s.market === "ru") out.push(["RU", "ru", "работает, только если среди рынков есть ru"]);
+  if (!s.in_all) out.push(["вручную", "na", "не входит в nf run all"]);
   return out.map(([t, c, title]) => h("span", {class: "bd " + c, title}, t));
 }
 function buildPipeline() {
@@ -569,14 +584,14 @@ function buildPipeline() {
   for (const seg of S.segs) {
     seen[seg.group] = (seen[seg.group] || 0) + 1;
     seg.title = titles[seg.group] || seg.group;
-    if (seen[seg.group] > 1) seg.title += seg.group === "s6" ? " · final pass" : " · continued";
-    if (seg.group === "s6" && seen[seg.group] === 1) seg.title += " · first pass";
+    if (seen[seg.group] > 1) seg.title += seg.group === "s6" ? " · финальный проход" : " · продолжение";
+    if (seg.group === "s6" && seen[seg.group] === 1) seg.title += " · первый проход";
   }
   const box = $("#segs");
   box.replaceChildren();
   S.rows = {};
   for (const seg of S.segs) {
-    const cb = h("input", {type: "checkbox", class: "cbx", title: "select the whole block",
+    const cb = h("input", {type: "checkbox", class: "cbx", title: "выбрать весь блок",
       onclick: e => e.stopPropagation(), onchange: e => {
         if (S.running) return;
         for (const n of seg.stages) e.target.checked ? S.sel.add(n) : S.sel.delete(n);
@@ -592,7 +607,8 @@ function buildPipeline() {
         if (S.running) return;
         e.target.checked ? S.sel.add(n) : S.sel.delete(n); save(); renderAll();
       }});
-      const row = h("div", {class: "st", "data-n": n, title: s.summary, onclick: () => { setLogFilter(S.logFilter === n ? "" : n); }},
+      const tip = s.summary_en && s.summary_en !== s.summary ? s.summary + "\n\n" + s.summary_en : s.summary;
+      const row = h("div", {class: "st", "data-n": n, title: tip, onclick: () => { setLogFilter(S.logFilter === n ? "" : n); }},
         rcb, h("span", {class: "ico"}),
         h("div", {}, h("div", {class: "l1"}, h("code", {class: "nm"}, n), ...badges(s), h("span", {class: "sum"}, s.summary)),
           h("div", {class: "l2"})),
@@ -626,11 +642,11 @@ function renderStages() {
     r.row.className = cls;
     r.cb.checked = sel; r.cb.disabled = S.running;
     let l2 = "", tm = "";
-    if (st === "running") { l2 = S.last[n] || "starting…"; tm = dur(now() - (S.startT[n] || now())); }
+    if (st === "running") { l2 = S.last[n] || "запускается…"; tm = dur(now() - (S.startT[n] || now())); }
     else if (st === "done") tm = dur(S.secs[n]);
-    else if (st === "skipped" || st === "failed" || st === "stopped") { l2 = S.why[n] || st; tm = S.secs[n] != null ? dur(S.secs[n]) : ""; }
-    else if (st === "notrun") l2 = "not reached: the run " + (S.run ? S.run.status : "ended");
-    else if (sel && ready[n]) l2 = "will be skipped: " + ready[n];
+    else if (st === "skipped" || st === "failed" || st === "stopped") { l2 = S.why[n] || STATUS[st]; tm = S.secs[n] != null ? dur(S.secs[n]) : ""; }
+    else if (st === "notrun") l2 = "не дошли: прогон " + ((S.run && RUN_STATUS[S.run.status]) || "завершён");
+    else if (sel && ready[n]) l2 = "будет пропущена: " + ready[n];
     else if (sel && S.times[n] != null) tm = "~" + dur(S.times[n]);
     if (r.l2.textContent !== l2) { r.l2.textContent = l2; r.l2.title = l2; }
     if (r.tm.textContent !== tm) r.tm.textContent = tm;
@@ -640,8 +656,8 @@ function renderStages() {
     seg.cb.checked = sel === seg.stages.length; seg.cb.indeterminate = sel > 0 && sel < seg.stages.length; seg.cb.disabled = S.running;
     const done = seg.stages.filter(n => ["done", "skipped"].includes(S.status[n])).length;
     const planned = S.plan ? seg.stages.filter(n => S.plan.includes(n)).length : sel;
-    seg.gs.textContent = S.plan ? `${done} / ${planned}` + (seg.stages.some(n => S.status[n] === "failed") ? " · failed" : "")
-      : `${sel} / ${seg.stages.length} selected`;
+    seg.gs.textContent = S.plan ? `${done} / ${planned}` + (seg.stages.some(n => S.status[n] === "failed") ? " · ошибка" : "")
+      : `выбрано ${sel} из ${seg.stages.length}`;
     seg.el.classList.toggle("folded", S.folded.has(seg.idx));
   }
   renderMap(); renderProgress();
@@ -670,9 +686,9 @@ function renderProgress() {
   if (!S.run) {
     const est = [...S.sel].reduce((a, n) => a + (S.times[n] || 0), 0);
     const unknown = [...S.sel].filter(n => S.times[n] == null).length;
-    box.replaceChildren(h("div", {class: "prog-h"}, h("span", {class: "title"}, "No run in this session yet")),
-      h("div", {class: "stats"}, h("span", {}, h("b", {}, S.sel.size), " stages selected"),
-        est ? h("span", {}, "last timings: ", h("b", {}, "≈ " + dur(est)), unknown ? ` + ${unknown} without a timing` : "") : null));
+    box.replaceChildren(h("div", {class: "prog-h"}, h("span", {class: "title"}, "В этой сессии прогонов ещё не было")),
+      h("div", {class: "stats"}, h("span", {}, plural(S.sel.size, "выбрана ", "выбрано ", "выбрано "), h("b", {}, S.sel.size), " " + plural(S.sel.size, "стадия", "стадии", "стадий")),
+        est ? h("span", {}, "по прошлым замерам ", h("b", {}, "≈ " + dur(est)), unknown ? ` + ${unknown} без замера` : "") : null));
     return;
   }
   const plan = S.plan || S.run.stages || [];
@@ -691,20 +707,20 @@ function renderProgress() {
       else if (st === "running" && S.times[n] != null) left += Math.max(0, S.times[n] - (now() - (S.startT[n] || now())));
     }
   }
-  const status = S.running ? "Running" : ({ok: "Finished", failed: "Failed", stopped: "Stopped"}[S.run.status] || S.run.status);
+  const status = S.running ? "Идёт прогон" : ({ok: "Прогон завершён", failed: "Прогон упал", stopped: "Прогон остановлен"}[S.run.status] || S.run.status);
   const tagc = S.running ? "accent" : S.run.status === "ok" ? "ok" : S.run.status === "stopped" ? "warn" : "bad";
   box.replaceChildren(
-    h("div", {class: "prog-h"}, h("span", {class: "title"}, status), h("span", {class: "tag " + tagc}, S.run.profile ? "profile " + S.run.profile : "full run"),
+    h("div", {class: "prog-h"}, h("span", {class: "title"}, status), h("span", {class: "tag " + tagc}, S.run.profile ? "профиль " + S.run.profile : "полный прогон"),
       cur ? h("span", {class: "tag accent"}, cur) : null,
       h("span", {class: "cmd", title: S.run.command}, S.run.command)),
     h("div", {class: "bar"}, h("i", {class: "b-done", style: `width:${100 * done / total}%`}), h("i", {class: "b-skip", style: `width:${100 * skip / total}%`}),
       h("i", {class: "b-fail", style: `width:${100 * fail / total}%`}), h("i", {class: "b-run", style: `width:${100 * run / total}%`})),
     h("div", {class: "stats"},
-      h("span", {}, h("b", {}, done + skip + fail), " / ", h("b", {}, plan.length), " stages"),
-      h("span", {}, h("b", {}, done), " done"), h("span", {}, h("b", {}, skip), " skipped"), h("span", {}, h("b", {}, fail), " failed"),
-      h("span", {}, "elapsed ", h("b", {}, dur(elapsed))),
-      left != null ? h("span", {}, "left ", h("b", {}, "≈ " + dur(left)), unknown ? ` + ${unknown} without a timing` : "") : null,
-      !S.running ? h("span", {}, "started ", h("b", {}, ago(S.run.started))) : null));
+      h("span", {}, h("b", {}, done + skip + fail), " из ", h("b", {}, plan.length), " " + plural(plan.length, "стадии", "стадий", "стадий")),
+      h("span", {}, "готово ", h("b", {}, done)), h("span", {}, "пропущено ", h("b", {}, skip)), h("span", {}, "с ошибкой ", h("b", {}, fail)),
+      h("span", {}, "прошло ", h("b", {}, dur(elapsed))),
+      left != null ? h("span", {}, "осталось ", h("b", {}, "≈ " + dur(left)), unknown ? ` + ${unknown} без замера` : "") : null,
+      !S.running ? h("span", {}, "начат ", h("b", {}, ago(S.run.started))) : null));
 }
 
 /* ---------- log ---------- */
@@ -723,10 +739,10 @@ function setLogFilter(n) {
   S.logFilter = n;
   const tag = $("#logflt");
   tag.hidden = !n;
-  tag.replaceChildren(...(n ? [n + "  ", h("button", {class: "linkbtn", type: "button", onclick: e => { e.stopPropagation(); setLogFilter(""); }}, "show all")] : []));
+  tag.replaceChildren(...(n ? [n + "  ", h("button", {class: "linkbtn", type: "button", onclick: e => { e.stopPropagation(); setLogFilter(""); }}, "показать все")] : []));
   const box = $("#log");
   const lines = S.logs.filter(ev => !n || ev.stage === n).slice(-4000);
-  box.replaceChildren(...(lines.length ? lines.map(logNode) : [h("div", {class: "empty"}, n ? `No output from ${n} in this run.` : "No output yet.")]));
+  box.replaceChildren(...(lines.length ? lines.map(logNode) : [h("div", {class: "empty"}, n ? `У ${n} в этом прогоне нет вывода.` : "Вывода пока нет.")]));
   box.scrollTop = box.scrollHeight;
   renderStages();
 }
@@ -786,8 +802,8 @@ function onEvent(ev) {
     case "summary": S.summary = ev; break;
     case "end":
       S.run = ev.run; S.running = false;
-      document.title = ({ok: "✓ ", failed: "✕ ", stopped: "■ "}[ev.status] || "") + "niche-finder console";
-      if (!document.hidden) setTimeout(() => document.title = "niche-finder console", 8000);
+      document.title = ({ok: "✓ ", failed: "✕ ", stopped: "■ "}[ev.status] || "") + "Консоль niche-finder";
+      if (!document.hidden) setTimeout(() => document.title = "Консоль niche-finder", 8000);
       refreshState(); renderSetup();
       if (S.tab === "res") loadResults();
       break;
@@ -822,18 +838,18 @@ async function startRun() {
   const stages = S.st.stages.map(s => s.name).filter(n => S.sel.has(n));
   const ready = (S.preview && S.preview.ready) || {};
   const paid = stages.filter(n => stageOf(n).keys.some(k => k.startsWith("DATAFORSEO")) && !ready[n]);
-  if (paid.length && !confirm(`This run includes paid DataForSEO stages:\n  ${paid.join("\n  ")}\n\nEach prints its expected cost and stops before paying when the balance is low; cached calls are free.\n\nStart the run?`)) return;
+  if (paid.length && !confirm(`В прогоне есть платные стадии DataForSEO:\n  ${paid.join("\n  ")}\n\nКаждая сначала печатает ожидаемую стоимость и останавливается до оплаты, если баланса мало; запросы из кэша бесплатны.\n\nЗапустить прогон?`)) return;
   const btn = $("#run");
   btn.disabled = true;
-  $("#runlbl").textContent = S.preview && S.preview.profile && !S.preview.exists ? "Preparing the profile…" : "Starting…";
+  $("#runlbl").textContent = S.preview && S.preview.profile && !S.preview.exists ? "Готовлю профиль…" : "Запускаю…";
   try {
     await post("/api/run", {spec: S.spec, stages, keep_going: $("#keep").checked, args: S.sel.size === 1 ? $("#args").value : ""});
     setTab("pipe");
-  } catch (e) { toast("Could not start: " + e.message); }
+  } catch (e) { toast("Не удалось запустить: " + e.message); }
   renderRunButton();
 }
 async function stopRun() {
-  if (!confirm("Stop the run? The running stage is killed; stages that finished keep their outputs.")) return;
+  if (!confirm("Остановить прогон? Текущая стадия будет прервана; у завершённых стадий результаты сохранятся.")) return;
   try { await post("/api/stop"); } catch (e) { toast(e.message); }
 }
 
@@ -858,29 +874,29 @@ async function loadResults() {
 }
 function renderResults() {
   const box = $("#tab-res"), d = S.res.data;
-  if (!d) { box.replaceChildren(h("div", {class: "empty"}, "Loading…")); return; }
+  if (!d) { box.replaceChildren(h("div", {class: "empty"}, "Загрузка…")); return; }
   const profs = [""].concat(S.st.profiles.map(p => p.name));
   const sel = h("select", {onchange: e => { S.res.profile = e.target.value; loadResults(); }},
-    ...profs.map(p => h("option", {value: p, selected: p === (S.res.profile || "")}, p ? "profile " + p : "full run")));
+    ...profs.map(p => h("option", {value: p, selected: p === (S.res.profile || "")}, p ? "профиль " + p : "полный прогон")));
   const all = boardRows();
   const vc = {green: 0, yellow: 0, red: 0};
   for (const r of all) if (r.verdict in vc) vc[r.verdict]++;
   const base = "/r/" + encodeURIComponent(S.res.profile || "-") + "/";
   const ru = S.res.board === "ru";
   const boards = d.rows_ru.length ? h("div", {class: "presets", style: "margin:0;width:auto"},
-    ...[["main", "S6 score", "the main score (US demand)"], ["ru", "S6 RU", "the Russian leaderboard (Wordstat, App Store RU)"]].map(([k, label, title]) =>
+    ...[["main", "Балл S6", "основной балл (спрос США)"], ["ru", "S6 RU", "российский лидерборд (Wordstat, App Store RU)"]].map(([k, label, title]) =>
       h("button", {type: "button", class: S.res.board === k ? "on" : "", title, onclick: () => { S.res.board = k; S.res.v = ""; renderResults(); }}, label))) : null;
-  const search = h("input", {type: "search", placeholder: "Filter niches", value: S.res.q, oninput: e => { S.res.q = e.target.value; renderResultsTable(); }});
+  const search = h("input", {type: "search", placeholder: "Фильтр ниш", value: S.res.q, oninput: e => { S.res.q = e.target.value; renderResultsTable(); }});
   box.replaceChildren(
     h("div", {class: "res-h"}, sel, boards,
-      h("div", {class: "vchips"}, ...[["", "all", all.length], ["green", "green", vc.green], ["yellow", "yellow", vc.yellow], ["red", "red", vc.red]].map(([v, label, n]) =>
+      h("div", {class: "vchips"}, ...[["", "все", all.length], ["green", "зелёные", vc.green], ["yellow", "жёлтые", vc.yellow], ["red", "красные", vc.red]].map(([v, label, n]) =>
         h("button", {type: "button", class: "vchip" + (S.res.v === v ? " on" : ""), onclick: () => { S.res.v = v; renderResults(); }},
           v ? h("span", {class: "dot " + v}) : null, `${label} ${n}`))),
-      search, h("span", {class: "tag"}, (ru ? d.scored_ru : d.scored) ? "scored " + ago(ru ? d.scored_ru : d.scored) : "not scored yet")),
+      search, h("span", {class: "tag"}, (ru ? d.scored_ru : d.scored) ? "посчитано " + ago(ru ? d.scored_ru : d.scored) : "ещё не посчитано")),
     h("div", {class: "reps"},
-      d.reports.some(r => r.name === "leaderboard.html") ? h("a", {class: "rep main", href: base + "leaderboard.html", target: "_blank", rel: "noopener"}, "Open leaderboard ↗") : null,
-      ...d.reports.filter(r => r.name.endsWith(".md")).map(r => h("button", {type: "button", class: "rep", title: "updated " + ago(r.mtime), onclick: () => openReport(base, r.name)}, r.name.replace(/\.md$/, ""))),
-      d.passports ? h("span", {class: "tag"}, d.passports + " passports") : null),
+      d.reports.some(r => r.name === "leaderboard.html") ? h("a", {class: "rep main", href: base + "leaderboard.html", target: "_blank", rel: "noopener"}, "Открыть лидерборд ↗") : null,
+      ...d.reports.filter(r => r.name.endsWith(".md")).map(r => h("button", {type: "button", class: "rep", title: "обновлён " + ago(r.mtime), onclick: () => openReport(base, r.name)}, r.name.replace(/\.md$/, ""))),
+      d.passports ? h("span", {class: "tag"}, d.passports + " " + plural(d.passports, "паспорт", "паспорта", "паспортов")) : null),
     h("div", {class: "card", id: "restable"}));
   renderResultsTable();
 }
@@ -893,32 +909,32 @@ function renderResultsTable() {
   if (!box) return;
   const q = S.res.q.toLowerCase(), all = boardRows();
   const rows = all.filter(r => (!S.res.v || r.verdict === S.res.v) && (!q || (r.name + " " + r.niche_id + " " + r.flags).toLowerCase().includes(q)));
-  if (!all.length) { box.replaceChildren(h("div", {class: "empty"}, d.error || "No score_final.csv in this profile yet: run S6 (the Rescore preset) after S3 and S5.")); return; }
+  if (!all.length) { box.replaceChildren(h("div", {class: "empty"}, d.error || (S.res.board === "ru" ? "В этом профиле ещё нет score_ru.csv: запустите s6_ru." : "В этом профиле ещё нет score_final.csv: запустите S6 (пресет «Пересчёт») после S3 и S5."))); return; }
   const base = "/r/" + encodeURIComponent(S.res.profile || "-") + "/";
   box.replaceChildren(h("table", {class: "t"},
-    h("thead", {}, h("tr", {}, h("th", {class: "num"}, "#"), h("th", {}, "Niche"), h("th", {}, "Side"), h("th", {}, S.res.board === "ru" ? "Demand RU" : "Tier"), h("th", {}, "Score"), h("th", {}, "Verdict"), h("th", {}, "Gates · flags"))),
+    h("thead", {}, h("tr", {}, h("th", {class: "num"}, "#"), h("th", {}, "Ниша"), h("th", {}, "Сегмент"), h("th", {}, S.res.board === "ru" ? "Спрос RU" : "Тир"), h("th", {}, "Балл"), h("th", {}, "Вердикт"), h("th", {}, "Гейты · флаги"))),
     h("tbody", {}, ...rows.map((r, i) => h("tr", {},
       h("td", {class: "num"}, i + 1),
-      h("td", {}, h("button", {type: "button", class: "linkbtn", style: "font-size:13px;text-align:left", title: "open the passport",
+      h("td", {}, h("button", {type: "button", class: "linkbtn", style: "font-size:13px;text-align:left", title: "открыть паспорт",
         onclick: () => openReport(base, "passports/" + r.niche_id + ".md")}, r.name), h("div", {class: "id"}, r.niche_id)),
-      h("td", {}, LABEL.side[r.side] || r.side), h("td", {class: S.res.board === "ru" ? "num" : ""}, S.res.board === "ru" ? (r.demand ? Number(r.demand).toLocaleString() : "") : r.tier),
+      h("td", {}, LABEL.side[r.side] || r.side), h("td", {class: S.res.board === "ru" ? "num" : ""}, S.res.board === "ru" ? (r.demand ? Number(r.demand).toLocaleString("ru-RU") : "") : r.tier),
       h("td", {}, h("div", {class: "sbar"}, h("span", {class: "tr"}, h("i", {style: `width:${Math.min(100, +r.score || 0)}%`})), h("b", {}, (+r.score || 0).toFixed(1)))),
-      h("td", {title: r.verdict_note}, h("span", {class: "dot " + r.verdict}), " ", r.verdict),
+      h("td", {title: r.verdict_note, style: "white-space:nowrap"}, h("span", {class: "dot " + r.verdict}), " ", VERDICT[r.verdict] || r.verdict),
       h("td", {class: "flags", title: r.flags}, [r.gates_failed, r.flags].filter(Boolean).join(" · ")))))));
 }
 function renderHistory() {
   const box = $("#tab-hist");
   const rows = S.st.history || [];
-  if (!rows.length) { box.replaceChildren(h("div", {class: "empty"}, "No runs from the console yet.")); return; }
+  if (!rows.length) { box.replaceChildren(h("div", {class: "empty"}, "Из консоли ещё ничего не запускали.")); return; }
   box.replaceChildren(h("div", {class: "card", style: "margin-top:12px"}, h("table", {class: "t"},
-    h("thead", {}, h("tr", {}, h("th", {}, "Started"), h("th", {}, "Profile"), h("th", {}, "Command"), h("th", {}, "Status"), h("th", {class: "num"}, "Duration"), h("th", {}, ""))),
+    h("thead", {}, h("tr", {}, h("th", {}, "Начат"), h("th", {}, "Профиль"), h("th", {}, "Команда"), h("th", {}, "Статус"), h("th", {class: "num"}, "Длительность"), h("th", {}, ""))),
     h("tbody", {}, ...rows.map(r => h("tr", {},
-      h("td", {}, new Date(r.started * 1000).toLocaleString()),
-      h("td", {}, r.profile || "full run"),
+      h("td", {}, when(r.started)),
+      h("td", {}, r.profile || "полный прогон"),
       h("td", {class: "flags", title: r.command}, r.command),
-      h("td", {}, h("span", {class: "tag " + ({ok: "ok", failed: "bad", stopped: "warn", running: "accent"}[r.status] || "")}, r.status)),
+      h("td", {}, h("span", {class: "tag " + ({ok: "ok", failed: "bad", stopped: "warn", running: "accent"}[r.status] || "")}, RUN_STATUS[r.status] || r.status)),
       h("td", {class: "num"}, r.ended ? dur(r.ended - r.started) : "…"),
-      h("td", {}, h("button", {type: "button", class: "linkbtn", onclick: () => openText("/api/runlog?id=" + encodeURIComponent(r.id), "run " + r.id)}, "log"))))))));
+      h("td", {}, h("button", {type: "button", class: "linkbtn", onclick: () => openText("/api/runlog?id=" + encodeURIComponent(r.id), "прогон " + r.id)}, "лог"))))))));
 }
 
 /* ---------- drawer: reports, help, logs ---------- */
@@ -933,14 +949,14 @@ async function openText(url, title) {
   try {
     const r = await fetch(url, {cache: "no-store"});
     const t = await r.text();
-    openDrawer(title, h("pre", {class: "plain"}, r.ok ? t : "Not available: " + t));
+    openDrawer(title, h("pre", {class: "plain"}, r.ok ? t : "Недоступно: " + t));
   } catch (e) { toast(e.message); }
 }
 async function openReport(base, rel) {
   const url = base + rel.split("/").map(encodeURIComponent).join("/");
   try {
     const r = await fetch(url, {cache: "no-store"});
-    if (!r.ok) { toast(rel + " is not in this profile yet"); return; }
+    if (!r.ok) { toast("В этом профиле ещё нет " + rel); return; }
     const t = await r.text();
     const dir = base + rel.split("/").slice(0, -1).map(x => x + "/").join("");
     const node = h("div", {class: "md", html: md(t, dir)});
@@ -1021,9 +1037,9 @@ function md(src, dir) {
 /* ---------- boot ---------- */
 function renderHeader() {
   $("#ws").textContent = S.st.workspace;
-  $("#ws").title = "workspace · niche-finder " + S.st.version;
+  $("#ws").title = "воркспейс · niche-finder " + S.st.version;
   $("#keys").replaceChildren(...Object.entries(S.st.keys).map(([k, on]) =>
-    h("span", {class: "key" + (on ? " on" : ""), title: on ? k + ": key found" : k + ": no key, its stages are skipped"}, KEYNAMES[k] || k)));
+    h("span", {class: "key" + (on ? " on" : ""), title: on ? k + ": ключ есть" : k + ": ключа нет, его стадии пропускаются"}, KEYNAMES[k] || k)));
 }
 function renderAll() { renderSetup(); renderStages(); }
 function tick() { if (S.running) { renderStages(); } }
@@ -1042,7 +1058,7 @@ async function init() {
   renderHeader(); buildPipeline(); autoFold(); renderAll(); refreshPreview();
   $("#run").onclick = startRun; $("#stop").onclick = stopRun;
   $("#keep").onchange = save;
-  $("#argshelp").onclick = () => { const n = [...S.sel][0]; if (n) openText("/api/help?stage=" + encodeURIComponent(n), n + " — help"); };
+  $("#argshelp").onclick = () => { const n = [...S.sel][0]; if (n) openText("/api/help?stage=" + encodeURIComponent(n), n + " — справка"); };
   $("#tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) setTab(b.dataset.tab); });
   $("#dclose").onclick = closeDrawer; $("#scrim").onclick = closeDrawer;
   document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
@@ -1051,7 +1067,7 @@ async function init() {
   const fromHash = {"#results": "res", "#history": "hist"}[location.hash];
   if (fromHash || (saved && saved.tab && saved.tab !== "pipe")) setTab(fromHash || saved.tab);
 }
-init().catch(e => { document.body.prepend(h("div", {class: "toast"}, "Could not load the console: " + e.message)); });
+init().catch(e => { document.body.prepend(h("div", {class: "toast"}, "Не удалось загрузить консоль: " + e.message)); });
 </script>
 </body>
 </html>
