@@ -1,12 +1,16 @@
-"""B2B pricing (switching cost): prices of the top products per niche from GetApp.
+"""B2B pricing (switching cost): prices of the top products per niche, from Capterra category pages, then GetApp.
 
-GetApp shows the same Gartner data as Capterra but keeps product cards open. For every B2B niche: the top-N products by
-Capterra reviews (horizontal ones excluded) -> their GetApp slug (found in the category listing) -> the product card:
-starting price, period, pricing model, free trial, free version.
+For every B2B niche: the top-N products by Capterra reviews (horizontal ones excluded). s5_capterra already read their
+pricing from the category pages (capterra_products.csv): free trial / free version always, the entry price, period and
+model when the page lists plans. A product whose price is still unknown goes to GetApp, which shows the same Gartner data
+on product cards: its GetApp slug (found in the category listing) -> the card. GetApp answers scripts with an anti-bot
+page (2026-11-21), so the first block page ends the GetApp lookups and the Capterra data is written alone.
 Inputs: data/out/capterra_products.csv, config/capterra_map.yaml, config/getapp_categories.yaml (GetApp child -> parent).
-Outputs: data/out/pricing_b2b.csv (per product) and data/out/pricing_b2b_niche.csv (per niche: share of products with a
-public price, median/min/max monthly price, share under $100, free trial/version shares). HTML is cached in
-data/cache/getapp/. Needs curl. No key.
+Outputs: data/out/pricing_b2b.csv (per product, `source` capterra / getapp / empty) and data/out/pricing_b2b_niche.csv
+(per niche: share of products with a public price among those whose pricing is known, median/min/max monthly price,
+share under $100, free trial/version shares). A product with no price and no "no pricing info" mark is unknown and stays
+out of the public-price share (counting it as unpriced gave false 0 % shares). HTML is cached in data/cache/getapp/.
+Needs curl. No key.
 """
 from __future__ import annotations
 
@@ -21,7 +25,7 @@ from nichefinder import http
 from nichefinder.stages.s5_capterra import blocked   # GetApp sits behind the same anti-bot check as Capterra
 from nichefinder.workspace import Workspace
 
-SUMMARY = "B2B pricing of top Capterra products from GetApp cards"
+SUMMARY = "B2B pricing of top Capterra products from Capterra page data, then GetApp cards"
 KEYS: tuple[str, ...] = ()
 NEEDS: tuple[str, ...] = ("curl",)
 
@@ -137,17 +141,14 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     for r in prods:
         if r["generic"] == "0":
             by_slug[r["slug"]].append(r)
-    try:
-        rows = price_products(ws, cmap, gcats, by_slug)
-    except Blocked as e:
-        # 2026-11-21: GetApp, like Capterra, answers scripts with a Cloudflare "Security Check" page. Retrying every URL
-        # cost ~40 s each and ended with a pricing_b2b.csv of empty prices (0 % public prices, a false switching signal).
-        print(f"GetApp answered {e} with an anti-bot page - B2B pricing is not measured; nothing written "
-              "(s5_merge treats the niches as unpriced: neutral switching inputs)")
+    rows = price_products(ws, cmap, gcats, by_slug)
+    if not any(r[k] not in ("", None) for r in rows for k in ("price", "no_pricing_info", "free_trial", "free_version")):
+        print("no pricing found for any product - nothing written (s5_merge treats the niches as unpriced: neutral switching inputs)")
         return
-    if not rows:
-        print("no products priced - nothing written")
-        return
+    src_n = defaultdict(int)
+    for r in rows:
+        src_n[r["source"] or "unknown"] += 1
+    print("pricing source per product:", dict(src_n))
     out = ws.out("pricing_b2b.csv")
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys())); w.writeheader(); w.writerows(rows)
@@ -155,28 +156,51 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     aggregate(ws)
 
 
+PRICE_COLS = ("price", "period", "model", "no_pricing_info", "free_trial", "free_version")
+
+
+def known_price(r: dict) -> bool:
+    """The product's pricing is known: a public price, or a mark that the vendor publishes none."""
+    return str(r.get("price", "")) not in ("", "None") or str(r.get("no_pricing_info", "")) == "1"
+
+
 def price_products(ws: Workspace, cmap: dict, gcats: dict, by_slug: dict) -> list[dict]:
-    rows = []
+    rows, getapp_open, listings = [], True, {}
     for nid, cfg in cmap.items():
         for cslug in cfg["slugs"]:
             child = OVERRIDE.get(cslug, cslug.replace("-software", ""))
             parent = gcats.get(child)
-            if not parent:
-                print(f"  !! no GetApp category for {cslug} ({child}) - add it to config/getapp_categories.yaml")
-                continue
-            listing = listing_products(ws, parent, child)
-            lookup = {norm(n): s for s, n in listing.items()}
             top = sorted(by_slug[cslug], key=lambda r: -int(r["reviews"]))[:TOP_N]
             for r in top:
-                gslug = lookup.get(norm(r["product"]))
-                if not gslug:
-                    cand = [s for s, n in listing.items() if norm(r["product"]) in norm(n) or norm(n) in norm(r["product"])]
-                    gslug = cand[0] if cand else re.sub(r"[^a-z0-9]+", "-", r["product"].lower()).strip("-")
-                pr = product_pricing(ws, gslug) or {}
+                cap = {k: r.get(k, "") or "" for k in PRICE_COLS}
+                pr, gslug, matched, source = dict(cap), "", "", "capterra" if known_price(cap) else ""
+                if not source and getapp_open and parent:
+                    try:
+                        if cslug not in listings:
+                            listings[cslug] = listing_products(ws, parent, child)
+                        listing = listings[cslug]
+                        lookup = {norm(n): s for s, n in listing.items()}
+                        gslug = lookup.get(norm(r["product"]))
+                        if not gslug:
+                            cand = [s for s, n in listing.items() if norm(r["product"]) in norm(n) or norm(n) in norm(r["product"])]
+                            gslug = cand[0] if cand else re.sub(r"[^a-z0-9]+", "-", r["product"].lower()).strip("-")
+                        matched = int(gslug in listing)
+                        ga = product_pricing(ws, gslug) or {}
+                        # the card's own flags win; Capterra's fill what the card does not show
+                        pr = {k: (ga.get(k) if ga.get(k) not in ("", None) else cap[k]) for k in PRICE_COLS}
+                        source = "getapp" if known_price(ga) else ""
+                    except Blocked as e:
+                        # 2026-11-21: GetApp, like Capterra, answers scripts with a Cloudflare "Security Check" page.
+                        # Retrying every URL cost ~40 s each, so the first block page ends the GetApp lookups.
+                        getapp_open = False
+                        print(f"GetApp answered {e} with an anti-bot page - no more GetApp lookups in this run; "
+                              "prices come from Capterra pages only")
+                elif not source and getapp_open and not parent:
+                    print(f"  !! no GetApp category for {cslug} ({child}) - add it to config/getapp_categories.yaml")
                 rows.append({"niche_id": nid, "capterra_slug": cslug, "product": r["product"], "reviews": r["reviews"],
-                             "getapp_slug": gslug, "matched": int(gslug in listing), **{k: pr.get(k, "") for k in
-                             ("price", "period", "model", "no_pricing_info", "free_trial", "free_version")}})
-                print(f"{nid:34} {r['product'][:28]:28} rev={r['reviews']:>5} -> {gslug[:30]:30} price={pr.get('price')} {pr.get('period','')} {pr.get('model','')[:12]} trial={pr.get('free_trial')} free={pr.get('free_version')}")
+                             "source": source, "getapp_slug": gslug, "matched": matched, **{k: pr.get(k, "") for k in PRICE_COLS}})
+                print(f"{nid:34} {r['product'][:28]:28} rev={r['reviews']:>5} [{source or 'unknown':8}] price={pr.get('price')} "
+                      f"{pr.get('period', '')} {str(pr.get('model', ''))[:12]} trial={pr.get('free_trial')} free={pr.get('free_version')}")
     return rows
 
 
@@ -195,9 +219,11 @@ def aggregate(ws: Workspace) -> None:
                 seen.add(r["product"]); uniq.append(r)
         monthly = sorted(float(r["price"]) for r in uniq if r["price"] not in ("", "None") and "month" in (r["period"] or ""))
         pub = [r for r in uniq if r["price"] not in ("", "None")]
+        known = [r for r in uniq if known_price(r)]
         trial = [r for r in uniq if r["free_trial"] in ("0", "1")]
         free = [r for r in uniq if r["free_version"] in ("0", "1")]
-        agg.append({"niche_id": nid, "n": len(uniq), "price_public": len(pub), "price_public_share": round(len(pub) / len(uniq), 2) if uniq else "",
+        agg.append({"niche_id": nid, "n": len(uniq), "price_known": len(known), "price_public": len(pub),
+                    "price_public_share": round(len(pub) / len(known), 2) if known else "",
                     "median_monthly_usd": monthly[len(monthly) // 2] if monthly else "", "min_monthly_usd": monthly[0] if monthly else "", "max_monthly_usd": monthly[-1] if monthly else "",
                     "under_100_share": round(sum(1 for x in monthly if x < 100) / len(monthly), 2) if monthly else "",
                     "free_trial_share": round(sum(1 for r in trial if r["free_trial"] == "1") / len(trial), 2) if trial else "",

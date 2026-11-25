@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import re
 from pathlib import Path
 
@@ -323,3 +324,90 @@ def test_passport_asks_for_a_manual_oligopoly_check_in_b2b_niches_that_are_not_r
     assert "top-3" not in s6_passports.oligopoly_lines("b2b", "yellow", cats[1:])[0]
     assert s6_passports.oligopoly_lines("b2b", "red", cats) == []
     assert s6_passports.oligopoly_lines("b2c", "green", cats) == [] and s6_passports.oligopoly_lines("prosumer", "green", cats) == []
+
+
+def with_pricing(page: str, products: list[tuple[str, dict]]) -> str:
+    """Add the Next.js page data with one CapterraProduct per (name, pricing) to a category page."""
+    data = json.dumps({"items": [{"__typename": "CapterraProduct", "name": n, "slug": n.lower(), "reviewSummary": {"totalReviews": 1},
+                                  "pricing": {"__typename": "ProductPricing", **pr}} for n, pr in products]}, separators=(",", ":"))
+    push = "self.__next_f.push([1," + json.dumps("5:" + data) + "])"
+    return page.replace("<html>", f"<html><script>{push}</script>", 1)
+
+
+def plan(price, default=False, freq=2, ptype=1, model=1) -> dict:
+    return {"__typename": "ProductPricingPlan", "startingPrice": price, "paymentFrequency": freq, "priceType": ptype,
+            "pricingModel": model, "isDefault": default}
+
+
+def test_capterra_pricing_reads_the_default_plan_and_keeps_unknown_apart():
+    page = with_pricing(listing(9, [("Leads", 900)]), [
+        ("Leads", {"hasFreeTrial": True, "hasFreeVersion": False, "plans": [plan(99), plan(29, default=True, model=2)]}),
+        ("Pipes", {"hasFreeTrial": False, "hasFreeVersion": False, "plans": [plan(None, ptype=2), plan(None, default=True, ptype=2)]}),
+        ("Deals", {"hasFreeTrial": True, "hasFreeVersion": True}),   # the common page variant: flags only
+        ("Deals", {"hasFreeTrial": True, "hasFreeVersion": True, "plans": [plan(12, freq=3)]}),   # shown again with plans
+        ("Tiny", {"hasFreeTrial": None})])
+    pr = s5_capterra.pricing(page)
+    assert pr["Leads"] == {"price": 29, "period": "per month", "model": "Per User", "no_pricing_info": 0, "free_trial": 1, "free_version": 0}
+    assert (pr["Pipes"]["price"], pr["Pipes"]["no_pricing_info"]) == ("", 1)   # every plan says "contact the vendor"
+    assert (pr["Deals"]["price"], pr["Deals"]["period"]) == (12, "per year")    # the copy with plans wins
+    assert (pr["Tiny"]["price"], pr["Tiny"]["no_pricing_info"], pr["Tiny"]["free_trial"]) == ("", "", "")
+
+
+def test_b2b_prices_come_from_capterra_pages_and_getapp_only_fills_unknown(tmp_path, monkeypatch):
+    ws = capterra_ws(tmp_path)
+    (tmp_path / "config" / "getapp_categories.yaml").write_text(yaml.safe_dump({"crm": "customer-management-software"}), encoding="utf-8")
+    p1 = with_pricing(listing(3, [("Leads", 900), ("Pipes", 500), ("Deals", 300)]), [
+        ("Leads", {"hasFreeTrial": True, "hasFreeVersion": False, "plans": [plan(29, default=True)]}),
+        ("Pipes", {"hasFreeTrial": False, "hasFreeVersion": False, "plans": [plan(None, default=True, ptype=2)]}),
+        ("Deals", {"hasFreeTrial": True, "hasFreeVersion": True})])
+    asked = []
+
+    def request(url, **kw):
+        asked.append(url)
+        return Resp(BLOCK if "getapp.com" in url else p1)
+    monkeypatch.setattr(http, "request", request)
+    monkeypatch.setattr(s5_capterra.time, "sleep", lambda s: None)
+    monkeypatch.setattr(s5_pricing_b2b.time, "sleep", lambda s: None)
+    s5_capterra.run(ws, argparse.Namespace())
+    s5_pricing_b2b.run(ws, argparse.Namespace(agg=False))
+    assert [u for u in asked if "getapp" in u] == ["https://www.getapp.com/customer-management-software/crm/"]   # Deals only, once
+    rows = {r["product"]: r for r in csv.DictReader(open(ws.out("pricing_b2b.csv"), encoding="utf-8"))}
+    assert [rows[p]["source"] for p in ("Leads", "Pipes", "Deals")] == ["capterra", "capterra", ""]
+    assert (rows["Deals"]["price"], rows["Deals"]["free_trial"], rows["Deals"]["free_version"]) == ("", "1", "1")
+    agg = next(csv.DictReader(open(ws.out("pricing_b2b_niche.csv"), encoding="utf-8")))
+    # Deals is unknown, not unpriced: one public price out of two known, not one out of three
+    assert (agg["n"], agg["price_known"], agg["price_public"], agg["price_public_share"]) == ("3", "2", "1", "0.5")
+    assert (agg["median_monthly_usd"], agg["under_100_share"], agg["free_trial_share"]) == ("29.0", "1.0", "0.67")
+
+
+def saved(url: str, page: str) -> str:
+    """A page as a browser saves it: the address in a comment before the document."""
+    return f"<!-- saved from url=({len(url):04d}){url} -->\n" + page
+
+
+def test_capterra_pages_saved_in_a_browser_are_imported_and_missing_ones_listed(tmp_path, monkeypatch, capsys):
+    ws = capterra_ws(tmp_path)
+    (tmp_path / "config" / "capterra_map.yaml").write_text(yaml.safe_dump(
+        {"crm": {"slugs": ["crm-software", "sales-software"]}, "budget": {"slugs": ["crm-software"]}}), encoding="utf-8")
+
+    def no_network(*a, **k):
+        raise AssertionError("--missing and --import make no requests")
+    monkeypatch.setattr(http, "request", no_network)
+    s5_capterra.run(ws, argparse.Namespace(missing=True))
+    out = capsys.readouterr().out
+    assert "2 page(s)" in out   # a category shared by two niches is listed once
+    assert "https://www.capterra.com/crm-software/   (" in out and "https://www.capterra.com/sales-software/   (crm)" in out
+    folder = tmp_path / "saved"
+    folder.mkdir()
+    (folder / "Best CRM Software.html").write_text(saved("https://www.capterra.com/crm-software/",
+                                                         listing(400, [("Leads", 900), ("Pipes", 500)])), encoding="utf-8")
+    (folder / "Best CRM Software (2).html").write_text(saved("https://www.capterra.com/crm-software/?page=2",
+                                                             listing(400, [("Deals", 300)])), encoding="utf-8")
+    (folder / "check.html").write_text(saved("https://www.capterra.com/sales-software/", BLOCK), encoding="utf-8")
+    (folder / "other.html").write_text(saved("https://www.capterra.com/p/123/Leads/", listing(1, [("Leads", 900)])), encoding="utf-8")
+    s5_capterra.run(ws, argparse.Namespace(import_dir=str(folder), missing=True))
+    out = capsys.readouterr().out
+    assert "imported 2 of 4" in out and "skip check.html" in out and "skip other.html" in out
+    assert sorted(p.name for p in ws.cache("capterra").iterdir()) == ["crm-software_p1.html", "crm-software_p2.html"]
+    # the next page of the category that is now read up to page 2, and still page 1 of the other one
+    assert "https://www.capterra.com/crm-software/?page=3   (" in out and "https://www.capterra.com/sales-software/   (crm)" in out
