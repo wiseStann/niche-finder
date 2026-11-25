@@ -31,6 +31,7 @@
 
 - id: ru-speech-analytics-calls
   name: Call speech analytics for sales teams and small call centres (RU)
+  platform: 2       # owner's judgment 2026-11-25: telephony vendors sell it as a module of their PBX (Mango Office since 2019), so the buyer already pays the operator
   who: sales teams of 5-50 managers, outsourced call centres, clinics, developers
   product: SaaS 5-30 thousand RUB/month or RUB per minute
   stack_fit: 1
@@ -46,6 +47,7 @@
 
 - id: ru-ai-interviewer-mass-hiring
   name: AI interviewer and candidate screening for mass hiring (RU)
+  platform: 2       # owner's judgment 2026-11-25: hh.ru's AI assistant for recruiters (2025) sorts applications and runs the first chat with candidates; interviews are next
   who: retail, logistics, call centres, HoReCa - HR teams with 100+ applications a week
   product: SaaS 10-50 thousand RUB/month or RUB per interview
   stack_fit: 1
@@ -211,6 +213,7 @@
 
 - id: ru-housing-management
   name: Management companies and homeowner associations - dispatch, requests, resident app (RU)
+  platform: 2       # owner's judgment 2026-11-25 after a manual check: the state app Gosuslugi Dom and the MAX channel mandatory from 1.09.2026 take the resident side for free; Sber (Doma.ai) and Yandex (Domilend) give the CRM core free
   who: management companies with 5-100 buildings, homeowner associations
   product: 5-30 thousand RUB/month
   stack_fit: 1
@@ -301,6 +304,7 @@
 
 - id: ru-recruiting-ats
   name: ATS / CRM for recruiting (RU)
+  platform: 2       # owner's judgment 2026-11-25: hh.ru owns the ATS Talantix and recruiters already work inside hh.ru; SberPodbor has a free plan
   who: HR departments of SMBs, recruitment agencies
   product: 3-20 thousand RUB/month
   stack_fit: 1
