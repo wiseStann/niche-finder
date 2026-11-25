@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 
 from nichefinder import appfit, http, keys, llm
-from nichefinder.stages import s5_appstore, s5_capterra, s5_merge, s5_pricing_b2b, s8_gplay_filter
+from nichefinder.stages import s5_appstore, s5_capterra, s5_merge, s5_pricing_b2b, s6_passports, s8_gplay_filter
 from nichefinder.workspace import Workspace
 
 
@@ -312,3 +312,14 @@ def test_getapp_block_page_stops_b2b_pricing_without_output(tmp_path, monkeypatc
     assert len(calls) == 1   # no retries: the first block page stops the stage
     assert not ws.out("pricing_b2b.csv").exists() and not ws.out("pricing_b2b_niche.csv").exists()
     assert not any(ws.cache("getapp").iterdir())
+
+
+def test_passport_asks_for_a_manual_oligopoly_check_in_b2b_niches_that_are_not_red():
+    cats = [{"slug": "website-builder-software", "complete": "1", "top3_share": "0.71"},
+            {"slug": "landing-page-software", "complete": "0", "top3_share": ""}]
+    lines = s6_passports.oligopoly_lines("b2b-smb", "green", cats)
+    assert lines[0].startswith("**Oligopoly check (manual).**")
+    assert "Capterra `website-builder-software` top-3 = 71%" in lines[0] and "landing-page" not in lines[0]   # no shares when incomplete
+    assert "top-3" not in s6_passports.oligopoly_lines("b2b", "yellow", cats[1:])[0]
+    assert s6_passports.oligopoly_lines("b2b", "red", cats) == []
+    assert s6_passports.oligopoly_lines("b2c", "green", cats) == [] and s6_passports.oligopoly_lines("prosumer", "green", cats) == []

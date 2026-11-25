@@ -41,6 +41,19 @@ def p(v):
     return n(v, "{:.0%}")
 
 
+def oligopoly_lines(side: str, verdict: str, cats: list[dict]) -> list[str]:
+    """The manual oligopoly check for a B2B niche that is not red. S5 catches one dominant product, not a market split
+    among a few large vendors, and that miss is accepted (methodology section 7, "The B2B controls and S5")."""
+    if not side.startswith("b2b") or verdict == "red":
+        return []
+    top3 = "; ".join(f"Capterra `{c['slug']}` top-3 = {p(c['top3_share'])}" for c in cats
+                     if c.get("complete") != "0" and c.get("top3_share") not in (None, ""))
+    return ["**Oligopoly check (manual).** S5 catches one dominant product, not a market split among a few large vendors, "
+            "so a B2B market held by three or four giants passes it. Before picking this niche, check whether the leaders "
+            "above are large companies that together hold most of the market" + (f" ({top3})" if top3 else "")
+            + ". Methodology section 7, \"The B2B controls and S5\", and section 11, step 3.", ""]
+
+
 def _rows(path, key):
     if not os.path.exists(path):
         return {}
@@ -179,6 +192,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             L += [f"**Manual supply estimate** (no proxy category): {m['supply_manual']}", ""]
         L += [f"S5 gate (top-1 ≤ 50% and ≥ 8 players by an independent signal): **{s['gate_s5']}**." + (" \"Second platform\" rule: the iOS leader holds > 50%, but the Google Play US leader holds ≤ 50% with ≥ 8 players above 100k installs - the market is not a monopoly, entry through Android (see \"Demand outside search\")." if s['gate_s5'] == 'PASS:android' else '')
               + (" Settled by the bounds of an incomplete Capterra category (`S5:partial`): more pages can only lower the top-1 share and add players; the players and top-3 points of the score are neutral until the category is read in full." if 'S5:partial' in s['flags'] else ''), ""]
+        L += oligopoly_lines(x["side"], s["verdict"], cl)
         e = ent.get(nid)
         if e and int(e["cohort_12_24m"] or 0) > 0:   # new-entrant survival (s9_entrants)
             L += [f"**New-entrant survival, App Store US** (released 12–24 months ago: {e['cohort_12_24m']}): updated within 180 days - {float(e['upd_180d']):.0%}, within 90 - {float(e['upd_90d']):.0%}; reached ≥ 1k ratings - {float(e['share_1k']):.0%}" + (f" → **{e['flag']}**" if e['flag'] else '') + ". (E:churn - newcomers die, a sign of a wrapper factory; E:traction - newcomers get traction, the market is open.)", ""]
