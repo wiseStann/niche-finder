@@ -141,7 +141,9 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                 d = f(sp.get("demand_us"), 0)
                 if d:
                     size = d * 12 * c["search_to_customer"]
-                    proxy = f"search: {d:,.0f}/month × 12 × {c['search_to_customer']:.0%} (proxy - no Capterra category)"
+                    why = ("the Capterra category was not read in full" if (cap.get(nid) or {}).get("complete") == "0"
+                           else "no Capterra category")   # an incomplete category has no review totals (s5_capterra)
+                    proxy = f"search: {d:,.0f}/month × 12 × {c['search_to_customer']:.0%} (proxy - {why})"
                     notes.append("size from search is the roughest proxy")
         if o.get("size_override"):
             size, proxy = float(o["size_override"]), f"manual estimate - {o.get('size_note', '')}"

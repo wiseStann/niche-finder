@@ -8,6 +8,11 @@ S5 gate "fragmentation by an independent signal": top1_share (by ratings/reviews
 says "broader" or "proxy" gets NA:proxy (supply is judged by hand in the passport). A source row without a top-1 share
 (Capterra pages that did not parse, such as an anti-bot "Security Check" page) is no data: the niche falls back to the
 other source, or gets NA:nodata. Until 2026-11-21 a missing share counted as 100 % and failed the gate.
+A Capterra category whose paging a block page cut short has no shares either, only bounds (s5_capterra). It settles the
+gate when the bounds do (top-1 share read so far <= 0.5 and players read so far >= 8 -> PASS; the unread products have
+under 100 reviews each and fewer than 8 players were read -> FAIL:players), with `supply_partial` = 1, and is no data
+otherwise. Its players and top-3 share stay empty, so the score gives them the neutral half-credit. `cap_stop` says why
+Capterra paging ended.
 Trend verdict: when the anchor's Google Trends verdict is DOWN or NA (or FLAT/UP and brands disagree), the brand queries
 of the category (kind=brand rows, at least 2 with signal and mean_2024 >= 5) vote and may move it by one step.
 """
@@ -24,12 +29,28 @@ SUMMARY = "Merge all S3-S5 signals per shortlisted niche into supply_deep.csv wi
 KEYS: tuple[str, ...] = ()
 NEEDS: tuple[str, ...] = ()
 
+TOP1_MAX, PLAYERS_MIN = 0.5, 8   # gate S5
+
 
 def f(v, default=None):
     try:
         return float(v)
     except (TypeError, ValueError):
         return default
+
+
+def capterra_bound(c: dict) -> str | None:
+    """The S5 gate that the bounds of an incomplete Capterra category settle, or None."""
+    if c.get("complete") != "0":
+        return None
+    smax, pmin, tail = f(c.get("top1_share_max")), f(c.get("products_100plus_min")), f(c.get("tail_reviews"))
+    if smax is None or pmin is None:
+        return None
+    if smax <= TOP1_MAX and pmin >= PLAYERS_MIN:
+        return "PASS"
+    if tail is not None and tail < 100 and pmin < PLAYERS_MIN:   # every product with 100+ reviews has been read
+        return "FAIL:players"
+    return None
 
 
 def run(ws: Workspace, args: argparse.Namespace) -> None:
@@ -140,7 +161,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             "cap_slug": c.get("slug", ""), "cap_products_total": sum(int(x["products_total"] or 0) for x in c_list) if c_list else None,
             "cap_products_100": f(c.get("products_100plus")), "cap_products_10": f(c.get("products_10plus")),
             "cap_top1": c.get("top1", ""), "cap_top1_share": f(c.get("top1_share")), "cap_top3_share": f(c.get("top3_share")), "cap_hhi": f(c.get("hhi")),
-            "cap_generic": c.get("generic_present", ""), "cap_note": (cmap.get(nid) or {}).get("note", ""),
+            "cap_generic": c.get("generic_present", ""), "cap_note": (cmap.get(nid) or {}).get("note", ""), "cap_stop": c.get("stop", ""),
             # Shopify App Store
             "shop_cat": shop.get(nid, {}).get("category", ""), "shop_players_100": f(shop.get(nid, {}).get("players_100")),
             "shop_top1": shop.get(nid, {}).get("top1", ""), "shop_top1_share": f(shop.get(nid, {}).get("top1_share")), "shop_top3_share": f(shop.get(nid, {}).get("top3_share")),
@@ -156,6 +177,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         # independent concentration: App Store for b2c/prosumer, Capterra for b2b; if both exist, the one matching the side
         # a Capterra row without a top-1 share means its pages did not parse (a "Security Check" page): no data
         has_cap = bool(c) and row["cap_top1_share"] is not None
+        cap_bound = capterra_bound(c) if c and not has_cap else None
+        has_cap = has_cap or cap_bound is not None
         use_as = row["as_na"] == 0 and n["side"] in ("b2c", "prosumer")
         use_cap = has_cap and n["side"].startswith("b2b")
         if not use_as and not use_cap:   # fallback: whatever is available
@@ -168,18 +191,24 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             row["supply_src"], row["supply_top1_share"], row["supply_top3_share"], row["supply_players"], row["supply_top1"] = "capterra", row["cap_top1_share"], row["cap_top3_share"], row["cap_products_100"], row["cap_top1"]
         else:
             row["supply_src"], row["supply_top1_share"], row["supply_top3_share"], row["supply_players"], row["supply_top1"] = "na", None, None, None, ""
+        row["supply_partial"] = int(row["supply_src"] == "capterra" and cap_bound is not None)
         note = row["cap_note"].lower()
         if row["supply_src"] == "na":
             row["gate_s5"] = "NA"
         elif row["supply_src"] == "capterra" and ("proxy" in note or "broader" in note):
             row["gate_s5"] = "NA:proxy"   # the Capterra category does not match the niche - supply is judged by hand in the passport
+        elif row["supply_partial"]:
+            row["gate_s5"] = cap_bound   # settled by the bounds of an incomplete category; players and top-3 stay unmeasured
         elif row["supply_top1_share"] is None:
             row["gate_s5"] = "NA:nodata"   # the source has no concentration for this niche: missing data is not a failed gate
         else:
-            ok = (row["supply_top1_share"] or 1) <= 0.5 and (row["supply_players"] or 0) >= 8
-            row["gate_s5"] = "PASS" if ok else ("FAIL:top1" if (row["supply_top1_share"] or 1) > 0.5 else "FAIL:players")
+            ok = (row["supply_top1_share"] or 1) <= TOP1_MAX and (row["supply_players"] or 0) >= PLAYERS_MIN
+            row["gate_s5"] = "PASS" if ok else ("FAIL:top1" if (row["supply_top1_share"] or 1) > TOP1_MAX else "FAIL:players")
         rows.append(row)
-        print(f"{tier} {nid:34} {row['supply_src']:8} top1={row['supply_top1_share'] if row['supply_top1_share'] is not None else '-'} players={row['supply_players']} -> {row['gate_s5']:12} | GT={row['trend_gt']} KP={row['trend_kp']}")
+        cap_off = ""
+        if c and row["cap_stop"] not in ("", "end", "cap"):
+            cap_off = f" | Capterra {row['cap_stop']}, " + ("gate from bounds" if row["supply_partial"] else "no data" if not has_cap else "not used")
+        print(f"{tier} {nid:34} {row['supply_src']:8} top1={row['supply_top1_share'] if row['supply_top1_share'] is not None else '-'} players={row['supply_players']} -> {row['gate_s5']:12} | GT={row['trend_gt']} KP={row['trend_kp']}{cap_off}")
     if not rows:
         print("empty shortlist - nothing written")
         return

@@ -124,6 +124,111 @@ def test_capterra_block_pages_are_not_data_and_not_cached(tmp_path, monkeypatch)
     assert s5_capterra.parse(s5_capterra.fetch(ws, "x-software", 1))[0] == 321 and cached.exists()
 
 
+def listing(total: int, cards: list[tuple[str, int]]) -> str:
+    """A category page that s5_capterra.parse reads: numberOfItems and cards of name, rating, (reviews)."""
+    body = "".join(f"<h2>{name}</h2><b>4.5</b><i>(</i><i>{n:,}</i><i>)</i>" for name, n in cards)
+    return f'<html><script>{{"numberOfItems":{total}}}</script>{body}' + "z" * 12000 + "</html>"
+
+
+def capterra_site(monkeypatch, pages: dict[int, str]) -> list[str]:
+    """Serve category pages by number (a missing page is a block page); returns the requested URLs."""
+    asked = []
+
+    def request(url, **kw):
+        asked.append(url)
+        page = int(url.rsplit("=", 1)[1]) if "?page=" in url else 1
+        return Resp(pages.get(page, BLOCK))
+    monkeypatch.setattr(http, "request", request)
+    monkeypatch.setattr(s5_capterra.time, "sleep", lambda s: None)
+    return asked
+
+
+def capterra_ws(tmp_path: Path, brands: list[str] = ()) -> Workspace:
+    ws = make_ws(tmp_path, side="b2b-smb")
+    (tmp_path / "config" / "capterra_map.yaml").write_text(yaml.safe_dump({"crm": {"slugs": ["crm-software"]}}), encoding="utf-8")
+    (tmp_path / "config" / "capterra_generic.yaml").write_text(yaml.safe_dump({"generic": ["Bigsuite", "Deputy"]}), encoding="utf-8")
+    qs = [{"q": "tiny crm", "i": "category", "anchor": True}] + [{"q": b.lower(), "i": "brand", "b": b} for b in brands]
+    (tmp_path / "queries" / "q.yaml").write_text(yaml.safe_dump({"crm": {"en": qs}}), encoding="utf-8")
+    return ws
+
+
+def stats_of(ws: Workspace) -> dict:
+    return next(csv.DictReader(open(ws.out("capterra_categories_stats.csv"), encoding="utf-8")))
+
+
+def test_capterra_category_cut_short_by_a_block_page_is_no_data(tmp_path, monkeypatch):
+    ws = capterra_ws(tmp_path)
+    # page 1 has the leaders; page 2 is a block page: the shares of 3 products out of 400 would be far too high
+    capterra_site(monkeypatch, {1: listing(400, [("Ad", 0), ("Leads", 900), ("Pipes", 500), ("Deals", 300)])})
+    s5_capterra.run(ws, argparse.Namespace())
+    st = stats_of(ws)
+    assert (st["complete"], st["pages"], st["stop"], st["products_seen"], st["products_total"]) == ("0", "1", "blocked p2", "4", "400")
+    assert (st["top1"], st["top1_share"], st["top3_share"], st["products_100plus"], st["reviews_niche"]) == ("Leads", "", "", "", "")
+    # the bounds settle nothing here: top-1 <= 53 % and only 3 players read, while unread products may hold 300 reviews each
+    assert (st["top1_share_max"], st["products_100plus_min"], st["tail_reviews"]) == ("0.529", "3", "300")
+    write_csv(ws.out("appstore_metrics.csv"), [{"niche_id": "crm", "store": "us", "na": 0, "players_1k": 9, "players_10k": 3,
+                                                "top1": "Pocket CRM", "top1_share": 0.3, "top3_share": 0.6, "hhi": 0.2}])
+    s5_merge.run(ws, argparse.Namespace())
+    row = next(r for r in csv.DictReader(open(ws.out("supply_deep.csv"), encoding="utf-8")) if r["niche_id"] == "crm")
+    assert (row["supply_src"], row["gate_s5"], row["cap_stop"], row["supply_partial"]) == ("appstore", "PASS", "blocked p2", "0")
+
+
+def bound_row(**kw) -> dict:
+    row = {"niche_id": "crm", "slug": "crm-software", "products_total": 700, "products_seen": 25, "complete": 0, "pages": 1,
+           "stop": "blocked p2", "products_100plus": "", "products_10plus": "", "top1": "Leads", "top1_share": "",
+           "top3_share": "", "hhi": "", "generic_present": "", "top1_share_max": 0.3, "products_100plus_min": 12, "tail_reviews": 150}
+    return {**row, **kw}
+
+
+def test_merge_settles_the_gate_from_the_bounds_of_an_incomplete_category(tmp_path):
+    ws = make_ws(tmp_path, side="b2b-smb")
+    write_csv(ws.out("appstore_metrics.csv"), [{"niche_id": "crm", "store": "us", "na": 0, "players_1k": 2, "players_10k": 1,
+                                                "top1": "Pocket CRM", "top1_share": 0.9, "top3_share": 1, "hhi": 0.8}])
+    cases = [({}, ("capterra", "PASS", "1")),                                            # top-1 can only fall, players only grow
+             ({"products_100plus_min": 5, "tail_reviews": 40}, ("capterra", "FAIL:players", "1")),   # all 100+ products read
+             ({"products_100plus_min": 5}, ("appstore", "FAIL:top1", "0")),                # unread products may still be players
+             ({"top1_share_max": 0.7}, ("appstore", "FAIL:top1", "0"))]                    # the share may still fall below 50 %
+    for kw, want in cases:
+        write_csv(ws.out("capterra_categories_stats.csv"), [bound_row(**kw)])
+        s5_merge.run(ws, argparse.Namespace())
+        row = next(r for r in csv.DictReader(open(ws.out("supply_deep.csv"), encoding="utf-8")) if r["niche_id"] == "crm")
+        assert (row["supply_src"], row["gate_s5"], row["supply_partial"]) == want, kw
+        if want[2] == "1":   # players and top-3 stay empty: the score gives them neutral half-credit
+            assert (row["supply_players"], row["supply_top3_share"], row["supply_top1"]) == ("", "", "Leads")
+
+
+def test_capterra_page_one_ending_without_reviews_completes_the_category(tmp_path, monkeypatch):
+    ws = capterra_ws(tmp_path)
+    cards = [("Ad", 40), ("Leads", 90), ("Pipes", 30)] + [(f"P{i}", 0) for i in range(22)] + [("Related", 15)]
+    asked = capterra_site(monkeypatch, {1: listing(51, cards)})
+    s5_capterra.run(ws, argparse.Namespace())
+    st = stats_of(ws)
+    assert len(asked) == 1 and (st["complete"], st["stop"], st["products_100plus"]) == ("1", "end", "0")
+
+
+def test_capterra_paging_stops_at_the_reviewless_tail_and_keeps_own_brands(tmp_path, monkeypatch):
+    ws = capterra_ws(tmp_path, brands=["Deputy"])
+    asked = capterra_site(monkeypatch, {
+        1: listing(90, [("Ad", 0), ("Bigsuite", 5000), ("Deputy", 1200), ("Leads", 600), ("Pipes", 400)]),
+        2: listing(90, [("Deals", 150), ("Tiny", 20), ("Nothing", 0)]),   # ends in a product without reviews
+    })
+    s5_capterra.run(ws, argparse.Namespace())
+    assert len(asked) == 2   # page 3 would only hold products without reviews: not requested
+    st = stats_of(ws)
+    assert (st["complete"], st["stop"], st["pages"]) == ("1", "end", "2")
+    # Bigsuite is a horizontal substitute; Deputy is generic elsewhere but a brand of this niche, so it stays a player
+    assert (st["generic_present"], st["generic_kept"], st["top1"]) == ("Bigsuite", "Deputy", "Deputy")
+    assert st["top1_share"] == str(round(1200 / (1200 + 600 + 400 + 150 + 20), 3)) and st["products_100plus"] == "4"
+    prods = {r["product"]: r["generic"] for r in csv.DictReader(open(ws.out("capterra_products.csv"), encoding="utf-8"))}
+    assert (prods["Bigsuite"], prods["Deputy"]) == ("1", "0")   # s5_pricing_b2b prices the niche's own brands too
+
+
+def test_capterra_own_brand_match_is_a_name_not_a_substring():
+    assert s5_capterra.is_own("Wix Studio", {"wix"}) and s5_capterra.is_own("When I Work", {"when i work"})
+    assert not s5_capterra.is_own("Box", {"warmup inbox"}) and not s5_capterra.is_own("Loom", {"bloomerang"})
+    assert not s5_capterra.is_own("Wixel", {"wix"})
+
+
 def score_inputs(tmp_path: Path, ws: Workspace, sides: dict, **supply) -> None:
     """score.yaml, metrics_quick.csv and supply_deep.csv for s6_score; `sides` maps niche id -> side."""
     (tmp_path / "config" / "score.yaml").write_text(yaml.safe_dump({

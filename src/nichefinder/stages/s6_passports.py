@@ -160,16 +160,25 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         elif a and a.get("na") == "1":
             L += ["App Store: not a sales channel for this niche (web product) - iTunes results are irrelevant, metrics were not computed.", ""]
         for c in cl:
+            if c.get("complete") == "0":   # paging cut short by an anti-bot page: the shares would be biased (s5_capterra)
+                bounds = (f"; bounds: top-1 ≤ {p(c['top1_share_max'])}, ≥ {c['products_100plus_min']} products with ≥ 100 reviews, "
+                          f"every unread product ≤ {c['tail_reviews']} reviews") if c.get("top1_share_max") else ""
+                L += [f"**Capterra `{c['slug']}`**: {c['products_total'] or '?'} products in the category; only {c['products_seen']} were read "
+                      f"({c['stop']}), so shares are not measured. Leader by reviews: **{c['top1'] or '?'}**{bounds}"
+                      + (f"; horizontal substitutes in the category: {c['generic_present']}" if c['generic_present'] else "") + (f". _{c['note']}_" if c['note'] else "."), ""]
+                continue
             L += [f"**Capterra `{c['slug']}`**: {c['products_total']} products in the category, {c['products_10plus']} with ≥ 10 reviews, **{c['products_100plus']} with ≥ 100**; "
                   f"excluding horizontal substitutes top-1 **{c['top1']}** = {p(c['top1_share'])} of reviews, top-3 = {p(c['top3_share'])}, HHI {n(c['hhi'], '{:.2f}')}"
-                  + (f"; horizontal substitutes in the category: {c['generic_present']}" if c['generic_present'] else "") + (f". _{c['note']}_" if c['note'] else "."), ""]
+                  + (f"; horizontal substitutes in the category: {c['generic_present']}" if c['generic_present'] else "")
+                  + (f"; counted as the niche's own brands: {c['generic_kept']}" if c.get('generic_kept') else "") + (f". _{c['note']}_" if c['note'] else "."), ""]
         for c in shop.get(nid, []):
             L += [f"**Shopify App Store `{c['category']}`**{' (primary)' if c['primary'] == '1' else ''}: {c['apps']} apps in the subcategory (crawled, excluding horizontal apps - `config/shopify_generic.yaml`), "
                   f"**{c['players_100']} with ≥ 100 reviews**, {c['players_1k']} with ≥ 1k; top-1 by reviews **{c['top1']}** = {p(c['top1_share'])}, top-3 = {p(c['top3_share'])}, HHI {n(c['hhi'], '{:.2f}')}; with a free plan/install - {p(c['free_share'])}. Top 3: {c['top3']}.", ""]
         L += ev.supply_lines(nid)
         if m.get("supply_manual"):
             L += [f"**Manual supply estimate** (no proxy category): {m['supply_manual']}", ""]
-        L += [f"S5 gate (top-1 ≤ 50% and ≥ 8 players by an independent signal): **{s['gate_s5']}**." + (" \"Second platform\" rule: the iOS leader holds > 50%, but the Google Play US leader holds ≤ 50% with ≥ 8 players above 100k installs - the market is not a monopoly, entry through Android (see \"Demand outside search\")." if s['gate_s5'] == 'PASS:android' else ''), ""]
+        L += [f"S5 gate (top-1 ≤ 50% and ≥ 8 players by an independent signal): **{s['gate_s5']}**." + (" \"Second platform\" rule: the iOS leader holds > 50%, but the Google Play US leader holds ≤ 50% with ≥ 8 players above 100k installs - the market is not a monopoly, entry through Android (see \"Demand outside search\")." if s['gate_s5'] == 'PASS:android' else '')
+              + (" Settled by the bounds of an incomplete Capterra category (`S5:partial`): more pages can only lower the top-1 share and add players; the players and top-3 points of the score are neutral until the category is read in full." if 'S5:partial' in s['flags'] else ''), ""]
         e = ent.get(nid)
         if e and int(e["cohort_12_24m"] or 0) > 0:   # new-entrant survival (s9_entrants)
             L += [f"**New-entrant survival, App Store US** (released 12–24 months ago: {e['cohort_12_24m']}): updated within 180 days - {float(e['upd_180d']):.0%}, within 90 - {float(e['upd_90d']):.0%}; reached ≥ 1k ratings - {float(e['share_1k']):.0%}" + (f" → **{e['flag']}**" if e['flag'] else '') + ". (E:churn - newcomers die, a sign of a wrapper factory; E:traction - newcomers get traction, the market is open.)", ""]

@@ -1,5 +1,8 @@
 # Horizontal products that Capterra lists in many categories. They are excluded from the per-niche concentration
 # (they are substitutes, not players of the niche) and mentioned separately as "horizontal substitute" (cap_generic).
+# A niche that names the product in its own brand queries (`i: brand`, field `b`) keeps it as a player: Deputy is a
+# substitute for a gym but a leader of shift scheduling (s5_capterra.is_own).
+# Names must match the Capterra card exactly; Capterra renames products, so a renamed one is listed under both names.
 generic:
   - Trello
   - Jira
@@ -37,6 +40,7 @@ generic:
   - Smartsheet
   - Pipedrive
   - Mailchimp
+  - Intuit Mailchimp Email Marketing   # Capterra's current name for Mailchimp
   - Shopify
   - Square Point of Sale
   - Square Appointments
