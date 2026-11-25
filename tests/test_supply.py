@@ -196,6 +196,13 @@ def test_merge_settles_the_gate_from_the_bounds_of_an_incomplete_category(tmp_pa
         assert (row["supply_src"], row["gate_s5"], row["supply_partial"]) == want, kw
         if want[2] == "1":   # players and top-3 stay empty: the score gives them neutral half-credit
             assert (row["supply_players"], row["supply_top3_share"], row["supply_top1"]) == ("", "", "Leads")
+    # a proxy category is judged by hand: its bounds settle nothing, so the row does not claim S5:partial
+    write_csv(ws.out("capterra_categories_stats.csv"), [bound_row()])
+    (tmp_path / "config" / "capterra_map.yaml").write_text(yaml.safe_dump(
+        {"crm": {"slugs": ["crm-software"], "note": "proxy: a broader category"}}), encoding="utf-8")
+    s5_merge.run(ws, argparse.Namespace())
+    row = next(r for r in csv.DictReader(open(ws.out("supply_deep.csv"), encoding="utf-8")) if r["niche_id"] == "crm")
+    assert (row["supply_src"], row["gate_s5"], row["supply_partial"]) == ("capterra", "NA:proxy", "0")
 
 
 def test_capterra_page_one_ending_without_reviews_completes_the_category(tmp_path, monkeypatch):
@@ -411,3 +418,15 @@ def test_capterra_pages_saved_in_a_browser_are_imported_and_missing_ones_listed(
     assert sorted(p.name for p in ws.cache("capterra").iterdir()) == ["crm-software_p1.html", "crm-software_p2.html"]
     # the next page of the category that is now read up to page 2, and still page 1 of the other one
     assert "https://www.capterra.com/crm-software/?page=3   (" in out and "https://www.capterra.com/sales-software/   (crm)" in out
+
+
+def test_capterra_offline_run_reads_the_cache_only(tmp_path, monkeypatch):
+    ws = capterra_ws(tmp_path)
+    (ws.cache("capterra") / "crm-software_p1.html").write_text(listing(400, [("Leads", 900), ("Pipes", 500)]), encoding="utf-8")
+
+    def no_network(*a, **k):
+        raise AssertionError("--offline makes no requests")
+    monkeypatch.setattr(http, "request", no_network)
+    s5_capterra.run(ws, argparse.Namespace(offline=True))
+    st = stats_of(ws)
+    assert (st["complete"], st["stop"], st["top1"], st["products_100plus_min"]) == ("0", "blocked p2", "Leads", "2")

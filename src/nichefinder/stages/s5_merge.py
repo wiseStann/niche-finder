@@ -197,6 +197,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             row["gate_s5"] = "NA"
         elif row["supply_src"] == "capterra" and ("proxy" in note or "broader" in note):
             row["gate_s5"] = "NA:proxy"   # the Capterra category does not match the niche - supply is judged by hand in the passport
+            row["supply_partial"] = 0     # so the bounds settle nothing either
         elif row["supply_partial"]:
             row["gate_s5"] = cap_bound   # settled by the bounds of an incomplete category; players and top-3 stay unmeasured
         elif row["supply_top1_share"] is None:

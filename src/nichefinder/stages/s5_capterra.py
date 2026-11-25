@@ -15,7 +15,8 @@ s5_merge settles the S5 gate from them when it can and treats the category as no
 stay in the cache, so a later run fetches only the missing ones.
 Cloudflare lets a browser through when it stops curl, so pages can also come from a browser: `--missing` lists the pages
 the cache lacks (no requests), and `--import <folder>` checks pages saved there (Ctrl+S) and puts them into the cache under
-the address the browser recorded (its "saved from url" comment, else the canonical link). The next run reads them.
+the address the browser recorded (its "saved from url" comment, else the canonical link). The next run reads them;
+`--offline` makes that run read the cache only, without the retries a blocked page costs (about 30 s per category).
 Pricing: the page data (Next.js `self.__next_f` strings) holds a pricing object per product. Every page variant has the
 free trial / free version flags; some categories (employee scheduling, rental property management in 2026-11) also list
 the plans. Then the default plan, the one Capterra shows as "Paid plans start at", gives the entry price, its period
@@ -260,6 +261,8 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
                         help="list the pages the cache lacks (next page of every incomplete category) and stop; no requests")
     parser.add_argument("--import", dest="import_dir", metavar="FOLDER",
                         help="first put the category pages saved in a browser in FOLDER into the cache")
+    parser.add_argument("--offline", action="store_true",
+                        help="read the cache only: pages it lacks are not requested (the categories stay incomplete)")
 
 
 def own_brands(ws: Workspace) -> dict[str, set[str]]:
@@ -351,7 +354,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
     for nid, cfg in cmap.items():
         for slug in cfg["slugs"]:
             if slug not in crawled:   # a category shared by two niches is fetched once
-                crawled[slug] = crawl(ws, slug)
+                crawled[slug] = crawl(ws, slug, offline=getattr(args, "offline", False))
                 prices[slug] = cached_pricing(ws, slug, crawled[slug][2])
             total, products, pages, stop, tail = crawled[slug]
             stats, rows = category_stats(nid, slug, cfg, total, products, pages, stop, tail, generic, brands.get(nid, set()))
