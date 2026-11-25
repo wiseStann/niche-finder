@@ -2,7 +2,11 @@
 
 For the `zakupki` phrases of each niche in config/ru_b2b_niches.yaml: number of procurements matching the exact phrase in the
 last 12 months and the 12 months before (windows end at the run date), and the sum and median of the initial contract price for
-procurements that have the phrase in their title (full-text search also matches attachments, which is noise).
+procurements that have the phrase in their title (full-text search also matches attachments, which is noise). "In the title"
+means every significant word of the phrase is there (`title_rule`): a word of up to three letters as a whole word, a longer one
+as its stem at the start of a word, so "hotel" in the instrumental case finds the genitive but not "boiler room", which contains
+the same four letters. Until 2026-11-25 one word was enough, and the hotel phrase "management system of a hotel" counted
+boiler-room and radio procurements (124 instead of 2).
 Laws 44-FZ and 223-FZ, all statuses. Cache: data/cache/zakupki/. Output: data/out/ru_b2b_zakupki.csv. Free, no key.
 """
 from __future__ import annotations
@@ -47,6 +51,29 @@ def get(ws: Workspace, u: str) -> str:
     return ""
 
 
+STOP = {"и", "в", "во", "на", "по", "для", "с", "со", "к", "ко", "от", "из", "о", "об", "при", "за"}
+
+
+def title_rule(q: str) -> list[re.Pattern]:
+    """One pattern per significant word of the phrase. Words of up to three letters (abbreviations such as TMS or CRM) must
+    stand whole; a longer word drops its inflection (1 letter at 5, 2 at 6-7, 3 from 8 letters) and must start a word."""
+    pats = []
+    for w in re.findall(r"[а-яa-z0-9-]+", q.lower().replace("ё", "е")):
+        if w in STOP:
+            continue
+        if len(w) <= 3:
+            pats.append(re.compile(rf"(?<!\w){re.escape(w)}(?!\w)"))
+        else:
+            cut = 3 if len(w) >= 8 else 2 if len(w) >= 6 else 1 if len(w) == 5 else 0
+            pats.append(re.compile(rf"(?<!\w){re.escape(w[:len(w) - cut])}"))
+    return pats
+
+
+def in_title(pats: list[re.Pattern], title: str) -> bool:
+    t = title.lower().replace("ё", "е")
+    return bool(pats) and all(p.search(t) for p in pats)
+
+
 def parse(s):
     m = re.search(r"search-results__total[^>]*>\s*([\d\s]+)", s)
     total = int(re.sub(r"\D", "", m.group(1))) if m and re.sub(r"\D", "", m.group(1)) else 0
@@ -69,7 +96,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         agg = {w: {"total": 0, "titled": 0, "prices": []} for w, _, _ in win}
         detail = []
         for q in n.get("zakupki") or []:
-            words = [w for w in re.findall(r"[а-яa-z0-9-]+", q.lower()) if len(w) > 3]
+            pats = title_rule(q)
             for w, d1, d2 in win:
                 s = get(ws, url(q, d1, d2, 1))
                 if not s:
@@ -83,7 +110,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
                         break
                     entries += e2
                     page += 1
-                titled = [(t, p) for t, p in entries if any(x[:6] in t.lower() for x in words)]
+                titled = [(t, p) for t, p in entries if in_title(pats, t)]
                 agg[w]["total"] += total
                 agg[w]["titled"] += len(titled)
                 agg[w]["prices"] += [p for _, p in titled if p]

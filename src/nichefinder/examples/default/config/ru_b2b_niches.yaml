@@ -8,7 +8,8 @@
 #   ws_brands / ws_cat / ws_dyn - Wordstat: sum of brands = category size; category phrases; 36-month dynamics                  (demand, trend)
 #   ws_brand_names - optional {phrase: brand}: spellings of one brand that count as one brand ("vetmanager" -> "ветменеджер")
 # Optional judgments and markers: `platform: 2` - the owner's judgment that a platform gives the product away or is building it
-# (the verdict is then red "platform", as G3 of S6-RU); `control: red|green` - a control niche (see the block at the end).
+# (the verdict is then red "platform", as G3 of S6-RU); `platform: 1` - a platform covers part of the task (flag
+# P1:platform-partial, the colour stays); `control: red|green` - a control niche (see the block at the end).
 # Search terms are Russian on purpose (they are queries against Russian sites); everything else is English.
 # stack_fit 0-3 is your own judgment of how well a niche fits your technical stack (3 = same stack, 0 = outside your competence).
 # It is shown beside the score and is not part of it. Every niche ships with the neutral 1; set your own.
@@ -153,6 +154,7 @@
 
 - id: ru-hotels-guesthouses
   name: Hotels, guest houses, apartments - PMS and booking (RU)
+  platform: 1       # owner's judgment 2026-11-25 after a manual check: OTA extranets (Yandex Travel, Ostrovok) and Avito give the calendar of their own channel free; the main risk is three strong groups (Kontur, TravelLine, 1C via Bnovo), not a platform
   who: properties with 5-100 rooms, short-term rentals
   product: 2-10 thousand RUB/month
   stack_fit: 1
@@ -183,6 +185,7 @@
 
 - id: ru-logistics-dispatch
   name: Freight and courier logistics - dispatch, TMS (RU)
+  platform: 1       # owner's judgment 2026-11-25 after a manual check: EPD operators (Saby, Kontur) and ATI give documents, the driver app and tracking almost free; Yandex Routing is free for 1-2 couriers
   who: transport companies and sole traders with 5-50 vehicles, courier services
   product: 3-20 thousand RUB/month
   stack_fit: 1
@@ -259,6 +262,7 @@
 
 - id: ru-tender-search
   name: Tender search and support for suppliers (RU)
+  platform: 1       # owner's judgment 2026-11-25 after a manual check: banks (T-Bank, Tochka, Sber) and the EIS app give tender search free; AI analysis of tender documents is paid but crowded (Kontur and about five others)
   who: SMB suppliers taking part in 44-FZ/223-FZ procurement
   product: 3-15 thousand RUB/month
   stack_fit: 1

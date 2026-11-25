@@ -105,10 +105,14 @@ def test_verdict_rules_after_the_control_calibration(tmp_path):
         {"id": "two", "name": "Two brands, 58%"},
         {"id": "three", "name": "Three brands, 58%"},
         {"id": "judged", "name": "Platform judgment", "platform": 2},
+        {"id": "partial", "name": "Partial platform", "platform": 1},
     ])
     _write(ws.out("ru_b2b_wordstat.csv"), _brands("edge", a=99_861, b=32_468, c=9_830) + _brands("two", a=5_800, b=4_200)
-           + _brands("three", a=5_800, b=2_200, c=2_000) + _brands("judged", a=3_000, b=3_000, c=3_000))
+           + _brands("three", a=5_800, b=2_200, c=2_000) + _brands("judged", a=3_000, b=3_000, c=3_000)
+           + _brands("partial", a=3_000, b=3_000, c=3_000))
     rows = _scores(ws)
+    # platform: 1 is a flag, as in G3: the colour comes from the rule ("judged" has the same data and is red only by judgment)
+    assert "P1:platform-partial" in rows["partial"]["flags"] and not rows["partial"]["verdict"].startswith("🔴")
     assert rows["edge"]["verdict"] == "🔴 monopoly"        # compared unrounded: 70.25% is above 70%, rounded it was 0.70
     assert "top brand" not in rows["two"]["why"]        # with two brands the leader holds >= 50% by construction
     assert "C:few-brands" in rows["two"]["flags"] and "C:few-brands" not in rows["three"]["flags"]

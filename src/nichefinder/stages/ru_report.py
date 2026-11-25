@@ -20,7 +20,8 @@ Score (percentiles are taken inside the RU B2B cohort; weights follow the spirit
   money/adoption 20 = 10 * pct(sum of initial contract prices, 12 months) + 10 * pct(vacancies mentioning a brand)
 `stack_fit` (0-3, set per niche in the niches config) is NOT part of the score; it is shown beside it.
 Flags: C:brand-leader (top brand > 60% of brand searches), C:few-brands (one or two brands measured), C:bitrix-leader
-(> 60% of installs), Z:noisy (procurements: < 30% have the phrase in the title), W:low (Wordstat sum < 500).
+(> 60% of installs), Z:noisy (procurements: < 30% have the phrase in the title), W:low (Wordstat sum < 500),
+P1:platform-partial (the owner's judgment `platform: 1`: a platform covers part of the task; the colour stays, as in G3).
 Verdict (a rule, not manual): red "monopoly" - top brand > 70% of brand searches with a brand sum of at least 5,000 (the share
 is compared unrounded); red "platform" - the owner's judgment `platform: 2` in the niches config (as G3 of S6-RU); yellow -
 top brand above 50% of at least three brands, or score below the cohort median; green - the rest. Calibrated on the control
@@ -190,6 +191,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             flags.append("Z:noisy")
         if x["ws_demand"] < 500:
             flags.append("W:low")
+        if x["platform"] == 1:
+            flags.append("P1:platform-partial")
         x["flags"] = ";".join(flags)
     med = sorted(x["score"] for x in cohort)[len(cohort) // 2]
     for x in rows:
