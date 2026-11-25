@@ -385,6 +385,45 @@ def test_b2b_prices_come_from_capterra_pages_and_getapp_only_fills_unknown(tmp_p
     # Deals is unknown, not unpriced: one public price out of two known, not one out of three
     assert (agg["n"], agg["price_known"], agg["price_public"], agg["price_public_share"]) == ("3", "2", "1", "0.5")
     assert (agg["median_monthly_usd"], agg["under_100_share"], agg["free_trial_share"]) == ("29.0", "1.0", "0.67")
+    assert (agg["price_unit"], agg["price_src"]) == ("account", "Capterra")
+
+
+def test_b2b_median_never_mixes_per_user_and_account_prices(tmp_path):
+    ws = make_ws(tmp_path, side="b2b-smb")
+    row = {"niche_id": "crm", "capterra_slug": "crm-software", "reviews": 100, "no_pricing_info": 0, "free_trial": 1, "free_version": 0}
+    write_csv(ws.out("pricing_b2b.csv"), [
+        {**row, "product": "Flat", "source": "capterra", "price": "40", "period": "per month", "model": "Flat Rate"},
+        {**row, "product": "Seat", "source": "capterra", "price": "2.5", "period": "per month", "model": "Per User"},
+        {**row, "product": "Usage", "source": "getapp", "price": "30", "period": "per month", "model": "Usage Based"},
+        {**row, "product": "Other", "source": "capterra", "price": "25", "period": "per month", "model": "Other"},
+        {**row, "niche_id": "budget", "product": "Seat A", "source": "capterra", "price": "49", "period": "per month", "model": "Per User"},
+        {**row, "niche_id": "budget", "product": "Seat B", "source": "capterra", "price": "120", "period": "per month", "model": "Per User"}])
+    s5_pricing_b2b.aggregate(ws)
+    agg = {r["niche_id"]: r for r in csv.DictReader(open(ws.out("pricing_b2b_niche.csv"), encoding="utf-8"))}
+    # the $2.5 seat price stays out of the account median, but still counts as a plan under $100
+    assert (agg["crm"]["median_monthly_usd"], agg["crm"]["min_monthly_usd"], agg["crm"]["price_unit"]) == ("30.0", "25.0", "account")
+    assert (agg["crm"]["price_src"], agg["crm"]["under_100_share"]) == ("Capterra, GetApp", "1.0")
+    assert "Seat $2.5/month per user" in agg["crm"]["sample"]
+    # no account price at all: the per-user median, marked as such
+    assert (agg["budget"]["median_monthly_usd"], agg["budget"]["price_unit"], agg["budget"]["under_100_share"]) == ("120.0", "user", "0.5")
+
+
+def test_path_to_goal_names_the_b2b_price_source_and_flags_a_per_user_price(tmp_path):
+    from importlib import resources
+    from nichefinder.stages import s6_ceiling
+    ws = make_ws(tmp_path, side="b2b-smb")
+    (tmp_path / "config" / "ceiling.yaml").write_text(
+        resources.files("nichefinder").joinpath("examples/default/config/ceiling.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+    write_csv(ws.out("score_final.csv"), [{"niche_id": nid, "verdict": "yellow", "score": 60, "side": "b2b-smb", "flags": ""}
+                                          for nid in ("budget", "crm")])
+    base = {"b2c_median_monthly": "", "demand_us": 1000, "supply_src": "capterra"}
+    write_csv(ws.out("supply_deep.csv"), [
+        {"niche_id": "crm", **base, "b2b_median_monthly": 30, "b2b_price_unit": "account", "b2b_price_src": "Capterra"},
+        {"niche_id": "budget", **base, "b2b_median_monthly": 49, "b2b_price_unit": "user", "b2b_price_src": "Capterra"}])
+    s6_ceiling.run(ws, argparse.Namespace())
+    rows = {r["niche_id"]: r for r in csv.DictReader(open(ws.out("path_to_goal.csv"), encoding="utf-8"))}
+    assert (rows["crm"]["price_src"], rows["budget"]["price_src"]) == ("Capterra", "Capterra")
+    assert "per user" not in rows["crm"]["notes"] and "price is per user - ARPU understated" in rows["budget"]["notes"]
 
 
 def saved(url: str, page: str) -> str:

@@ -116,7 +116,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         elif num(sp["b2c_median_yearly"]):
             price = f"${num(sp['b2c_median_yearly']):.0f}/yr"
         elif num(sp["b2b_median_monthly"]):
-            price = f"${num(sp['b2b_median_monthly']):.0f}/mo"
+            price = f"${num(sp['b2b_median_monthly']):.0f}/mo" + ("/user" if sp.get("b2b_price_unit") == "user" else "")
         pg = ptg.get(nid) or {}
         o = off.get(nid) or {}
         row = {

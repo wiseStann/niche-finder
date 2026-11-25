@@ -8,8 +8,11 @@ page (2026-11-21), so the first block page ends the GetApp lookups and the Capte
 Inputs: data/out/capterra_products.csv, config/capterra_map.yaml, config/getapp_categories.yaml (GetApp child -> parent).
 Outputs: data/out/pricing_b2b.csv (per product, `source` capterra / getapp / empty) and data/out/pricing_b2b_niche.csv
 (per niche: share of products with a public price among those whose pricing is known, median/min/max monthly price,
-share under $100, free trial/version shares). A product with no price and no "no pricing info" mark is unknown and stays
-out of the public-price share (counting it as unpriced gave false 0 % shares). HTML is cached in data/cache/getapp/.
+its unit and source, share under $100, free trial/version shares). A product with no price and no "no pricing info" mark
+is unknown and stays out of the public-price share (counting it as unpriced gave false 0 % shares). The median is a price
+per account: a per-user price (Capterra model "Per User") enters it only when no product of the niche has an account
+price, and then `price_unit` is `user`, an ARPU that understates the account. The share under $100 still counts every
+monthly price. HTML is cached in data/cache/getapp/.
 Needs curl. No key.
 """
 from __future__ import annotations
@@ -30,6 +33,7 @@ KEYS: tuple[str, ...] = ()
 NEEDS: tuple[str, ...] = ("curl",)
 
 TOP_N = 8
+SOURCE = {"capterra": "Capterra", "getapp": "GetApp"}  # rows written before `source` existed came from GetApp
 # Capterra slug -> GetApp child category, where it differs from "slug minus -software"
 OVERRIDE = {
     "billing-and-invoicing-software": "billing-invoicing",
@@ -159,6 +163,11 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
 PRICE_COLS = ("price", "period", "model", "no_pricing_info", "free_trial", "free_version")
 
 
+def per_user(r: dict) -> bool:
+    """A per-seat price: Capterra model "Per User" (GetApp cards show the same Gartner label)."""
+    return str(r.get("model") or "").strip().lower() == "per user"
+
+
 def known_price(r: dict) -> bool:
     """The product's pricing is known: a public price, or a mark that the vendor publishes none."""
     return str(r.get("price", "")) not in ("", "None") or str(r.get("no_pricing_info", "")) == "1"
@@ -217,7 +226,10 @@ def aggregate(ws: Workspace) -> None:
         for r in rs:
             if r["product"] not in seen:
                 seen.add(r["product"]); uniq.append(r)
-        monthly = sorted(float(r["price"]) for r in uniq if r["price"] not in ("", "None") and "month" in (r["period"] or ""))
+        per_month = [r for r in uniq if r["price"] not in ("", "None") and "month" in (r["period"] or "")]
+        account = [r for r in per_month if not per_user(r)]
+        base = account or per_month          # a per-user price is not an account price: the two are never mixed
+        monthly = sorted(float(r["price"]) for r in base)
         pub = [r for r in uniq if r["price"] not in ("", "None")]
         known = [r for r in uniq if known_price(r)]
         trial = [r for r in uniq if r["free_trial"] in ("0", "1")]
@@ -225,10 +237,13 @@ def aggregate(ws: Workspace) -> None:
         agg.append({"niche_id": nid, "n": len(uniq), "price_known": len(known), "price_public": len(pub),
                     "price_public_share": round(len(pub) / len(known), 2) if known else "",
                     "median_monthly_usd": monthly[len(monthly) // 2] if monthly else "", "min_monthly_usd": monthly[0] if monthly else "", "max_monthly_usd": monthly[-1] if monthly else "",
-                    "under_100_share": round(sum(1 for x in monthly if x < 100) / len(monthly), 2) if monthly else "",
+                    "price_unit": ("account" if account else "user") if base else "",
+                    "price_src": ", ".join(sorted({SOURCE.get(r.get("source") or "getapp", "GetApp") for r in base})),
+                    "under_100_share": round(sum(1 for r in per_month if float(r["price"]) < 100) / len(per_month), 2) if per_month else "",
                     "free_trial_share": round(sum(1 for r in trial if r["free_trial"] == "1") / len(trial), 2) if trial else "",
                     "free_version_share": round(sum(1 for r in free if r["free_version"] == "1") / len(free), 2) if free else "",
-                    "sample": "; ".join(f"{r['product'][:20]} ${r['price']}{'/' + r['period'].replace('per ', '') if r['period'] else ''}" for r in pub[:5])})
+                    "sample": "; ".join(f"{r['product'][:20]} ${r['price']}{'/' + r['period'].replace('per ', '') if r['period'] else ''}"
+                                        f"{' per user' if per_user(r) else ''}" for r in pub[:5])})
     out = ws.out("pricing_b2b_niche.csv")
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=list(agg[0].keys())); w.writeheader(); w.writerows(agg)

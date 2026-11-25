@@ -166,7 +166,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             "shop_cat": shop.get(nid, {}).get("category", ""), "shop_players_100": f(shop.get(nid, {}).get("players_100")),
             "shop_top1": shop.get(nid, {}).get("top1", ""), "shop_top1_share": f(shop.get(nid, {}).get("top1_share")), "shop_top3_share": f(shop.get(nid, {}).get("top3_share")),
             # pricing
-            "b2b_median_monthly": f(pb2b.get(nid, {}).get("median_monthly_usd")), "b2b_price_public": f(pb2b.get(nid, {}).get("price_public_share")),
+            "b2b_median_monthly": f(pb2b.get(nid, {}).get("median_monthly_usd")), "b2b_price_unit": pb2b.get(nid, {}).get("price_unit", ""),
+            "b2b_price_src": pb2b.get(nid, {}).get("price_src", ""), "b2b_price_public": f(pb2b.get(nid, {}).get("price_public_share")),
             "b2b_under100": f(pb2b.get(nid, {}).get("under_100_share")), "b2b_trial": f(pb2b.get(nid, {}).get("free_trial_share")), "b2b_free": f(pb2b.get(nid, {}).get("free_version_share")),
             "b2c_monetized": f(pb2c.get(nid, {}).get("monetized_share")), "b2c_median_monthly": f(pb2c.get(nid, {}).get("median_monthly")),
             "b2c_median_yearly": f(pb2c.get(nid, {}).get("median_yearly")), "b2c_with_monthly": f(pb2c.get(nid, {}).get("with_monthly")), "b2c_n": f(pb2c.get(nid, {}).get("n")),

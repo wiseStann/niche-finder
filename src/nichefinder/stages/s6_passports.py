@@ -205,7 +205,10 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             L += ["| Product | Reviews (Capterra) | Starting price | Period | Free trial | Free version |", "|---|---|---|---|---|---|"]
             for r in sorted(ps, key=lambda r: -int(r["reviews"]))[:8]:
                 L.append(f"| {r['product']} | {r['reviews']} | {('$' + r['price']) if r['price'] not in ('', 'None') else '—'} | {r['period'] or '—'} {r['model']} | {'yes' if r['free_trial']=='1' else ('no' if r['free_trial']=='0' else '—')} | {'yes' if r['free_version']=='1' else ('no' if r['free_version']=='0' else '—')} |")
-            L += ["", f"Median starting price **${n(sp['b2b_median_monthly'])}/month**, {p(sp['b2b_price_public'])} of products publish a price, plans under $100/month - {p(sp['b2b_under100'])}, free trial at {p(sp['b2b_trial'])}, free version at {p(sp['b2b_free'])} (GetApp).", ""]
+            unit = " per user (no competitor shows an account price, so ARPU is understated)" if sp.get("b2b_price_unit") == "user" else ""
+            # Capterra page data carries the trial / free flags of every product; supply_deep before 2026-11-26 has no source column: GetApp
+            src = ", ".join(sorted({"Capterra", *filter(None, sp["b2b_price_src"].split(", "))})) if "b2b_price_src" in sp else "GetApp"
+            L += ["", f"Median starting price **${n(sp['b2b_median_monthly'])}/month**{unit}, {p(sp['b2b_price_public'])} of products publish a price, plans under $100/month - {p(sp['b2b_under100'])}, free trial at {p(sp['b2b_trial'])}, free version at {p(sp['b2b_free'])} ({src}).", ""]
         if nid in pb2c:
             L += ["| App | Ratings | IAP | Monthly | Yearly | Weekly | Lifetime | IAP examples |", "|---|---|---|---|---|---|---|---|"]
             for r in pb2c[nid]:

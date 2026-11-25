@@ -97,7 +97,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         notes = []
         # --- price
         pm = f(sp["b2c_median_monthly"]) if b2c else f(sp["b2b_median_monthly"])
-        src_price = "App Store IAP" if b2c else "GetApp"
+        src_price = "App Store IAP" if b2c else (sp.get("b2b_price_src") or "GetApp")   # supply_deep before 2026-11-26: GetApp only
         if "S5:manual" in (s.get("flags") or ""):   # the Capterra category is only a proxy: take the price from the niche's product description
             pm = None
         if not pm:
@@ -107,6 +107,8 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             prod = x.get("product") or ""
             if "сотрудник" in prod or "экран" in prod or "per unit" in prod or "employee" in prod or "screen" in prod or "per seat" in prod:
                 notes.append("price is per unit (employee/screen) - ARPU understated")
+        elif not b2c and sp.get("b2b_price_unit") == "user":   # no competitor shows an account price (s5_pricing_b2b)
+            notes.append("price is per user - ARPU understated")
         if b2c:
             c = cfg["b2c"]
             arpu = pm * c["annual_discount"] * (1 - c["store_fee"])
@@ -209,7 +211,8 @@ def write_report(ws, rows, cfg, niches, cur, net_low, net_high, upu, margin, rev
          "", "**How it is computed (all coefficients are in `config/ceiling.yaml`; order of magnitude, not a forecast):**",
          f"- B2C: ARPU = median monthly competitor price (IAP) × {b['annual_discount']} (annual plans) × (1 − {b['store_fee']:.0%} store fee). "
          f"Payers in the niche = App Store ratings/month × {b['installs_per_rating_ios']} installs per rating × {b['android_multiplier']:.0f} (Android) × {b['install_to_paid']:.0%} conversion × {b['paid_lifetime_months']} months of payer lifetime.",
-         f"- B2B: ARPU = median starting price (GetApp) × (1 − {c['payment_fee']:.0%}). Customers in the niche = Capterra reviews × {c['customers_per_review']} "
+         f"- B2B: ARPU = median starting price per account (Capterra page data, else GetApp; a per-user price only when no "
+         f"competitor shows an account price, and then it understates ARPU) × (1 − {c['payment_fee']:.0%}). Customers in the niche = Capterra reviews × {c['customers_per_review']} "
          f"(Shopify × {c['customers_per_review_shopify']}); without a category, search demand × 12 × {c['search_to_customer']:.0%}.",
          f"- Position: share of the niche's payers needed for the goal: > {b['position_thresholds']['leader']:.0%} leader; > {b['position_thresholds']['top3']:.0%} top-3; "
          f"> {b['position_thresholds']['top10']:.0%} top-10; otherwise \"one of many\".",
