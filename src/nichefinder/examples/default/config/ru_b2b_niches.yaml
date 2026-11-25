@@ -6,6 +6,9 @@
 #   hh_roles  - hh.ru: vacancies for the role the product automates ("secretary on the phone", "estimator")                     (labour = automation potential)
 #   hh_brands - hh.ru: vacancies that name a brand                                                                              (adoption)
 #   ws_brands / ws_cat / ws_dyn - Wordstat: sum of brands = category size; category phrases; 36-month dynamics                  (demand, trend)
+#   ws_brand_names - optional {phrase: brand}: spellings of one brand that count as one brand ("vetmanager" -> "ветменеджер")
+# Optional judgments and markers: `platform: 2` - the owner's judgment that a platform gives the product away or is building it
+# (the verdict is then red "platform", as G3 of S6-RU); `control: red|green` - a control niche (see the block at the end).
 # Search terms are Russian on purpose (they are queries against Russian sites); everything else is English.
 # stack_fit 0-3 is your own judgment of how well a niche fits your technical stack (3 = same stack, 0 = outside your competence).
 # It is shown beside the score and is not part of it. Every niche ships with the neutral 1; set your own.
@@ -322,6 +325,135 @@
   hh_roles: [администратор ветеринарной клиники, администратор ветклиники]
   hh_brands: [ветменеджер, vetmanager]
   ws_brands: [ветменеджер, vetmanager, 1с ветеринария, vetera]
+  ws_brand_names: {vetmanager: ветменеджер}
   ws_cat: [программа для ветклиники, crm для ветеринарной клиники]
   ws_dyn: программа для ветклиники
   notes: borderline with healthcare; included as a check
+
+# --- Control niches (added 2026-11-25, expectations fixed before they were measured) ---------------------------------------
+# `control: red` = a market a small team should not enter (a monopoly, an oligopoly of giants, or a crowd with free tiers);
+# `control: green` = should pass (demand, several vendors of comparable size, small teams selling self-serve).
+# Controls are scored against the cohort but stay out of its percentiles and median (as in S6-RU). If a control gets the wrong
+# colour, suspect the formula, not the control (methodology, principle 5). Three of them mirror the global controls
+# ctrl-smb-crm, ctrl-task-manager and ctrl-website-builder, which are red in S3/S6 and S6-RU.
+
+- id: ctrl-ru-crm-smb
+  name: "[control red] CRM for small businesses (RU)"
+  control: red
+  who: small businesses with a sales team
+  product: SaaS 500-3000 RUB/month per user
+  reestr: [crm]
+  bitrix: [воронка продаж, учет клиентов]
+  zakupki: [crm-система, система управления взаимоотношениями с клиентами]
+  hh_roles: [ассистент отдела продаж, помощник менеджера по продажам, администратор crm]
+  hh_brands: [amocrm, битрикс24, retailcrm]
+  ws_brands: [битрикс24, amocrm, амо crm, retailcrm, мегаплан, envycrm]
+  ws_brand_names: {амо crm: amocrm}
+  ws_cat: [crm для малого бизнеса, crm система, простая crm для малого бизнеса]
+  ws_dyn: crm система
+  notes: >-
+    Expected red: two giants (Bitrix24, amoCRM) hold the SMB market, Bitrix24 has a free tier. Mirrors the global ctrl-smb-crm.
+
+- id: ctrl-ru-accounting
+  name: "[control red] Online accounting for small businesses and sole traders (RU)"
+  control: red
+  who: sole traders and small companies that keep their own books or pay an outsourced accountant
+  product: SaaS 1-3 thousand RUB/month
+  reestr: [бухгалтер, бухучет]
+  bitrix: [бухгалтерия, счета и акты]
+  zakupki: [1с:бухгалтерия, программа для бухгалтерского учета]
+  hh_roles: [бухгалтер по первичной документации, помощник бухгалтера, бухгалтер на первичную документацию]
+  hh_brands: [1с:бухгалтерия, контур.эльба, мое дело]
+  ws_brands: [1с бухгалтерия, контур эльба, контур бухгалтерия, мое дело бухгалтерия, сбис бухгалтерия]
+  ws_cat: [онлайн бухгалтерия, бухгалтерия для ип, программа для бухгалтерии]
+  ws_dyn: онлайн бухгалтерия
+  notes: >-
+    Expected red: 1C holds the accounting market, and Kontur, SBIS and Moe Delo split the online rest; reporting to the
+    tax office needs an accredited operator.
+
+- id: ctrl-ru-edo
+  name: "[control red] Electronic document exchange with counterparties, EDO (RU)"
+  control: red
+  who: companies exchanging invoices and acts with counterparties
+  product: per-document tariffs or 3-20 thousand RUB/year
+  reestr: [электронного документооборота, обмена электронными документами]
+  bitrix: [эдо, электронный документооборот]
+  zakupki: [юридически значимый электронный документооборот, оператор электронного документооборота]
+  hh_roles: [специалист по эдо, специалист по электронному документообороту]
+  hh_brands: [диадок, сбис, 1с-эдо]
+  ws_brands: [диадок, сбис эдо, 1с эдо, такском, калуга астрал]
+  ws_cat: [электронный документооборот, эдо с контрагентами, оператор эдо]
+  ws_dyn: электронный документооборот
+  notes: >-
+    Expected red: an oligopoly of operators accredited by the tax service (Kontur Diadoc, SBIS, Taxcom, 1C-EDO); a new
+    vendor needs the accreditation or a roaming agreement. Tests whether the formula sees an oligopoly, not only a monopoly.
+
+- id: ctrl-ru-website-builder
+  name: "[control red] Website builders for small businesses (RU)"
+  control: red
+  who: small businesses and freelancers who build their own site or landing page
+  product: SaaS 500-2000 RUB/month
+  reestr: [конструктор сайтов, конструктор сайта]
+  bitrix: [конструктор сайтов, лендинг]
+  zakupki: [конструктор сайтов]
+  hh_roles: [веб-дизайнер, контент-менеджер сайта, верстальщик]
+  hh_brands: [tilda, taplink, craftum]
+  ws_brands: [tilda, тильда, wix, craftum, taplink, nethouse]
+  ws_brand_names: {тильда: tilda}
+  ws_cat: [конструктор сайтов, создать сайт бесплатно конструктор, конструктор сайтов для бизнеса]
+  ws_dyn: конструктор сайтов
+  notes: >-
+    Expected red: Tilda dominates. Mirrors the global ctrl-website-builder.
+
+- id: ctrl-ru-task-manager
+  name: "[control red] Task trackers and project management for teams (RU)"
+  control: red
+  who: SMB teams that plan work in tasks and boards
+  product: SaaS 300-1000 RUB/month per user
+  reestr: [таск-трекер, управления проектами, управления задачами]
+  bitrix: [канбан, управление проектами]
+  zakupki: [система управления проектами, таск-трекер]
+  hh_roles: [координатор проектов, ассистент руководителя проекта, администратор проекта]
+  hh_brands: [kaiten, яндекс трекер, jira]
+  ws_brands: [kaiten, яндекс трекер, notion, yougile, weeek, jira]
+  ws_cat: [таск трекер, программа для управления проектами, планировщик задач для команды]
+  ws_dyn: таск трекер
+  notes: >-
+    Expected red: a crowd of tools with free tiers (Yandex Tracker, Bitrix24 tasks, YouGile, Kaiten, Weeek) and
+    incumbents people keep searching (Jira, Notion). Mirrors the global ctrl-task-manager. Tests the formula on a crowded but
+    fragmented market, which the fragmentation block rewards.
+
+- id: ctrl-ru-email-marketing
+  name: "[control green] Email newsletter services for small businesses (RU)"
+  control: green
+  who: online shops, online schools, service businesses sending newsletters
+  product: SaaS 500-10000 RUB/month by list size
+  reestr: [рассылк, email-маркетинг]
+  bitrix: [email рассылка, рассылки]
+  zakupki: [сервис email-рассылок, email-рассылка]
+  hh_roles: [email-маркетолог, специалист по email-маркетингу]
+  hh_brands: [unisender, sendpulse, dashamail]
+  ws_brands: [unisender, sendpulse, dashamail, sendsay, notisend]
+  ws_cat: [сервис email рассылок, сервис рассылок, email рассылка]
+  ws_dyn: сервис email рассылок
+  notes: >-
+    Expected green: several vendors of comparable size and no platform giving it away; small teams (DashaMail, Notisend) sell
+    self-serve, and Mailchimp's exit in 2022 moved its customers to local vendors.
+
+- id: ctrl-ru-call-tracking
+  name: "[control green] Call tracking and end-to-end marketing analytics for SMBs (RU)"
+  control: green
+  who: SMBs buying ads whose leads call by phone - clinics, real estate, services, auto
+  product: SaaS 1-15 thousand RUB/month plus numbers
+  reestr: [коллтрекинг, сквозная аналитика, отслеживания звонков]
+  bitrix: [коллтрекинг, сквозная аналитика]
+  zakupki: [коллтрекинг, сквозная аналитика]
+  hh_roles: [веб-аналитик, специалист по сквозной аналитике]
+  hh_brands: [calltouch, comagic, roistat]
+  ws_brands: [calltouch, comagic, roistat, callibri, alloka]
+  ws_cat: [коллтрекинг, динамический коллтрекинг, сквозная аналитика]
+  ws_dyn: коллтрекинг
+  notes: >-
+    Expected green: fragmented between mid-sized vendors (Calltouch, CoMagic/UIS, Roistat) and small ones (Callibri,
+    Alloka), sold self-serve. Calltouch and CoMagic are trap phrases only for speech analytics, where they are an adjacent
+    category.
