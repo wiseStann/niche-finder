@@ -174,7 +174,9 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
             L += ["App Store: not a sales channel for this niche (web product) - iTunes results are irrelevant, metrics were not computed.", ""]
         for c in cl:
             if c.get("complete") == "0":   # paging cut short by an anti-bot page: the shares would be biased (s5_capterra)
-                bounds = (f"; bounds: top-1 ≤ {p(c['top1_share_max'])}, ≥ {c['products_100plus_min']} products with ≥ 100 reviews, "
+                players = (f"exactly **{c['products_100plus']}** products with ≥ 100 reviews" if c.get("products_100plus")
+                           else f"≥ {c['products_100plus_min']} products with ≥ 100 reviews")
+                bounds = (f"; bounds: top-1 ≤ {p(c['top1_share_max'])}, {players}, "
                           f"every unread product ≤ {c['tail_reviews']} reviews") if c.get("top1_share_max") else ""
                 L += [f"**Capterra `{c['slug']}`**: {c['products_total'] or '?'} products in the category; only {c['products_seen']} were read "
                       f"({c['stop']}), so shares are not measured. Leader by reviews: **{c['top1'] or '?'}**{bounds}"
@@ -191,7 +193,7 @@ def run(ws: Workspace, args: argparse.Namespace) -> None:
         if m.get("supply_manual"):
             L += [f"**Manual supply estimate** (no proxy category): {m['supply_manual']}", ""]
         L += [f"S5 gate (top-1 ≤ 50% and ≥ 8 players by an independent signal): **{s['gate_s5']}**." + (" \"Second platform\" rule: the iOS leader holds > 50%, but the Google Play US leader holds ≤ 50% with ≥ 8 players above 100k installs - the market is not a monopoly, entry through Android (see \"Demand outside search\")." if s['gate_s5'] == 'PASS:android' else '')
-              + (" Settled by the bounds of an incomplete Capterra category (`S5:partial`): more pages can only lower the top-1 share and add players; the players and top-3 points of the score are neutral until the category is read in full." if 'S5:partial' in s['flags'] else ''), ""]
+              + (" Settled by the bounds of an incomplete Capterra category (`S5:partial`): more pages can only lower the top-1 share and add players; the top-3 point of the score is neutral until the category is read in full, and so is the players point unless the player count is already exact." if 'S5:partial' in s['flags'] else ''), ""]
         L += oligopoly_lines(x["side"], s["verdict"], cl)
         e = ent.get(nid)
         if e and int(e["cohort_12_24m"] or 0) > 0:   # new-entrant survival (s9_entrants)

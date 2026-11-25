@@ -11,7 +11,8 @@ niches moved with it). An incomplete category keeps its product count and the na
 player counts and review totals stay empty. Instead it carries bounds that more pages cannot move the wrong way: the
 top-1 share read so far is an upper bound (the leader is on page 1, the denominator only grows), the players read so far
 a lower bound, and the reviews of the last ordered card (`tail_reviews`) an upper bound for every product not read.
-s5_merge settles the S5 gate from them when it can and treats the category as no data otherwise. Pages that came through
+Once that tail is under 100 reviews, no unread product can be a player, so the player count is exact and is filled in
+(changed 2026-11-25; the count of products with 10+ reviews likewise once the tail is under 10). s5_merge settles the S5 gate from them when it can and treats the category as no data otherwise. Pages that came through
 stay in the cache, so a later run fetches only the missing ones.
 Cloudflare lets a browser through when it stops curl, so pages can also come from a browser: `--missing` lists the pages
 the cache lacks (no requests), and `--import <folder>` checks pages saved there (Ctrl+S) and puts them into the cache under
@@ -293,19 +294,22 @@ def conc(ps: list[tuple[str, float, int]]):
 def category_stats(nid: str, slug: str, cfg: dict, total, products, pages: int, stop: str, tail: int | None,
                    generic: set[str], brands: set[str]) -> tuple[dict, list[dict]]:
     """The stats row of one category and its product rows. An incomplete category keeps counts of what was seen and the
-    leaders' names (page 1 holds them), but no shares, player counts or review totals; its bounds are the
-    `top1_share_max`, `products_100plus_min` and `tail_reviews` columns."""
+    leaders' names (page 1 holds them), but no shares or review totals, and a player count only when it is exact (every
+    unread product has fewer reviews than the threshold); its bounds are the `top1_share_max`, `products_100plus_min`
+    and `tail_reviews` columns."""
     products = sorted(products, key=lambda c: -c[2])
     horizontal = {c[0] for c in products if c[0] in generic and not is_own(c[0], brands)}
     niche_only = [c for c in products if c[0] not in horizontal]
     tot_rev, top1, top1_share, top3_share, _ = conc(products)
     n_tot, n_top1, n_top1_share, n_top3_share, n_hhi = conc(niche_only)
     full = complete(stop)
+    exact_10 = full or (pages > 0 and tail is not None and tail < 10)     # no unread product reaches the threshold
+    exact_100 = full or (pages > 0 and tail is not None and tail < 100)
     stats = {
         "niche_id": nid, "slug": slug, "products_total": total, "products_seen": len(products),
         "complete": int(full), "pages": pages, "stop": stop,
-        "products_10plus": sum(1 for c in niche_only if c[2] >= 10) if full else "",
-        "products_100plus": sum(1 for c in niche_only if c[2] >= 100) if full else "",
+        "products_10plus": sum(1 for c in niche_only if c[2] >= 10) if exact_10 else "",
+        "products_100plus": sum(1 for c in niche_only if c[2] >= 100) if exact_100 else "",
         "reviews_total": tot_rev if full else "", "top1_all": top1,
         "top1_share_all": top1_share if full else "", "top3_share_all": top3_share if full else "",
         "reviews_niche": n_tot if full else "", "top1": n_top1,

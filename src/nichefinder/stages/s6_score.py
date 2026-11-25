@@ -18,8 +18,8 @@ Gates (any failure = red): G3 platform_risk = 2; G5 feasibility score >= 2; S5 s
 players) - for B2C / prosumer niches PASS when the Google Play leader holds <= 50% with >= 8 players above 100k installs
 (PASS:android; B2B products are not bought in app stores, so a second store is no second signal for them); unmeasured
 supply passes only with a manual supply estimate (PASS*, flag S5:manual); without one it fails S5:unmeasured. A gate that
-s5_merge settled from the bounds of an incomplete Capterra category is flagged S5:partial; its players and top-3 points
-are neutral, as for NA.
+s5_merge settled from the bounds of an incomplete Capterra category is flagged S5:partial; its top-3 point is neutral,
+as for NA, and so is its players point unless the player count is exact (every unread product under 100 reviews).
 
 Verdict: gates failed -> red; otherwise green when score >= nf.yaml `verdict.green_min_score` (default 70), else yellow.
 `verdict` in config/overrides.yaml for a niche replaces the automatic green/yellow. The reason is written to `verdict_note`.

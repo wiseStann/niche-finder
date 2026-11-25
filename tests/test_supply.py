@@ -430,3 +430,18 @@ def test_capterra_offline_run_reads_the_cache_only(tmp_path, monkeypatch):
     s5_capterra.run(ws, argparse.Namespace(offline=True))
     st = stats_of(ws)
     assert (st["complete"], st["stop"], st["top1"], st["products_100plus_min"]) == ("0", "blocked p2", "Leads", "2")
+
+
+def test_capterra_player_count_is_exact_once_unread_products_are_under_100_reviews(tmp_path, monkeypatch):
+    ws = capterra_ws(tmp_path)
+    cards = [("Ad", 0)] + [(f"P{i}", 900 - 30 * i) for i in range(10)] + [("Small", 60)]
+    capterra_site(monkeypatch, {1: listing(400, cards)})   # page 2 is a block page
+    s5_capterra.run(ws, argparse.Namespace())
+    st = stats_of(ws)
+    assert (st["complete"], st["stop"], st["tail_reviews"]) == ("0", "blocked p2", "60")
+    # every unread product has at most 60 reviews: none can be a player, so the count of 10 is exact; shares stay unknown
+    assert (st["products_100plus"], st["products_100plus_min"], st["products_10plus"], st["top3_share"]) == ("10", "10", "", "")
+    s5_merge.run(ws, argparse.Namespace())
+    row = next(r for r in csv.DictReader(open(ws.out("supply_deep.csv"), encoding="utf-8")) if r["niche_id"] == "crm")
+    assert (row["supply_src"], row["gate_s5"], row["supply_partial"], row["supply_top3_share"]) == ("capterra", "PASS", "1", "")
+    assert float(row["supply_players"]) == 10   # the score uses it; the top-3 point stays neutral
