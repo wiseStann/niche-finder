@@ -14,6 +14,11 @@ ws_traps:
   mango office: {reason: "telephony, not speech analytics", niches: [ru-speech-analytics-calls]}
   sipuni: {reason: "telephony, not speech analytics", niches: [ru-speech-analytics-calls]}
   comagic: {reason: "call tracking / telephony", niches: [ru-speech-analytics-calls]}
+  контур логистика: {reason: "Kontur's exchange of electronic transport documents (mandatory from 1 September 2026), mostly logins; not a TMS", niches: [ru-freight-carriers-tms]}
+  логист про: {reason: "a TMS platform for shippers with a carrier base - another segment", niches: [ru-freight-carriers-tms]}
+  atrucks: {reason: "a freight procurement platform for shippers - another segment", niches: [ru-freight-carriers-tms]}
+  roolz: {reason: "a freight exchange, like ATI (not measured)", niches: [ru-freight-carriers-tms]}
+  курьерист: {reason: "a courier company, not software", niches: [ru-courier-routing]}
 
 # Phrases that look ambiguous but are kept in the sums. Documentation only; `ru_report` does not read this key.
 ws_caveats:

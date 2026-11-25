@@ -9,7 +9,8 @@ sleep: 1.0          # seconds between live requests
 keywords:
   ru-lms-smb: [обучение сотрудников, корпоративное обучение, lms, онлайн-обучение]     # "курсы" also matches currency-rate apps
   ru-tender-search: [тендер, госзакупк, 44-фз, 223-фз]                                  # "закупки" matches purchase-order apps
-  ru-logistics-dispatch: [грузоперевозки, tms, маршрутизация, диспетчер]               # "логистика" matches marketplace-seller apps
+  ru-freight-carriers-tms: [грузоперевозки, tms, диспетчер]                           # "логистика" matches marketplace-seller apps
+  ru-courier-routing: [курьер, маршрутизация]                                       # "доставка" matches every carrier integration
 
 # marketplace -> niche_id -> catalog categories whose every app counts for the niche (MoySklad category slugs from
 # /integratsii/<slug>/, read from page 1 only; amoCRM groups: recommended, phone, site, mail, chats, useful).

@@ -183,21 +183,47 @@
   ws_dyn: iiko
   notes: a duopoly of iiko and r_keeper is expected - a control niche
 
-- id: ru-logistics-dispatch
-  name: Freight and courier logistics - dispatch, TMS (RU)
-  platform: 1       # owner's judgment 2026-11-25 after a manual check: EPD operators (Saby, Kontur) and ATI give documents, the driver app and tracking almost free; Yandex Routing is free for 1-2 couriers
-  who: transport companies and sole traders with 5-50 vehicles, courier services
-  product: 3-20 thousand RUB/month
+- id: ru-freight-carriers-tms
+  name: Road freight carriers - orders, trips, drivers, documents (TMS) (RU)
+  platform: 1       # owner's judgment 2026-11-25 after a manual check (carried over from ru-logistics-dispatch): EPD operators (Saby, Kontur) and ATI give documents, the driver app and tracking almost free
+  who: transport companies and sole traders with 5-50 trucks, forwarders with their own fleet
+  product: 3-20 thousand RUB/month; cloud TMS start at 1-4 thousand
   stack_fit: 1
-  reestr: [грузоперевоз, tms, транспортной логистики, маршрутизации]
+  reestr: [грузоперевоз, транспортной логистики, управления перевозками, управления транспортом]
   bitrix: [грузоперевозки, логистика, tms]
   zakupki: [транспортная логистика программное обеспечение, tms система]
   hh_roles: [диспетчер грузоперевозок, логист диспетчер, диспетчер транспортного отдела]
-  hh_brands: [умная логистика, 1с tms, мегалогист]
-  ws_brands: [умная логистика, 1с tms, мегалогист, яндекс маршрутизация, atrucks]
-  ws_cat: [программа для грузоперевозок, tms система, программа для диспетчера грузоперевозок]
+  hh_brands: [умная логистика, 1с tms, saby tms]
+  ws_brands: [умная логистика, saby tms, 1с tms, advantum, 4logist, киберлог, мегалогист, fastsol, контур логистика, логист про, atrucks, roolz]
+  ws_cat: [программа для грузоперевозок, программа для транспортной компании, tms система для грузоперевозок]
   ws_dyn: программа для грузоперевозок
-  notes: ~
+  notes: >-
+    Split out of ru-logistics-dispatch on 2026-11-25: that niche summed carriers, couriers (Yandex Routing) and shippers
+    (ATrucks), so no brand led, while among carriers Smart Logistics held 80% of brand searches. Brands were found through
+    Wordstat the same day. Left out as traps (reasons in ru_b2b_traps.yaml): Kontur.Logistika (98k searches a month, mostly
+    logins to the exchange of electronic transport documents, mandatory from 1 September 2026; not a TMS), Logist Pro and
+    ATrucks (platforms for shippers), Roolz (a freight exchange, like ATI, which is not measured). Saby TMS is kept: it sells
+    trip planning, GPS and driver pay beside the documents, though many of its searches are logins of document users too.
+
+- id: ru-courier-routing
+  name: Courier services and own delivery - route planning, courier app, tracking (RU)
+  platform: 2       # owner's judgment 2026-11-25 after the split: Yandex Routing leads with 89% of brand searches and is free in Yandex Maps for 1-2 couriers
+  who: courier services, shops and restaurants with their own delivery, 3-50 couriers
+  product: 1-3 thousand RUB per courier a month
+  stack_fit: 1
+  reestr: [курьер, управления доставкой, планирования маршрутов, маршрутизации доставки]
+  bitrix: [курьер, маршрутизация]
+  zakupki: [маршрутизация доставки, планирование маршрутов доставки]
+  hh_roles: [диспетчер курьерской службы, логист по доставке, координатор курьеров]
+  hh_brands: [яндекс маршрутизация, курьерика]
+  ws_brands: [яндекс маршрутизация, курьерика, track pod, курьерист]
+  ws_cat: [маршрутизация курьеров, программа для службы доставки, программа для курьерской службы]
+  ws_dyn: маршрутизация курьеров
+  notes: >-
+    Split out of ru-logistics-dispatch on 2026-11-25. Search demand for courier software is small: "приложение для курьеров"
+    (10k a month) is couriers looking for gig work (Yandex Pro, Kuper, Samokat, X5), "маршрутизация курьеров" has 84.
+    Brands were found through Wordstat the same day; Kurierist is a courier company, not software (a trap). Yandex Routing
+    is free in Yandex Maps for 1-2 couriers and up to 50 points, then from 990 RUB per courier a month.
 
 - id: ru-construction-estimates
   name: Estimates and accounting for renovation crews and contractors (RU)
